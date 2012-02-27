@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    android:id="@+id/TableLayout01"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:stretchColumns="*"
+    android:shrinkColumns="*">
+  <TableRow>
+    <LinearLayout
+        android:layout_height="fill_parent"
+        android:orientation="horizontal">
+      <Spinner
+          android:id="@+id/presetSpinner"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"/>
+    </LinearLayout>
+  </TableRow>
+  <TableRow>
+    <LinearLayout
+        android:layout_height="fill_parent"
+        android:layout_span="6"
+        android:orientation="vertical">
+      <com.google.synthesizer.android.widgets.ChordGridView
+          android:id="@+id/chord_grid"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"/>
+    </LinearLayout>
+  </TableRow>
+</TableLayout>

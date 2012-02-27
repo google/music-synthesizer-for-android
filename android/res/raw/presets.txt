@@ -1,0 +1,380 @@
+#
+# Copyright 2011 Google Inc.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#      http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+preset <
+  name: "organ"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.0 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 0.0 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 1.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.02 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "square" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: -1.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.01 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "square" >
+
+  input_setting < setting: BALANCE value: 0.75 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.2 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.0 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.0 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 0.15 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+  input_setting < setting: FILTER_ATTACK value: 0.0 >
+  input_setting < setting: FILTER_DECAY value: 0.0 >
+  input_setting < setting: FILTER_SUSTAIN value: 0.0 >
+  input_setting < setting: FILTER_RELEASE value: 0.0 >
+
+  input_setting < setting: ATTACK value: 0.01 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 0.01 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.10 >
+  input_setting < setting: ECHO_DELAY value: 0.10 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "rubberband"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.0 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 0.0 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "karplus-strong string" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.0 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.0 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.0 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 1.0 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+
+  input_setting < setting: ATTACK value: 0.0 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 5.0 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.0 >
+  input_setting < setting: ECHO_DELAY value: 0.0 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "voice"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.0 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 5.0 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "triangle" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.05 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.17 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.0 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.0 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.0 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 1.0 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+
+  input_setting < setting: ATTACK value: 0.01 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 0.5 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.0 >
+  input_setting < setting: ECHO_DELAY value: 0.0 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "flute"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.0 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 0.0 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.3 >
+  input_setting < setting: TREMOLO_ATTACK value: 2.5 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.5 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 1.0 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+
+  input_setting < setting: ATTACK value: 0.1 >
+  input_setting < setting: DECAY value: 0.2 >
+  input_setting < setting: SUSTAIN value: 0.9 >
+  input_setting < setting: RELEASE value: 0.1 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.0 >
+  input_setting < setting: ECHO_DELAY value: 0.0 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "drums"
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "drums" >
+
+  input_setting < setting: ATTACK value: 0.01 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 5.0 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: TREMOLO_DEPTH value: 0.0 >
+
+  input_setting < setting: FILTER_CUTOFF value: 1.0 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+  input_setting < setting: FILTER_ATTACK value: 0.0 >
+  input_setting < setting: FILTER_DECAY value: 0.0 >
+  input_setting < setting: FILTER_SUSTAIN value: 0.0 >
+  input_setting < setting: FILTER_RELEASE value: 0.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.0 >
+  input_setting < setting: ECHO_DELAY value: 0.0 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "noise"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.01 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 0.01 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "noise" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.0 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.0 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.0 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 0.25 >
+  input_setting < setting: FILTER_DEPTH value: -1.0 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.01 >
+  input_setting < setting: TREMOLO_DECAY value: 0.01 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 0.25 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.01 >
+
+  input_setting < setting: ATTACK value: 0.01 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 0.01 >
+  input_setting < setting: VOLUME value: 0.7 >
+
+  input_setting < setting: ECHO_MIX value: 0.0 >
+  input_setting < setting: ECHO_DELAY value: 0.0 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "square"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.0 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 0.0 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "square" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.0 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.0 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.0 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 1.0 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+
+  input_setting < setting: ATTACK value: 0.0 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 0.0 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.0 >
+  input_setting < setting: ECHO_DELAY value: 0.0 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>
+
+preset <
+  name: "drawbar organ"
+
+  input_setting < setting: VIBRATO_RATE value: 2.5 >
+  input_setting < setting: VIBRATO_ATTACK value: 0.0 >
+  input_setting < setting: VIBRATO_DECAY value: 0.0 >
+  input_setting < setting: VIBRATO_SUSTAIN value: 1.0 >
+  input_setting < setting: VIBRATO_RELEASE value: 0.0 >
+  waveform_setting < setting: VIBRATO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: OSCILLATOR_1_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_1_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_1_WAVEFORM waveform: "drawbar organ" >
+
+  input_setting < setting: OSCILLATOR_2_GLIDE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_COARSE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_FINE value: 0.0 >
+  input_setting < setting: OSCILLATOR_2_VIBRATO value: 0.0 >
+  waveform_setting < setting: OSCILLATOR_2_WAVEFORM waveform: "noise" >
+
+  input_setting < setting: BALANCE value: 0.0 >
+
+  input_setting < setting: TREMOLO_RATE value: 2.2 >
+  input_setting < setting: TREMOLO_DEPTH value: 0.5 >
+  input_setting < setting: TREMOLO_ATTACK value: 0.0 >
+  input_setting < setting: TREMOLO_DECAY value: 0.0 >
+  input_setting < setting: TREMOLO_SUSTAIN value: 1.0 >
+  input_setting < setting: TREMOLO_RELEASE value: 0.0 >
+  waveform_setting < setting: TREMOLO_WAVEFORM waveform: "sine" >
+
+  input_setting < setting: FILTER_CUTOFF value: 1.0 >
+  input_setting < setting: FILTER_DEPTH value: 0.0 >
+  input_setting < setting: FILTER_ATTACK value: 0.0 >
+  input_setting < setting: FILTER_DECAY value: 0.0 >
+  input_setting < setting: FILTER_SUSTAIN value: 0.0 >
+  input_setting < setting: FILTER_RELEASE value: 0.0 >
+
+  input_setting < setting: ATTACK value: 0.01 >
+  input_setting < setting: DECAY value: 0.0 >
+  input_setting < setting: SUSTAIN value: 1.0 >
+  input_setting < setting: RELEASE value: 0.01 >
+  input_setting < setting: VOLUME value: 1.0 >
+
+  input_setting < setting: ECHO_MIX value: 0.10 >
+  input_setting < setting: ECHO_DELAY value: 0.10 >
+  input_setting < setting: DELAY_MIX value: 0.5 >
+>

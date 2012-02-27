@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/piano" android:title="@string/piano" />
+  <item android:id="@+id/chord_grid" android:title="@string/chord_grid" />
+  <item android:id="@+id/edit_instrument" android:title="@string/edit_instrument" />
+  <item android:id="@+id/compose" android:title="@string/compose" />
+</menu>

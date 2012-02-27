@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.synthesizer"
+    android:versionCode="2"
+    android:versionName="0.9">
+  <uses-sdk android:minSdkVersion="8" /> <!-- 8 = Froyo 2.2 -->
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <application android:icon="@drawable/icon" android:label="@string/app_name">
+    <activity
+        android:name=".android.ui.PianoActivity"
+        android:label="@string/app_name"
+        android:screenOrientation="landscape">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <activity
+        android:name=".android.ui.MainActivity"
+        android:label="@string/app_name"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.ScoreActivity"
+        android:label="@string/app_name"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.ChordGridActivity"
+        android:label="@string/chord_grid"
+        android:screenOrientation="portrait" />
+    <activity
+        android:name=".android.ui.InstrumentListActivity"
+        android:label="@string/instrument_list"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.EditInstrumentActivity"
+        android:label="@string/edit_instrument"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.VibratoActivity"
+        android:label="@string/vibrato"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.OscillatorActivity"
+        android:label="@string/oscillator"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.TremoloActivity"
+        android:label="@string/tremolo"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.LowPassFilterActivity"
+        android:label="@string/low_pass_filter"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.AmplificationActivity"
+        android:label="@string/amplification"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.EffectsActivity"
+        android:label="@string/effects"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name=".android.ui.KarplusStrongActivity"
+        android:label="@string/karplus_strong"
+        android:screenOrientation="landscape" />
+    <service android:name=".android.service.SynthesizerService">
+      <intent-filter>
+        <action android:name=".android.service.ISynthesizerService" />
+      </intent-filter>
+    </service>
+  </application>
+</manifest>

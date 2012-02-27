@@ -1,0 +1,8 @@
+#Thu Jan 27 01:35:20 PST 2011
+eclipse.preferences.version=1
+formatter_profile=_MusicSynthesizer
+formatter_settings_version=11
+org.eclipse.jdt.ui.ignorelowercasenames=true
+org.eclipse.jdt.ui.importorder=java;javax;org;com;
+org.eclipse.jdt.ui.ondemandthreshold=99
+org.eclipse.jdt.ui.staticondemandthreshold=99

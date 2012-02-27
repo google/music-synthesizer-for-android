@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    android:id="@+id/TableLayout01"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:stretchColumns="*"
+    android:shrinkColumns="*">
+  <TableRow>
+    <TextView
+        android:text="@string/echo_mix"
+        android:id="@+id/echoMixLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text="@string/echo_delay"
+        android:id="@+id/echoDelayLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/empty1Label"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/empty2Label"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/empty3Label"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/empty4Label"
+        android:gravity="center_horizontal" />
+  </TableRow>
+  <TableRow>
+    <com.google.synthesizer.android.widgets.knob.KnobView
+        android:id="@+id/echoMixKnob"
+        app:value="0.0"
+        app:min="0.0"
+        app:max="1.0"
+        android:layout_margin="2px" />
+    <com.google.synthesizer.android.widgets.knob.KnobView
+        android:id="@+id/echoDelayKnob"
+        app:value="0.5"
+        app:min="0.1"
+        app:max="2.0"
+        android:layout_margin="2px" />
+    <com.google.synthesizer.android.widgets.knob.KnobPlaceholderView
+        android:id="@+id/empty1Knob"
+        android:layout_margin="2px" />
+    <com.google.synthesizer.android.widgets.knob.KnobPlaceholderView
+        android:id="@+id/empty2Knob"
+        android:layout_margin="2px" />
+    <com.google.synthesizer.android.widgets.knob.KnobPlaceholderView
+        android:id="@+id/empty3Knob"
+        android:layout_margin="2px" />
+    <com.google.synthesizer.android.widgets.knob.KnobPlaceholderView
+        android:id="@+id/empty4Knob"
+        android:layout_margin="2px" />
+  </TableRow>
+  <TableRow>
+    <LinearLayout
+        android:layout_height="fill_parent"
+        android:layout_span="6"
+        android:orientation="vertical">
+      <com.google.synthesizer.android.widgets.piano.PianoView
+          android:id="@+id/piano"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          app:octaves="2"
+          app:first_octave="4"/>
+    </LinearLayout>
+  </TableRow>
+</TableLayout>

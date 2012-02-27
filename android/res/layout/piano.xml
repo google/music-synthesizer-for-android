@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    android:id="@+id/TableLayout01"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:stretchColumns="*"
+    android:shrinkColumns="*">
+  <TableRow>
+    <TextView
+        android:text="@string/volume"
+        android:id="@+id/volumeLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/emptyLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/emptyLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/emptyLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/emptyLabel"
+        android:gravity="center_horizontal" />
+    <TextView
+        android:text=""
+        android:id="@+id/emptyLabel"
+        android:gravity="center_horizontal" />
+  </TableRow>
+  <TableRow>
+    <com.google.synthesizer.android.widgets.knob.KnobView
+        android:id="@+id/volumeKnob"
+        app:value="0.0"
+        app:min="0"
+        app:max="1"
+        android:layout_margin="2px" />
+    <Spinner
+        android:id="@+id/presetSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_span="5" />
+  </TableRow>
+  <TableRow>
+    <LinearLayout
+        android:layout_height="fill_parent"
+        android:layout_span="6"
+        android:orientation="vertical">
+      <com.google.synthesizer.android.widgets.piano.PianoView
+          android:id="@+id/piano"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          app:octaves="2"
+          app:first_octave="4" />
+    </LinearLayout>
+  </TableRow>
+</TableLayout>

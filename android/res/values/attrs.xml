@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="ChordGridView">
+    <attr name="octave" format="integer" />
+  </declare-styleable>
+  <declare-styleable name="KnobView">
+    <attr name="value" format="float" />
+    <attr name="min" format="float" />
+    <attr name="max" format="float" />
+  </declare-styleable>
+  <declare-styleable name="PianoView">
+    <attr name="octaves" format="integer" />
+    <attr name="first_octave" format="integer" />
+  </declare-styleable>
+</resources>
