@@ -1,0 +1,193 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1DBA85B761236957DF00CF7B /* fm_core.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA7AAEE2AD874001F6B71D52 /* fm_core.cc */; };
+		2FB5AF9855596821669CAE1F /* dx7note.cc in Sources */ = {isa = PBXBuildFile; fileRef = BA00975977E2704F74104728 /* dx7note.cc */; };
+		36D08A0FEA591FC0EF188469 /* env.cc in Sources */ = {isa = PBXBuildFile; fileRef = B73D485E55EBD9CD5950A375 /* env.cc */; };
+		4FB7FFF436D333023EC91E2C /* sin.cc in Sources */ = {isa = PBXBuildFile; fileRef = D1D8B6FB01C9E7E2D99378F0 /* sin.cc */; };
+		5FA224E159A6B07188657BA8 /* freqlut.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9FF02D488CE6FD5017D7D81A /* freqlut.cc */; };
+		71911D7305F0175DC4A3FF17 /* sawtooth.cc in Sources */ = {isa = PBXBuildFile; fileRef = 48B6535400CF3AC8BABB3299 /* sawtooth.cc */; };
+		80D3C6DC6F5236826B6AB404 /* test_ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */; };
+		8D41064389CC8FD281956BF7 /* fm_op_kernel.cc in Sources */ = {isa = PBXBuildFile; fileRef = 509D811344DB98984FD6C126 /* fm_op_kernel.cc */; };
+		908EAB1EE59231C41FD88BCD /* ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 68FD17910F296961541A67E4 /* ringbuffer.cc */; };
+		A16F70FD02394895C6FA7326 /* synth_unit.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2082841A11DF6E62596265CF /* synth_unit.cc */; };
+		D5ECD09EBEB1684C00616248 /* resofilter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 97A5CBACD479212282D0BFD6 /* resofilter.cc */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2082841A11DF6E62596265CF /* synth_unit.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = synth_unit.cc; sourceTree = "<group>"; };
+		48B6535400CF3AC8BABB3299 /* sawtooth.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sawtooth.cc; sourceTree = "<group>"; };
+		509D811344DB98984FD6C126 /* fm_op_kernel.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fm_op_kernel.cc; sourceTree = "<group>"; };
+		521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test_ringbuffer.cc; sourceTree = "<group>"; };
+		68FD17910F296961541A67E4 /* ringbuffer.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ringbuffer.cc; sourceTree = "<group>"; };
+		6C1B71FBACD041F20E7F828A /* core.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = core.gyp; sourceTree = "<group>"; };
+		8B1FC9FF853D5C32F4771091 /* libcore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		97A5CBACD479212282D0BFD6 /* resofilter.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = resofilter.cc; sourceTree = "<group>"; };
+		9FF02D488CE6FD5017D7D81A /* freqlut.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = freqlut.cc; sourceTree = "<group>"; };
+		B73D485E55EBD9CD5950A375 /* env.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = env.cc; sourceTree = "<group>"; };
+		BA00975977E2704F74104728 /* dx7note.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dx7note.cc; sourceTree = "<group>"; };
+		D1D8B6FB01C9E7E2D99378F0 /* sin.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sin.cc; sourceTree = "<group>"; };
+		DA7AAEE2AD874001F6B71D52 /* fm_core.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fm_core.cc; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		59A50EE4C8CF7BE6875289EF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1CE02724939AB46300B24440 = {
+			isa = PBXGroup;
+			children = (
+				521E615727EAD5BFC2BFE8C3 /* Source */,
+				ADABDC1FC75C07B5469F92DE /* Products */,
+				72A5A7469C1AF9FDDAB23BD1 /* Build */,
+			);
+			sourceTree = "<group>";
+		};
+		521E615727EAD5BFC2BFE8C3 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				BA00975977E2704F74104728 /* dx7note.cc */,
+				B73D485E55EBD9CD5950A375 /* env.cc */,
+				DA7AAEE2AD874001F6B71D52 /* fm_core.cc */,
+				509D811344DB98984FD6C126 /* fm_op_kernel.cc */,
+				9FF02D488CE6FD5017D7D81A /* freqlut.cc */,
+				97A5CBACD479212282D0BFD6 /* resofilter.cc */,
+				68FD17910F296961541A67E4 /* ringbuffer.cc */,
+				48B6535400CF3AC8BABB3299 /* sawtooth.cc */,
+				D1D8B6FB01C9E7E2D99378F0 /* sin.cc */,
+				2082841A11DF6E62596265CF /* synth_unit.cc */,
+				521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		72A5A7469C1AF9FDDAB23BD1 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				6C1B71FBACD041F20E7F828A /* core.gyp */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
+		ADABDC1FC75C07B5469F92DE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8B1FC9FF853D5C32F4771091 /* libcore.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5A9991BB6607533745115226 /* core */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6B3D26CA3D8A77B9BBF035FF /* Build configuration list for PBXNativeTarget "core" */;
+			buildPhases = (
+				CE1A34D2C5345E1B084CD2DB /* Sources */,
+				59A50EE4C8CF7BE6875289EF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = core;
+			productName = core;
+			productReference = 8B1FC9FF853D5C32F4771091 /* libcore.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		64E0BDEAB5AF6CD7ECF6A5F6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = 2F684B8427DC8F5001D9A5B0 /* Build configuration list for PBXProject "core" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 1CE02724939AB46300B24440;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5A9991BB6607533745115226 /* core */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CE1A34D2C5345E1B084CD2DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FB5AF9855596821669CAE1F /* dx7note.cc in Sources */,
+				36D08A0FEA591FC0EF188469 /* env.cc in Sources */,
+				1DBA85B761236957DF00CF7B /* fm_core.cc in Sources */,
+				8D41064389CC8FD281956BF7 /* fm_op_kernel.cc in Sources */,
+				5FA224E159A6B07188657BA8 /* freqlut.cc in Sources */,
+				D5ECD09EBEB1684C00616248 /* resofilter.cc in Sources */,
+				908EAB1EE59231C41FD88BCD /* ringbuffer.cc in Sources */,
+				71911D7305F0175DC4A3FF17 /* sawtooth.cc in Sources */,
+				4FB7FFF436D333023EC91E2C /* sin.cc in Sources */,
+				A16F70FD02394895C6FA7326 /* synth_unit.cc in Sources */,
+				80D3C6DC6F5236826B6AB404 /* test_ringbuffer.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0B978C26C6EBEB8479A59BA7 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+			};
+			name = Default;
+		};
+		5A3F0CBEC18C4B4A90EF08F4 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = .;
+				PRODUCT_NAME = core;
+			};
+			name = Default;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2F684B8427DC8F5001D9A5B0 /* Build configuration list for PBXProject "core" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B978C26C6EBEB8479A59BA7 /* Default */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Default;
+		};
+		6B3D26CA3D8A77B9BBF035FF /* Build configuration list for PBXNativeTarget "core" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A3F0CBEC18C4B4A90EF08F4 /* Default */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Default;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 64E0BDEAB5AF6CD7ECF6A5F6 /* Project object */;
+}

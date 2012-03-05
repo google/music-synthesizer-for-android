@@ -1,0 +1,306 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		070048C57FCB5F31827D61CD /* midi_in_mac.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9CC658C4805259001BB2BA70 /* midi_in_mac.cc */; };
+		444FC1A8A4F4BFBB71A55578 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 106567A2B2FDE65A2547B9C0 /* InfoPlist.strings */; };
+		4EC6E0A88AFE158936E7DF22 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3EDCE57490308092B70255E /* CoreFoundation.framework */; };
+		6004825C9C1BA9246F032431 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D3126A377165245C44B6C8A /* CoreAudio.framework */; };
+		6824545AE8F4DAFB95F6CDDB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB723D6CDE6B962FBA69894 /* main.m */; };
+		752469DD01013D889966B42C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F664EAAFF41058799553650 /* AudioUnit.framework */; };
+		7E84D499B82B6C02EB8AA96C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D651559601BF84BEA261778D /* MainMenu.xib */; };
+		7F9707F48C04E2AE1EB5C866 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4618975BF19F21FC2A429474 /* Cocoa.framework */; };
+		9366D617A2CE978AEA3555B3 /* libcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BACEAAFABBABE1D12902220B /* libcore.a */; };
+		982E3B747974F63D8B4482B2 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9DC34125BEDD68ABCAB055D /* AudioToolbox.framework */; };
+		98F8F0314510BD0F6AA320CE /* SynthMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = AFA13CCA8E0B32555D59A9B3 /* SynthMain.mm */; };
+		B6BA9FF151AD9A0D309C0D53 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1680278C574FAEFF7657992 /* CoreMIDI.framework */; };
+		C5E74E9A85CDC29EB3DCCBF7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0638CA1C453E326E762DA4BE /* Carbon.framework */; };
+		D6CAF0C6797908C34B18E987 /* SynthAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 22758A226C30B8A0C2E095B2 /* SynthAppDelegate.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0113EA7215BA932B68889274 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A9991BB6607533745115226;
+			remoteInfo = core;
+		};
+		8733BC1F6527748907794EA9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8B1FC9FF853D5C32F4771091;
+			remoteInfo = core;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0638CA1C453E326E762DA4BE /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		22758A226C30B8A0C2E095B2 /* SynthAppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SynthAppDelegate.mm; sourceTree = "<group>"; };
+		2D3126A377165245C44B6C8A /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		3C854865960DE58DBB62E200 /* SynthApp_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = text; path = SynthApp_Prefix.pch; sourceTree = "<group>"; };
+		4618975BF19F21FC2A429474 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		47E3EC1A3593850470FB7E33 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		645192D86D7D39B0CAB2E0FC /* SynthApp.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = SynthApp.gyp; sourceTree = "<group>"; };
+		6F664EAAFF41058799553650 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		9CC658C4805259001BB2BA70 /* midi_in_mac.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = midi_in_mac.cc; sourceTree = "<group>"; };
+		AC00D3CE197617EB5BC7110C /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		AFA13CCA8E0B32555D59A9B3 /* SynthMain.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SynthMain.mm; sourceTree = "<group>"; };
+		B1680278C574FAEFF7657992 /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
+		B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = core.xcodeproj; sourceTree = SOURCE_ROOT; };
+		C3EDCE57490308092B70255E /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		E4B4F7598D96CC2CE29666B4 /* SynthApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SynthApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9DC34125BEDD68ABCAB055D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		FAB723D6CDE6B962FBA69894 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E0443A39F1982DD2A0D4C8E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9366D617A2CE978AEA3555B3 /* libcore.a in Frameworks */,
+				982E3B747974F63D8B4482B2 /* AudioToolbox.framework in Frameworks */,
+				752469DD01013D889966B42C /* AudioUnit.framework in Frameworks */,
+				C5E74E9A85CDC29EB3DCCBF7 /* Carbon.framework in Frameworks */,
+				7F9707F48C04E2AE1EB5C866 /* Cocoa.framework in Frameworks */,
+				6004825C9C1BA9246F032431 /* CoreAudio.framework in Frameworks */,
+				4EC6E0A88AFE158936E7DF22 /* CoreFoundation.framework in Frameworks */,
+				B6BA9FF151AD9A0D309C0D53 /* CoreMIDI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08D7B67857704EB61BBC1112 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F9DC34125BEDD68ABCAB055D /* AudioToolbox.framework */,
+				6F664EAAFF41058799553650 /* AudioUnit.framework */,
+				0638CA1C453E326E762DA4BE /* Carbon.framework */,
+				4618975BF19F21FC2A429474 /* Cocoa.framework */,
+				2D3126A377165245C44B6C8A /* CoreAudio.framework */,
+				C3EDCE57490308092B70255E /* CoreFoundation.framework */,
+				B1680278C574FAEFF7657992 /* CoreMIDI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		26BC9EF25519FDFECC66EBA5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E4B4F7598D96CC2CE29666B4 /* SynthApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		56669AEF9C728CE587C3E8A3 = {
+			isa = PBXGroup;
+			children = (
+				C611344839FF3B4608474E37 /* Source */,
+				710624B4F3ADB1F020942DB0 /* Projects */,
+				08D7B67857704EB61BBC1112 /* Frameworks */,
+				26BC9EF25519FDFECC66EBA5 /* Products */,
+				FF670D1787E80284877493D1 /* Build */,
+			);
+			sourceTree = "<group>";
+		};
+		710624B4F3ADB1F020942DB0 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */,
+			);
+			name = Projects;
+			sourceTree = "<group>";
+		};
+		C611344839FF3B4608474E37 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				106567A2B2FDE65A2547B9C0 /* InfoPlist.strings */,
+				D651559601BF84BEA261778D /* MainMenu.xib */,
+				22758A226C30B8A0C2E095B2 /* SynthAppDelegate.mm */,
+				3C854865960DE58DBB62E200 /* SynthApp_Prefix.pch */,
+				AFA13CCA8E0B32555D59A9B3 /* SynthMain.mm */,
+				FAB723D6CDE6B962FBA69894 /* main.m */,
+				9CC658C4805259001BB2BA70 /* midi_in_mac.cc */,
+			);
+			name = Source;
+			path = SynthApp;
+			sourceTree = "<group>";
+		};
+		D9149B7557AF29282FBD3555 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BACEAAFABBABE1D12902220B /* libcore.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FF670D1787E80284877493D1 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				645192D86D7D39B0CAB2E0FC /* SynthApp.gyp */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C05003BAF5004F3B18F94002 /* SynthApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB5E551BF701B14CD4C2B627 /* Build configuration list for PBXNativeTarget "SynthApp" */;
+			buildPhases = (
+				11D527F4085F0D823076B687 /* Resources */,
+				BCACCEFB309FFDB59EE9B9A1 /* Sources */,
+				E0443A39F1982DD2A0D4C8E6 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				27F0280BCDE369FB81181FD4 /* PBXTargetDependency */,
+			);
+			name = SynthApp;
+			productName = SynthApp;
+			productReference = E4B4F7598D96CC2CE29666B4 /* SynthApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F6DFBBC1A435D3962598EE50 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = F2D5F35CD2FF169326ADC8E8 /* Build configuration list for PBXProject "SynthApp" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 56669AEF9C728CE587C3E8A3;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D9149B7557AF29282FBD3555 /* Products */;
+					ProjectRef = B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				C05003BAF5004F3B18F94002 /* SynthApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		BACEAAFABBABE1D12902220B /* libcore.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcore.a;
+			remoteRef = 8733BC1F6527748907794EA9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		11D527F4085F0D823076B687 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				444FC1A8A4F4BFBB71A55578 /* InfoPlist.strings in Resources */,
+				7E84D499B82B6C02EB8AA96C /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BCACCEFB309FFDB59EE9B9A1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6824545AE8F4DAFB95F6CDDB /* main.m in Sources */,
+				070048C57FCB5F31827D61CD /* midi_in_mac.cc in Sources */,
+				D6CAF0C6797908C34B18E987 /* SynthAppDelegate.mm in Sources */,
+				98F8F0314510BD0F6AA320CE /* SynthMain.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		27F0280BCDE369FB81181FD4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = core;
+			targetProxy = 0113EA7215BA932B68889274 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		106567A2B2FDE65A2547B9C0 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AC00D3CE197617EB5BC7110C /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		D651559601BF84BEA261778D /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				47E3EC1A3593850470FB7E33 /* English */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		200985946FE77FF1BE0AA81C /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+			};
+			name = Default;
+		};
+		F637FD3979A20A160561D04A /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = .;
+				INFOPLIST_FILE = "SynthApp/Synth-Info.plist";
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/System/Library/Frameworks";
+				PRODUCT_NAME = SynthApp;
+				WRAPPER_PREFIX = "";
+			};
+			name = Default;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DB5E551BF701B14CD4C2B627 /* Build configuration list for PBXNativeTarget "SynthApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F637FD3979A20A160561D04A /* Default */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Default;
+		};
+		F2D5F35CD2FF169326ADC8E8 /* Build configuration list for PBXProject "SynthApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				200985946FE77FF1BE0AA81C /* Default */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Default;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F6DFBBC1A435D3962598EE50 /* Project object */;
+}
