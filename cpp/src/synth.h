@@ -29,14 +29,15 @@
 #define SynthMemoryBarrier() OSMemoryBarrier()
 #elif defined(__GNUC__)
 #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)
-#define SynthMemoryBarrier __sync_synchronize()
-#else
-#warning Memory barrier is not enabled
+#define SynthMemoryBarrier() __sync_synchronize()
 #endif
-#warning Memory barrier is not enabled
 #endif
 
 // #undef SynthMemoryBarrier()
-// #define SynthMemoryBarrier()
+
+#ifndef SynthMemoryBarrier
+#warning Memory barrier is not enabled
+#define SynthMemoryBarrier()
+#endif
 
 #endif  // __SYNTH_H

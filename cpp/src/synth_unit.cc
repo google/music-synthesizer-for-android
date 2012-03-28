@@ -39,6 +39,7 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   input_buffer_index_ = 0;
   std::memcpy(patch_data_, epiano, sizeof(epiano));
   current_patch_ = 0;
+  current_note_ = 0;
 }
 
 // Transfer as many bytes as possible from ring buffer to input buffer.
