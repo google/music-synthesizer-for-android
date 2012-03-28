@@ -47,13 +47,6 @@ extern "C" void BqPlayerCallback(SLAndroidSimpleBufferQueueItf queueItf,
   cur_buffer = (cur_buffer + 1) % N_BUFFERS;
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_hello(JNIEnv *env,
-    jobject thiz) {
-  LOGI("here %d!", 42);
-  return 42;
-}
-
 void CreateEngine() {
   SLresult result;
   result = slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);

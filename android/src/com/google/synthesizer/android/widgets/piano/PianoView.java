@@ -16,6 +16,9 @@
 
 package com.google.synthesizer.android.widgets.piano;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -23,8 +26,11 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
 import com.google.synthesizer.R;
+import com.google.synthesizer.android.AndroidGlue;
 import com.google.synthesizer.core.model.composite.MultiChannelSynthesizer;
+import com.google.synthesizer.core.music.Note;
 
 /**
  * PianoView is a UI widget that simulates a music keyboard.
@@ -347,6 +353,32 @@ public class PianoView extends View {
       public void noteUp(int finger) {
         synth.getChannel(channel).turnOff(finger);
       }
+    });
+  }
+
+  /**
+   * Connects the PianoView to an AndroidGlue. This should probably be a MidiListener instead,
+   * though...
+   */
+  public void bindTo(final AndroidGlue midiSink) {
+    this.setPianoViewListener(new PianoViewListener() {
+      {
+        fingerMap_ = new HashMap<Integer, Integer>();
+      }
+      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn) {
+        noteUp(finger);
+        int midiNote = Note.getKeyforLog12TET(logFrequency);
+        fingerMap_.put(finger, midiNote);
+        midiSink.sendMidi(new byte[] {(byte) 0x90, (byte) midiNote, 64});
+      }
+      public void noteUp(int finger) {
+        if (fingerMap_.containsKey(finger)) {
+          int midiNote = fingerMap_.get(finger);
+          fingerMap_.remove(finger);
+          midiSink.sendMidi(new byte[] {(byte) 0x80, (byte) midiNote, 64});
+        }
+      }
+      private Map<Integer, Integer> fingerMap_;
     });
   }
 

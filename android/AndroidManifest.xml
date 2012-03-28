@@ -4,11 +4,11 @@
     package="com.google.synthesizer"
     android:versionCode="2"
     android:versionName="0.9">
-  <uses-sdk android:minSdkVersion="8" /> <!-- 8 = Froyo 2.2 -->
+  <uses-sdk android:minSdkVersion="9" /> <!-- 8 = Froyo 2.2 -->
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <application android:icon="@drawable/icon" android:label="@string/app_name">
     <activity
-        android:name=".android.ui.PianoActivity"
+        android:name=".android.ui.PianoActivity2"
         android:label="@string/app_name"
         android:screenOrientation="landscape">
       <intent-filter>
@@ -64,10 +64,12 @@
         android:name=".android.ui.KarplusStrongActivity"
         android:label="@string/karplus_strong"
         android:screenOrientation="landscape" />
+    <!-- Don't need the service if we're running native sound engine
     <service android:name=".android.service.SynthesizerService">
       <intent-filter>
         <action android:name=".android.service.ISynthesizerService" />
       </intent-filter>
     </service>
+    -->
   </application>
 </manifest>
