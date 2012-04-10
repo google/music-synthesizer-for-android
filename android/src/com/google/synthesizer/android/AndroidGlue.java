@@ -1,14 +1,41 @@
 package com.google.synthesizer.android;
 
+import com.google.synthesizer.core.midi.MessageOutputProcessor;
 
-public class AndroidGlue {
+/**
+ * JNI container for connecting to C++ synth engine. The actual implementation is in the cpp/src
+ * subdirectory of the repository, and interfaces with JNI.
+ * 
+ * This class implements the MessageOutputProcessor interface, so you can use those methods to
+ * actually send MIDI data.
+ */
+public class AndroidGlue extends MessageOutputProcessor {
 
+  /**
+   * Create and initialize the engine. This should be done once per process.
+   */
   public native void start();
+
+  /**
+   * Start or pause the actual sound generation.
+   * 
+   * @param isPlaying Whether the sound generation should be enabled or no.
+   */
   public native void setPlayState(boolean isPlaying);
+
+  /**
+   * Send a MIDI message. Currently supported messages include DX7 sysex data, and note-on/note-off,
+   * but it will expand.
+   * 
+   * @param midiData The midi data to send.
+   */
   public native void sendMidi(byte[] midiData);
+
+  public void onMessage(byte[] midiData) {
+    sendMidi(midiData);
+  }
 
   static {
     System.loadLibrary("synth");
   }
 }
-

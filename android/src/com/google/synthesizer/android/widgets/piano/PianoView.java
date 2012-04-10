@@ -28,7 +28,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.google.synthesizer.R;
-import com.google.synthesizer.android.AndroidGlue;
+import com.google.synthesizer.core.midi.MidiListener;
 import com.google.synthesizer.core.model.composite.MultiChannelSynthesizer;
 import com.google.synthesizer.core.music.Note;
 
@@ -360,7 +360,7 @@ public class PianoView extends View {
    * Connects the PianoView to an AndroidGlue. This should probably be a MidiListener instead,
    * though...
    */
-  public void bindTo(final AndroidGlue midiSink) {
+  public void bindTo(final MidiListener midiSink) {
     this.setPianoViewListener(new PianoViewListener() {
       {
         fingerMap_ = new HashMap<Integer, Integer>();
@@ -369,13 +369,13 @@ public class PianoView extends View {
         noteUp(finger);
         int midiNote = Note.getKeyforLog12TET(logFrequency);
         fingerMap_.put(finger, midiNote);
-        midiSink.sendMidi(new byte[] {(byte) 0x90, (byte) midiNote, 64});
+        midiSink.onNoteOn(0, midiNote, 64);
       }
       public void noteUp(int finger) {
         if (fingerMap_.containsKey(finger)) {
           int midiNote = fingerMap_.get(finger);
           fingerMap_.remove(finger);
-          midiSink.sendMidi(new byte[] {(byte) 0x80, (byte) midiNote, 64});
+          midiSink.onNoteOff(0, midiNote, 64);
         }
       }
       private Map<Integer, Integer> fingerMap_;

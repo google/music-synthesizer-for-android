@@ -16,8 +16,17 @@
 
 package com.google.synthesizer.android.ui;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.google.synthesizer.R;
@@ -44,7 +53,31 @@ public class PianoActivity2 extends Activity {
     androidGlue_ = new AndroidGlue();
     androidGlue_.start();
 
+    InputStream patchIs = getResources().openRawResource(R.raw.rom1a);
+    byte[] patchData = new byte[4104];
+    try {
+      patchIs.read(patchData);
+      androidGlue_.sendMidi(patchData);
+      ArrayList<String> patchNames = new ArrayList<String>();
+      for (int i = 0; i < 32; i++) {
+        patchNames.add(new String(patchData, 124 + 128 * i, 10, "ISO-8859-1"));
+      }
+      ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+              this, android.R.layout.simple_spinner_item, patchNames);
+      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+      presetSpinner_.setAdapter(adapter);
+    } catch (IOException e) {
+      Log.e(getClass().getName(), "loading patches failed");
+    }
+    presetSpinner_.setOnItemSelectedListener(new OnItemSelectedListener() {
+      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        androidGlue_.sendMidi(new byte[] {(byte)0xc0, (byte)position});
+      }
+      public void onNothingSelected(AdapterView<?> parent) {
+      }
+    });
     piano_.bindTo(androidGlue_);
+    
   }
 
   @Override
