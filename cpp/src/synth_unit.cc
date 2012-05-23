@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#ifdef VERBOSE
 #include <iostream>
+#endif
+
+#include <string.h>
 
 #include "synth.h"
 #include "synth_unit.h"
@@ -37,7 +41,7 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
     active_note_[note].dx7_note = NULL;
   }
   input_buffer_index_ = 0;
-  std::memcpy(patch_data_, epiano, sizeof(epiano));
+  memcpy(patch_data_, epiano, sizeof(epiano));
   current_patch_ = 0;
   current_note_ = 0;
 }
@@ -48,7 +52,7 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
 // optimizing for simplicity of implementation.
 void SynthUnit::TransferInput() {
   size_t bytes_available = ring_buffer_->BytesAvailable();
-  int bytes_to_read = std::min(bytes_available,
+  int bytes_to_read = min(bytes_available,
       sizeof(input_buffer_) - input_buffer_index_);
   if (bytes_to_read > 0) {
     ring_buffer_->Read(bytes_to_read, input_buffer_ + input_buffer_index_);
@@ -58,7 +62,7 @@ void SynthUnit::TransferInput() {
 
 void SynthUnit::ConsumeInput(int n_input_bytes) {
   if (n_input_bytes < input_buffer_index_) {
-    std::memmove(input_buffer_, input_buffer_ + n_input_bytes,
+    memmove(input_buffer_, input_buffer_ + n_input_bytes,
         input_buffer_index_ - n_input_bytes);
   }
   input_buffer_index_ -= n_input_bytes;
@@ -97,12 +101,14 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
     if (buf_size >= 2) {
       // program change
       int program_number = buf[1];
-      current_patch_ = std::min(program_number, 31);
+      current_patch_ = min(program_number, 31);
       char name[11];
-      std::memcpy(name, patch_data_ + 128 * current_patch_ + 118, 10);
+      memcpy(name, patch_data_ + 128 * current_patch_ + 118, 10);
       name[10] = 0;
+#ifdef VERBOSE
       std::cout << "Loaded patch " << current_patch_ << ": " << name << "\r";
       std::cout.flush();
+#endif
       return 2;
     }
     return 0;
@@ -112,7 +118,7 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
         buf[4] == 0x20 && buf[5] == 0x00) {
       if (buf_size >= 4104) {
         // TODO: check checksum?
-        std::memcpy(patch_data_, buf + 6, 4096);
+        memcpy(patch_data_, buf + 6, 4096);
         return 4104;
       }
       return 0;
@@ -120,8 +126,10 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
   }
 
   // TODO: more robust handling
+#ifdef VERBOSE
   std::cout << "Unknown message " << std::hex << (int)cmd <<
     ", skipping " << std::dec << buf_size << " bytes" << std::endl;
+#endif
   return buf_size;
 }
 

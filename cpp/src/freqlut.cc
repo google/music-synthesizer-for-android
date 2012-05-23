@@ -19,11 +19,8 @@
 // The LUT is just a global, and we'll need the init function to be called before
 // use.
 
-#include <iostream>  // for debugging
 #include <stdint.h>
 #include <math.h>
-
-using namespace std;
 
 #include "freqlut.h"
 

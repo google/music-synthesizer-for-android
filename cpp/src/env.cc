@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <iostream>
 #include "synth.h"
 #include "env.h"
 
@@ -92,7 +91,7 @@ void Env::advance(int newix) {
     // rate
     int qrate = (rates_[ix_] * 41) >> 6;
     qrate += rate_scaling_;
-    qrate = std::min(qrate, 63);
+    qrate = min(qrate, 63);
     inc_ = (4 + (qrate & 3)) << (2 + LG_N + (qrate >> 2));
   }
 }
