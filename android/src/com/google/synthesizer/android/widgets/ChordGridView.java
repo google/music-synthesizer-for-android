@@ -73,7 +73,7 @@ public class ChordGridView extends View {
    */
   private void notifyNoteDown(double logFrequency, int finger, boolean retriggerIfOn) {
     if (pianoViewListener_ != null) {
-      pianoViewListener_.noteDown(logFrequency, finger, retriggerIfOn);
+      pianoViewListener_.noteDown(logFrequency, finger, retriggerIfOn, 1.0f);
     }
   }
 
@@ -282,7 +282,8 @@ public class ChordGridView extends View {
    */
   public void bindTo(final MultiChannelSynthesizer synth, final int channel) {
     this.setPianoViewListener(new PianoViewListener() {
-      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn) {
+      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn,
+              float pressure) {
         synth.getChannel(channel).setPitch(logFrequency, finger);
         synth.getChannel(channel).turnOn(retriggerIfOn, finger);
       }

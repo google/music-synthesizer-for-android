@@ -113,9 +113,10 @@ public class PianoView extends View {
    * @param logFrequency - the log frequency of the new note.
    * @param retriggerIfOn - true if this is a new touch, rather than just moving.
    */
-  private void notifyNoteDown(double logFrequency, int finger, boolean retriggerIfOn) {
+  private void notifyNoteDown(double logFrequency, int finger, boolean retriggerIfOn,
+          float pressure) {
     if (pianoViewListener_ != null) {
-      pianoViewListener_.noteDown(logFrequency, finger, retriggerIfOn);
+      pianoViewListener_.noteDown(logFrequency, finger, retriggerIfOn, pressure);
     }
   }
 
@@ -147,7 +148,7 @@ public class PianoView extends View {
    * Called to handle touch down events.
    * Returns true iff we need to redraw.
    */
-  protected boolean onTouchDown(int finger, int x, int y) {
+  protected boolean onTouchDown(int finger, int x, int y, float pressure) {
     // Look through keys from top to bottom, and set the first one found as down, the rest as up.
     PianoKey keyDown = null;
     boolean redraw = false;
@@ -165,7 +166,7 @@ public class PianoView extends View {
       }
     }
     if (keyDown instanceof NotePianoKey) {
-      notifyNoteDown(((NotePianoKey)keyDown).getLogFrequency(), finger, true);
+      notifyNoteDown(((NotePianoKey)keyDown).getLogFrequency(), finger, true, pressure);
     }
     return redraw;
   }
@@ -173,7 +174,7 @@ public class PianoView extends View {
   /**
    * Called to handle touch move events.
    */
-  protected boolean onTouchMove(int finger, int x, int y) {
+  protected boolean onTouchMove(int finger, int x, int y, float pressure) {
     // Look through keys from top to bottom, and set the first one found as moved, the rest as up.
     PianoKey keyDown = null;
     boolean redraw = false;
@@ -193,8 +194,11 @@ public class PianoView extends View {
       }
     }
     if (keyDown instanceof NotePianoKey) {
+      if (!usePressure_) {
+        pressure = 0.5f;
+      }
       if (!wasPressed) {
-        notifyNoteDown(((NotePianoKey)keyDown).getLogFrequency(), finger, false);
+        notifyNoteDown(((NotePianoKey)keyDown).getLogFrequency(), finger, false, pressure);
       }
     } else {
       notifyNoteUp(finger);
@@ -229,17 +233,18 @@ public class PianoView extends View {
       if (pointerId < FINGERS) {
         int x = (int)event.getX();
         int y = (int)event.getY();
-        redraw |= onTouchDown(pointerId, x, y);
+        float pressure = event.getPressure();
+        redraw |= onTouchDown(pointerId, x, y, pressure);
       }
     } else if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {
-      int pointerId = action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-      if (pointerId < FINGERS) {
-        int pointerIndex = event.findPointerIndex(pointerId);
-        if (pointerIndex >= 0) {
-          int x = (int)event.getX(pointerIndex);
-          int y = (int)event.getY(pointerIndex);
-          redraw |= onTouchDown(pointerId, x, y);
-        }
+      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
+          >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+      int pointerId = event.getPointerId(pointerIndex);
+      if (pointerId < FINGERS && pointerId >= 0) {
+        int x = (int)event.getX(pointerIndex);
+        int y = (int)event.getY(pointerIndex);
+        float pressure = event.getPressure(pointerIndex);
+        redraw |= onTouchDown(pointerId, x, y, pressure);
       }
     } else if (actionCode == MotionEvent.ACTION_MOVE) {
       for (int pointerIndex = 0; pointerIndex < event.getPointerCount(); ++pointerIndex) {
@@ -250,7 +255,8 @@ public class PianoView extends View {
         if (pointerIndex >= 0) {
           int x = (int)event.getX(pointerIndex);
           int y = (int)event.getY(pointerIndex);
-          redraw |= onTouchMove(pointerId, x, y);
+          float pressure = event.getPressure(pointerIndex);
+          redraw |= onTouchMove(pointerId, x, y, pressure);
         }
       }
     } else if (actionCode == MotionEvent.ACTION_UP) {
@@ -272,14 +278,15 @@ public class PianoView extends View {
         }
       }
     } else if (actionCode == MotionEvent.ACTION_POINTER_UP) {
-      int pointerId = action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
+      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+      int pointerId = event.getPointerId(pointerIndex);
       if (pointerId < FINGERS) {
         redraw |= onTouchUp(pointerId);
       }
-      // Clean up any other pointers that have disappeared.
+      // Clean up any other pointers that have disappeared. Note: this is probably not necessary.
       for (pointerId = 0; pointerId < FINGERS; ++pointerId) {
         boolean found = false;
-        for (int pointerIndex = 0; pointerIndex < event.getPointerCount(); ++pointerIndex) {
+        for (pointerIndex = 0; pointerIndex < event.getPointerCount(); ++pointerIndex) {
           if (pointerId == event.getPointerId(pointerIndex)) {
             found = true;
             break;
@@ -346,7 +353,8 @@ public class PianoView extends View {
    */
   public void bindTo(final MultiChannelSynthesizer synth, final int channel) {
     this.setPianoViewListener(new PianoViewListener() {
-      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn) {
+      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn,
+              float pressure) {
         synth.getChannel(channel).setPitch(logFrequency, finger);
         synth.getChannel(channel).turnOn(retriggerIfOn, finger);
       }
@@ -357,25 +365,26 @@ public class PianoView extends View {
   }
 
   /**
-   * Connects the PianoView to an AndroidGlue. This should probably be a MidiListener instead,
-   * though...
+   * Connects the PianoView to an MidiListener.
    */
-  public void bindTo(final MidiListener midiSink) {
+  public void bindTo(final MidiListener midiListener) {
     this.setPianoViewListener(new PianoViewListener() {
       {
         fingerMap_ = new HashMap<Integer, Integer>();
       }
-      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn) {
+      public void noteDown(double logFrequency, int finger, boolean retriggerIfOn,
+              float pressure) {
         noteUp(finger);
         int midiNote = Note.getKeyforLog12TET(logFrequency);
         fingerMap_.put(finger, midiNote);
-        midiSink.onNoteOn(0, midiNote, 64);
+        int midiPressure = Math.max(1, Math.min(127, (int)(127 * pressure)));
+        midiListener.onNoteOn(0, midiNote, midiPressure);
       }
       public void noteUp(int finger) {
         if (fingerMap_.containsKey(finger)) {
           int midiNote = fingerMap_.get(finger);
           fingerMap_.remove(finger);
-          midiSink.onNoteOff(0, midiNote, 64);
+          midiListener.onNoteOff(0, midiNote, 64);
         }
       }
       private Map<Integer, Integer> fingerMap_;
@@ -402,4 +411,7 @@ public class PianoView extends View {
 
   // The number of simultaneous fingers supported by this control.
   protected static final int FINGERS = 5;
+  
+  // Whether to use pressure (doesn't work well on all hardware)
+  private boolean usePressure_ = true;
 }

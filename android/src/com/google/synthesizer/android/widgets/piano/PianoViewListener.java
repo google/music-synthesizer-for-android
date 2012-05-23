@@ -23,7 +23,7 @@ public interface PianoViewListener {
    * @param logFrequency - the log frequency of the note pressed.
    * @param retriggerIfOn - true if this is a new touch, rather than just moving.
    */
-  void noteDown(double logFrequency, int finger, boolean retriggerIfOn);
+  void noteDown(double logFrequency, int finger, boolean retriggerIfOn, float pressure);
   
   /**
    * The note was released.

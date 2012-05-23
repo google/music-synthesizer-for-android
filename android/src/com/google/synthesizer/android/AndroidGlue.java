@@ -17,6 +17,11 @@ public class AndroidGlue extends MessageOutputProcessor {
   public native void start();
 
   /**
+   *  Shut down the OpenSL ES engine and audio synthesizer.
+   */
+  public native void shutdown();
+  
+  /**
    * Start or pause the actual sound generation.
    * 
    * @param isPlaying Whether the sound generation should be enabled or no.
