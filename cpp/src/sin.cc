@@ -16,6 +16,7 @@
 
 #include <math.h>
 
+#include "synth.h"
 #include "sin.h"
 
 #define R (1 << 29)
