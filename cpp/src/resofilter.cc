@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#include "module.h"
+#include "synth.h"
+#include "freqlut.h"
 #include "resofilter.h"
 
 double this_sample_rate;
@@ -30,8 +31,8 @@ ResoFilter::ResoFilter() {
 }
 
 int32_t compute_alpha(int32_t logf) {
-  // TODO
-  return 1 << 21;
+  // TODO: better tuning
+  return min(1 << 24, Freqlut::lookup(logf));
 }
 
 void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
@@ -42,6 +43,12 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
   int32_t k = control_last[1];
   int32_t k_in = control_in[1];
   int32_t delta_k = (k_in - k) >> lg_n;
+  if ((((int64_t)alpha_in * (int64_t)k_in) >> 24) > 1 << 24) {
+    k_in = ((1 << 30) / alpha_in) << 18;
+  }
+  if ((((int64_t)alpha * (int64_t)k) >> 24) > 1 << 24) {
+    k = ((1 << 30) / alpha) << 18;
+  }
   const int32_t *ibuf = inbufs[0];
   int32_t *obuf = outbufs[0];
   int x0 = x[0];

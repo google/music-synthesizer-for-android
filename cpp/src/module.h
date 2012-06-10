@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifndef SYNTH_MODULE_H
+#define SYNTH_MODULE_H
+
 #include <stdint.h>
 
 class Module {
@@ -23,3 +26,6 @@ class Module {
   virtual void process(const int32_t **inbufs, const int32_t *control_in,
 					   const int32_t *control_last, int32_t **outbufs) = 0;
 };
+
+#endif  // SYNTH_MODULE_H
+

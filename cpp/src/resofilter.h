@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+#ifndef SYNTH_RESOFILTER_H_
+#define SYNTH_RESOFILTER_H_
+
+#include "module.h"
+
 class ResoFilter : Module {
  public:
   ResoFilter();
@@ -25,3 +30,5 @@ class ResoFilter : Module {
  private:
   int32_t x[4];
 };
+
+#endif  // SYNTH_RESOFILTER_H_

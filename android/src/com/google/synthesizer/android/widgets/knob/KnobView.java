@@ -74,7 +74,7 @@ public class KnobView extends View {
   public boolean onTouchEvent(MotionEvent event) {
     int action = event.getAction();
     switch (action) {
-      case MotionEvent.ACTION_POINTER_DOWN: {
+      case MotionEvent.ACTION_DOWN: {
         // Just record the current finger position.
         getDrawingRect(rect_);
         previousX_ = event.getX() - rect_.centerX();
@@ -116,7 +116,7 @@ public class KnobView extends View {
         break;
       }
       
-      case MotionEvent.ACTION_POINTER_UP: {
+      case MotionEvent.ACTION_UP: {
         break;
       }
     }

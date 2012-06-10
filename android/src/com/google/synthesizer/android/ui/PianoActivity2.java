@@ -39,10 +39,10 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.google.synthesizer.R;
 import com.google.synthesizer.android.AndroidGlue;
+import com.google.synthesizer.android.widgets.knob.KnobListener;
 import com.google.synthesizer.android.widgets.knob.KnobView;
 import com.google.synthesizer.android.widgets.piano.PianoView;
 
@@ -57,10 +57,11 @@ public class PianoActivity2 extends Activity {
     super.onCreate(savedInstanceState);
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN |
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    setContentView(R.layout.piano);
+    setContentView(R.layout.piano2);
 
     piano_ = (PianoView)findViewById(R.id.piano);
-    volumeKnob_ = (KnobView)findViewById(R.id.volumeKnob);
+    cutoffKnob_ = (KnobView)findViewById(R.id.cutoffKnob);
+    resonanceKnob_ = (KnobView)findViewById(R.id.resonanceKnob);
     presetSpinner_ = (Spinner)findViewById(R.id.presetSpinner);
 
     androidGlue_ = new AndroidGlue();
@@ -89,6 +90,20 @@ public class PianoActivity2 extends Activity {
       public void onNothingSelected(AdapterView<?> parent) {
       }
     });
+    
+    cutoffKnob_.setKnobListener(new KnobListener() {
+      public void onKnobChanged(double newValue) {
+        int value = (int)Math.round(newValue * 127);
+        androidGlue_.onController(0, 1, value);
+      }      
+    });
+    resonanceKnob_.setKnobListener(new KnobListener() {
+      public void onKnobChanged(double newValue) {
+        int value = (int)Math.round(newValue * 127);
+        androidGlue_.onController(0, 2, value);
+      }      
+    });
+    
     piano_.bindTo(androidGlue_);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       tryConnectUsb();
@@ -134,8 +149,8 @@ public class PianoActivity2 extends Activity {
           for (int i = 0; i < nBytes; i += 4) {
             int codeIndexNumber = buf[i] & 0xf;
             int payloadBytes = 0;
-            if (codeIndexNumber == 8 || codeIndexNumber == 9) {
-              // TODO: pitchbend, control, etc
+            if (codeIndexNumber == 8 || codeIndexNumber == 9 || codeIndexNumber == 11 ||
+                    codeIndexNumber == 14) {
               payloadBytes = 3;
             } else if (codeIndexNumber == 12) {
               payloadBytes = 2;
@@ -173,6 +188,7 @@ public class PianoActivity2 extends Activity {
   
   private AndroidGlue androidGlue_;
   private PianoView piano_;
-  private KnobView volumeKnob_;
+  private KnobView cutoffKnob_;
+  private KnobView resonanceKnob_;
   private Spinner presetSpinner_;
 }

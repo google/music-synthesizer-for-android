@@ -47,6 +47,7 @@
 
   <!-- Low Pass Filter -->
   <string name="cutoff">Cutoff</string>
+  <string name="resonance">Resonance</string>
 
   <!-- Amp -->
   <string name="attack">Attack</string>

@@ -44,6 +44,8 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   memcpy(patch_data_, epiano, sizeof(epiano));
   current_patch_ = 0;
   current_note_ = 0;
+  filter_control_[0] = 258847126;
+  filter_control_[1] = 0;
 }
 
 // Transfer as many bytes as possible from ring buffer to input buffer.
@@ -97,6 +99,17 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       return 3;
     }
     return 0;
+  } else if (cmd_type == 0xb0) {
+    if (buf_size >= 3) {
+      int controller = buf[1];
+      int value = buf[2];
+      if (controller == 1) {
+        filter_control_[0] = 129423563 + value * 1019083;
+      } else if (controller == 2) {
+        filter_control_[1] = value * 528416;
+      }
+      return 3;
+    } return 0;
   } else if (cmd_type == 0xc0) {
     if (buf_size >= 2) {
       // program change
@@ -149,6 +162,7 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
 
   for (int i = 0; i < n_samples; i += N) {
     int32_t audiobuf[N];
+    int32_t audiobuf2[N];
     for (int j = 0; j < N; ++j) {
       audiobuf[j] = 0;
     }
@@ -157,8 +171,11 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
         active_note_[note].dx7_note->compute(audiobuf);
       }
     }
+    const int32_t *bufs[] = { audiobuf };
+    int32_t *bufs2[] = { audiobuf2 };
+    filter_.process(bufs, filter_control_, filter_control_, bufs2);
     for (int j = 0; j < N; ++j) {
-      int32_t val = audiobuf[j] >> 4;
+      int32_t val = audiobuf2[j] >> 4;
       int clip_val = val < -(1 << 24) ? 0x8000 : val >= (1 << 24) ? 0x7fff :
         val >> 9;
       // TODO: maybe some dithering?
