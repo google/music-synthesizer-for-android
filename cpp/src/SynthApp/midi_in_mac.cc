@@ -17,9 +17,25 @@
 #include <iostream>
 #include "midi_in_mac.h"
 
+#define DEBUG_MIDI_BYTES
+
+using std::cout;
+using std::endl;
+
 void MidiInMac::OnRead(const MIDIPacketList *pktlist) {
   const MIDIPacket *packet = &(pktlist->packet[0]);
   for (int i = 0; i < pktlist->numPackets; ++i) {
+#if defined(DEBUG_MIDI_BYTES)
+    cout << "MIDI DATA:";
+    cout.fill('0');
+    for (size_t i = 0; i < packet->length; i++) {
+      cout << " ";
+      cout.width(2);
+      cout << std::hex << static_cast<int>(packet->data[i]);
+      cout.width();
+    }
+    cout << endl;
+#endif
     ring_buffer_->Write(packet->data, packet->length);
     packet = MIDIPacketNext(packet);
   }
@@ -44,6 +60,14 @@ bool MidiInMac::Init(CFStringRef name, RingBuffer *ring_buffer) {
     MIDIObjectGetProperties(device_ref, &midi_device_properties, true);
     CFStringRef dev_name = NULL;
     s = MIDIObjectGetStringProperty(device_ref, kMIDIPropertyName, &dev_name);
+#if defined(DEBUG_USB_NAMES)
+    char buf[64];
+    if (CFStringGetCString(dev_name, buf, sizeof(buf), kCFStringEncodingASCII)) {
+      std::cout << "midi name =" << buf << std::endl;
+    } else {
+      std::cout << "error converting" << std::endl;
+    }
+#endif
     CFComparisonResult comparison = CFStringCompare(dev_name, name, 0);
     CFRelease(dev_name);
     if (comparison == kCFCompareEqualTo) {

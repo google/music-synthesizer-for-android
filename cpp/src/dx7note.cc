@@ -20,6 +20,7 @@
 #include <math.h>
 #include "synth.h"
 #include "freqlut.h"
+#include "patch.h"
 #include "dx7note.h"
 
 using namespace std;
@@ -121,46 +122,48 @@ int ScaleLevel(int midinote, int break_pt, int left_depth, int right_depth,
 }
 
 // Considering making this an init method...
-Dx7Note::Dx7Note(const char patch[128], int midinote, int velocity) {
+Dx7Note::Dx7Note(const char bulk[128], int midinote, int velocity) {
+  char patch[156];
+  UnpackPatch(bulk, patch);  // TODO: move this out, take unpacked patch
   for (int op = 0; op < 6; op++) {
-    int off = op * 17;
+    int off = op * 21;
     int rates[4];
     int levels[4];
     for (int i = 0; i < 4; i++) {
       rates[i] = patch[off + i];
       levels[i] = patch[off + 4 + i];
     }
-    int outlevel = patch[off + 14];
+    int outlevel = patch[off + 16];
 #ifdef VERBOSE
     for (int j = 8; j < 12; j++) {
       cout << (int)patch[off + j] << " ";
     }
 #endif
     int level_scaling = ScaleLevel(midinote, patch[off + 8], patch[off + 9],
-        patch[off + 10], patch[off + 11] & 3, patch[off + 11] >> 2);
+        patch[off + 10], patch[off + 11], patch[off + 12]);
     outlevel += level_scaling;
     outlevel = min(99, outlevel);
 #ifdef VERBOSE
     cout << op << ": " << level_scaling << " " << outlevel << endl;
 #endif
     outlevel = outlevel << 5;
-    outlevel += ScaleVelocity(velocity, patch[off + 13] >> 2);
+    outlevel += ScaleVelocity(velocity, patch[off + 15]);
     outlevel = max(0, outlevel);
-    int rate_scaling = ScaleRate(midinote, patch[off + 12] & 7);
+    int rate_scaling = ScaleRate(midinote, patch[off + 13]);
     env_[op].init(rates, levels, outlevel, rate_scaling);
 
-    int mode = patch[off + 15] & 1;
-    int coarse = patch[off + 15] >> 1;
-    int fine = patch[off + 16];
-    int detune = (patch[off + 12] >> 3) - 7;
+    int mode = patch[off + 17];
+    int coarse = patch[off + 18];
+    int fine = patch[off + 19];
+    int detune = patch[off + 20];
     int32_t freq = osc_freq(midinote, mode, coarse, fine, detune);
     params_[op].freq = freq;
     // cout << op << " freq: " << freq << endl;
     params_[op].phase = 0;
     params_[op].gain[1] = 0;
   }
-  algorithm_ = patch[110];
-  int feedback = patch[111] & 7;
+  algorithm_ = patch[134];
+  int feedback = patch[135];
   fb_shift_ = feedback != 0 ? 8 - feedback : 16;
 }
 

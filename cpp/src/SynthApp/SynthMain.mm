@@ -170,7 +170,9 @@ int SynthMain::SynthInit() {
     cout << err << endl;
     return 1;
   }
-  midi_in_mac_.Init(CFSTR("KeyRig 49"), &ring_buffer_);
+  CFStringRef usbname = CFSTR("MPK mini");
+  // CFStringRef usbname = CFST("KeyRig 49");
+  midi_in_mac_.Init(usbname, &ring_buffer_);
   startplayback();
   return 0;
 }

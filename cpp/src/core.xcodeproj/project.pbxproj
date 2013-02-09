@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,7 @@
 		8D41064389CC8FD281956BF7 /* fm_op_kernel.cc in Sources */ = {isa = PBXBuildFile; fileRef = 509D811344DB98984FD6C126 /* fm_op_kernel.cc */; };
 		908EAB1EE59231C41FD88BCD /* ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 68FD17910F296961541A67E4 /* ringbuffer.cc */; };
 		A16F70FD02394895C6FA7326 /* synth_unit.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2082841A11DF6E62596265CF /* synth_unit.cc */; };
+		AECC016D16C70F9300FBD4E4 /* patch.cc in Sources */ = {isa = PBXBuildFile; fileRef = AECC016C16C70F9300FBD4E4 /* patch.cc */; };
 		D5ECD09EBEB1684C00616248 /* resofilter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 97A5CBACD479212282D0BFD6 /* resofilter.cc */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 		8B1FC9FF853D5C32F4771091 /* libcore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		97A5CBACD479212282D0BFD6 /* resofilter.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = resofilter.cc; sourceTree = "<group>"; };
 		9FF02D488CE6FD5017D7D81A /* freqlut.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = freqlut.cc; sourceTree = "<group>"; };
+		AECC016C16C70F9300FBD4E4 /* patch.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patch.cc; sourceTree = "<group>"; };
 		B73D485E55EBD9CD5950A375 /* env.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = env.cc; sourceTree = "<group>"; };
 		BA00975977E2704F74104728 /* dx7note.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dx7note.cc; sourceTree = "<group>"; };
 		D1D8B6FB01C9E7E2D99378F0 /* sin.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sin.cc; sourceTree = "<group>"; };
@@ -50,6 +52,7 @@
 		1CE02724939AB46300B24440 = {
 			isa = PBXGroup;
 			children = (
+				AECC016C16C70F9300FBD4E4 /* patch.cc */,
 				521E615727EAD5BFC2BFE8C3 /* Source */,
 				ADABDC1FC75C07B5469F92DE /* Products */,
 				72A5A7469C1AF9FDDAB23BD1 /* Build */,
@@ -119,7 +122,11 @@
 			};
 			buildConfigurationList = 2F684B8427DC8F5001D9A5B0 /* Build configuration list for PBXProject "core" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 1CE02724939AB46300B24440;
 			projectDirPath = "";
 			projectRoot = "";
@@ -145,6 +152,7 @@
 				4FB7FFF436D333023EC91E2C /* sin.cc in Sources */,
 				A16F70FD02394895C6FA7326 /* synth_unit.cc in Sources */,
 				80D3C6DC6F5236826B6AB404 /* test_ringbuffer.cc in Sources */,
+				AECC016D16C70F9300FBD4E4 /* patch.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
