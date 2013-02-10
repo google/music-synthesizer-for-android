@@ -46,6 +46,7 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   current_note_ = 0;
   filter_control_[0] = 258847126;
   filter_control_[1] = 0;
+  sustain_ = false;
 }
 
 // Transfer as many bytes as possible from ring buffer to input buffer.
@@ -70,6 +71,18 @@ void SynthUnit::ConsumeInput(int n_input_bytes) {
   input_buffer_index_ -= n_input_bytes;
 }
 
+int SynthUnit::AllocateNote() {
+  int note = current_note_;
+  for (int i = 0; i < max_active_notes; i++) {
+    if (!active_note_[note].keydown) {
+      current_note_ = (note + 1) % max_active_notes;
+      return note;
+    }
+    note = (note + 1) % max_active_notes;
+  }
+  return -1;
+}
+
 int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
   uint8_t cmd = buf[0];
   uint8_t cmd_type = cmd & 0xf0;
@@ -78,8 +91,13 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       // note off
       for (int note = 0; note < max_active_notes; ++note) {
         if (active_note_[note].midi_note == buf[1] && 
-            active_note_[note].dx7_note != NULL) {
-          active_note_[note].dx7_note->keyup();
+            active_note_[note].keydown) {
+          if (sustain_) {
+            active_note_[note].sustained = true;
+          } else {
+            active_note_[note].dx7_note->keyup();
+          }
+          active_note_[note].keydown = false;
         }
       }
       return 3;
@@ -88,14 +106,16 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
   } else if (cmd_type == 0x90) {
     if (buf_size >= 3) {
       // note on
-      // Note that this implements round-robin (same as original Dx7). A more
-      // sophisticated note-stealing algorithm is probably worthwhile.
-      delete active_note_[current_note_].dx7_note;
-      active_note_[current_note_].midi_note = buf[1];
-      const uint8_t *patch = patch_data_ + 128 * current_patch_;
-      active_note_[current_note_].dx7_note =
-        new Dx7Note((const char *)patch, buf[1], buf[2]);
-      current_note_ = (current_note_ + 1) % max_active_notes;
+      int note_ix = AllocateNote();
+      if (note_ix >= 0) {
+        delete active_note_[note_ix].dx7_note;
+        active_note_[note_ix].midi_note = buf[1];
+        active_note_[note_ix].keydown = true;
+        active_note_[note_ix].sustained = sustain_;
+        const uint8_t *patch = patch_data_ + 128 * current_patch_;
+        active_note_[note_ix].dx7_note =
+          new Dx7Note((const char *)patch, buf[1], buf[2]);
+      }
       return 3;
     }
     return 0;
@@ -107,6 +127,16 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
         filter_control_[0] = 129423563 + value * 1019083;
       } else if (controller == 2) {
         filter_control_[1] = value * 528416;
+      } else if (controller == 64) {
+        sustain_ = value != 0;
+        if (!sustain_) {
+          for (int note = 0; note < max_active_notes; note++) {
+            if (active_note_[note].sustained && !active_note_[note].keydown) {
+              active_note_[note].dx7_note->keyup();
+              active_note_[note].sustained = false;
+            }
+          }
+        }
       }
       return 3;
     } return 0;

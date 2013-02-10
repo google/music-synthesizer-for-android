@@ -20,6 +20,8 @@
 
 struct ActiveNote {
   int midi_note;
+  bool keydown;
+  bool sustained;
   Dx7Note *dx7_note;
 };
 
@@ -32,6 +34,10 @@ class SynthUnit {
   void TransferInput();
 
   void ConsumeInput(int n_input_bytes);
+
+  // Choose a note for a new key-down, returns note number, or -1 if
+  // none available.
+  int AllocateNote();
 
   int ProcessMidiMessage(const uint8_t *buf, int buf_size);
 
@@ -47,4 +53,5 @@ class SynthUnit {
 
   ResoFilter filter_;
   int32_t filter_control_[2];
+  bool sustain_;
 };

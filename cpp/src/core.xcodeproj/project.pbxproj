@@ -22,7 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2082841A11DF6E62596265CF /* synth_unit.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = synth_unit.cc; sourceTree = "<group>"; };
+		2082841A11DF6E62596265CF /* synth_unit.cc */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; path = synth_unit.cc; sourceTree = "<group>"; tabWidth = 2; };
 		48B6535400CF3AC8BABB3299 /* sawtooth.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sawtooth.cc; sourceTree = "<group>"; };
 		509D811344DB98984FD6C126 /* fm_op_kernel.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fm_op_kernel.cc; sourceTree = "<group>"; };
 		521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test_ringbuffer.cc; sourceTree = "<group>"; };
