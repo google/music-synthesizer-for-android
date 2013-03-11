@@ -39,6 +39,8 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   ring_buffer_ = ring_buffer;
   for (int note = 0; note < max_active_notes; ++note) {
     active_note_[note].dx7_note = NULL;
+    active_note_[note].keydown = false;
+    active_note_[note].sustained = false;
   }
   input_buffer_index_ = 0;
   memcpy(patch_data_, epiano, sizeof(epiano));
