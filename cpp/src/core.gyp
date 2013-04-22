@@ -6,9 +6,12 @@
       'sources': [
         'dx7note.cc',
         'env.cc',
+        'exp2.cc',
         'fm_core.cc',
         'fm_op_kernel.cc',
         'freqlut.cc',
+        'lfo.cc',
+        'patch.cc',
         'resofilter.cc',
         'ringbuffer.cc',
         'sawtooth.cc',

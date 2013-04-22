@@ -24,6 +24,7 @@
 #include "wavout.h"
 #include "sawtooth.h"
 #include "sin.h"
+#include "exp2.h"
 #include "resofilter.h"
 #include "fm_core.h"
 #include "fm_op_kernel.h"
@@ -217,11 +218,24 @@ void mkdx7note(double sample_rate) {
 
 void test_ringbuffer();
 
+void test_exp2() {
+  for (int32_t i = -16 << 24; i < 6 << 24; i += 123) {
+    int32_t result = Exp2::lookup(i);
+    int32_t accurate = floor((1<<24) * pow(2, i * 1.0 / (1<<24)) + .5);
+    int32_t error = accurate - result;
+    if (abs(error) > 1 && abs(error) > accurate / 10000000) {
+      std::cout << i << ": " << result << " " << accurate << std::endl;
+      // TODO (maybe): hook into automated test runner & report results
+    }
+  }
+}
+
 int main(int argc, char **argv) {
   double sample_rate = 44100.0;
   Freqlut::init(sample_rate);
   Sawtooth::init(sample_rate);
   Sin::init();
+  Exp2::init();
 
   //FmCore::dump();
   //test_sin_accuracy();
@@ -234,5 +248,6 @@ int main(int argc, char **argv) {
   //mkdx7note(sample_rate);
   mksaw(sample_rate);
   //test_ringbuffer();
+  test_exp2();
   return 0;
 }

@@ -3,38 +3,42 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 45;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1DBA85B761236957DF00CF7B /* fm_core.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA7AAEE2AD874001F6B71D52 /* fm_core.cc */; };
-		2FB5AF9855596821669CAE1F /* dx7note.cc in Sources */ = {isa = PBXBuildFile; fileRef = BA00975977E2704F74104728 /* dx7note.cc */; };
-		36D08A0FEA591FC0EF188469 /* env.cc in Sources */ = {isa = PBXBuildFile; fileRef = B73D485E55EBD9CD5950A375 /* env.cc */; };
-		4FB7FFF436D333023EC91E2C /* sin.cc in Sources */ = {isa = PBXBuildFile; fileRef = D1D8B6FB01C9E7E2D99378F0 /* sin.cc */; };
-		5FA224E159A6B07188657BA8 /* freqlut.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9FF02D488CE6FD5017D7D81A /* freqlut.cc */; };
-		71911D7305F0175DC4A3FF17 /* sawtooth.cc in Sources */ = {isa = PBXBuildFile; fileRef = 48B6535400CF3AC8BABB3299 /* sawtooth.cc */; };
-		80D3C6DC6F5236826B6AB404 /* test_ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */; };
-		8D41064389CC8FD281956BF7 /* fm_op_kernel.cc in Sources */ = {isa = PBXBuildFile; fileRef = 509D811344DB98984FD6C126 /* fm_op_kernel.cc */; };
-		908EAB1EE59231C41FD88BCD /* ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 68FD17910F296961541A67E4 /* ringbuffer.cc */; };
-		A16F70FD02394895C6FA7326 /* synth_unit.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2082841A11DF6E62596265CF /* synth_unit.cc */; };
-		AECC016D16C70F9300FBD4E4 /* patch.cc in Sources */ = {isa = PBXBuildFile; fileRef = AECC016C16C70F9300FBD4E4 /* patch.cc */; };
-		D5ECD09EBEB1684C00616248 /* resofilter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 97A5CBACD479212282D0BFD6 /* resofilter.cc */; };
+		2DD71F3E9AE0C4253B8B7747 /* exp2.cc in Sources */ = {isa = PBXBuildFile; fileRef = D5669C7FDAF95F10639CF5AB /* exp2.cc */; };
+		391223C6D7249361C00A14AF /* dx7note.cc in Sources */ = {isa = PBXBuildFile; fileRef = BA00975977E2704F74104728 /* dx7note.cc */; };
+		3DFFE98F73F04D2F66DA9FA4 /* env.cc in Sources */ = {isa = PBXBuildFile; fileRef = B73D485E55EBD9CD5950A375 /* env.cc */; };
+		50C9BC20B9DB9E51A9B852BC /* test_ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */; };
+		6E01450F6BFF126216C8164C /* ringbuffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 68FD17910F296961541A67E4 /* ringbuffer.cc */; };
+		79D1CB0F9A4671DA79729544 /* fm_op_kernel.cc in Sources */ = {isa = PBXBuildFile; fileRef = 509D811344DB98984FD6C126 /* fm_op_kernel.cc */; };
+		97788F06DA1810835D9F0A50 /* lfo.cc in Sources */ = {isa = PBXBuildFile; fileRef = 42D2A2AD8EDACBEF9B884718 /* lfo.cc */; };
+		AA0F43347EBDEE6D29032DAF /* sin.cc in Sources */ = {isa = PBXBuildFile; fileRef = D1D8B6FB01C9E7E2D99378F0 /* sin.cc */; };
+		AA1CD32CDCFEB4469067D98E /* resofilter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 97A5CBACD479212282D0BFD6 /* resofilter.cc */; };
+		B64D26CA7CC8017052D3E963 /* patch.cc in Sources */ = {isa = PBXBuildFile; fileRef = 779AFCD7AFEB1CDEACBC0425 /* patch.cc */; };
+		D80FBC17492647DCFDE96F75 /* fm_core.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA7AAEE2AD874001F6B71D52 /* fm_core.cc */; };
+		E2649182D734B708D5E72B66 /* synth_unit.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2082841A11DF6E62596265CF /* synth_unit.cc */; };
+		E31A9F6965B9E56115BAE59F /* sawtooth.cc in Sources */ = {isa = PBXBuildFile; fileRef = 48B6535400CF3AC8BABB3299 /* sawtooth.cc */; };
+		FB78A2E9904695ABCC799CC3 /* freqlut.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9FF02D488CE6FD5017D7D81A /* freqlut.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2082841A11DF6E62596265CF /* synth_unit.cc */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; path = synth_unit.cc; sourceTree = "<group>"; tabWidth = 2; };
+		2082841A11DF6E62596265CF /* synth_unit.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = synth_unit.cc; sourceTree = "<group>"; };
+		42D2A2AD8EDACBEF9B884718 /* lfo.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = lfo.cc; sourceTree = "<group>"; };
 		48B6535400CF3AC8BABB3299 /* sawtooth.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sawtooth.cc; sourceTree = "<group>"; };
 		509D811344DB98984FD6C126 /* fm_op_kernel.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fm_op_kernel.cc; sourceTree = "<group>"; };
 		521793C71CAA078F5598EFC0 /* test_ringbuffer.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test_ringbuffer.cc; sourceTree = "<group>"; };
 		68FD17910F296961541A67E4 /* ringbuffer.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ringbuffer.cc; sourceTree = "<group>"; };
 		6C1B71FBACD041F20E7F828A /* core.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = core.gyp; sourceTree = "<group>"; };
+		779AFCD7AFEB1CDEACBC0425 /* patch.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = patch.cc; sourceTree = "<group>"; };
 		8B1FC9FF853D5C32F4771091 /* libcore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		97A5CBACD479212282D0BFD6 /* resofilter.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = resofilter.cc; sourceTree = "<group>"; };
 		9FF02D488CE6FD5017D7D81A /* freqlut.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = freqlut.cc; sourceTree = "<group>"; };
-		AECC016C16C70F9300FBD4E4 /* patch.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patch.cc; sourceTree = "<group>"; };
 		B73D485E55EBD9CD5950A375 /* env.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = env.cc; sourceTree = "<group>"; };
 		BA00975977E2704F74104728 /* dx7note.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dx7note.cc; sourceTree = "<group>"; };
 		D1D8B6FB01C9E7E2D99378F0 /* sin.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sin.cc; sourceTree = "<group>"; };
+		D5669C7FDAF95F10639CF5AB /* exp2.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = exp2.cc; sourceTree = "<group>"; };
 		DA7AAEE2AD874001F6B71D52 /* fm_core.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fm_core.cc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -49,24 +53,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1CE02724939AB46300B24440 = {
+		19BC3E7E3EDF760717F26DF5 = {
 			isa = PBXGroup;
 			children = (
-				AECC016C16C70F9300FBD4E4 /* patch.cc */,
-				521E615727EAD5BFC2BFE8C3 /* Source */,
-				ADABDC1FC75C07B5469F92DE /* Products */,
-				72A5A7469C1AF9FDDAB23BD1 /* Build */,
+				1B875637F4FC04501E9170B8 /* Source */,
+				E53EB7DD466ADEEC9F094623 /* Products */,
+				8512968DD6AB145582824E65 /* Build */,
 			);
 			sourceTree = "<group>";
 		};
-		521E615727EAD5BFC2BFE8C3 /* Source */ = {
+		1B875637F4FC04501E9170B8 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				BA00975977E2704F74104728 /* dx7note.cc */,
 				B73D485E55EBD9CD5950A375 /* env.cc */,
+				D5669C7FDAF95F10639CF5AB /* exp2.cc */,
 				DA7AAEE2AD874001F6B71D52 /* fm_core.cc */,
 				509D811344DB98984FD6C126 /* fm_op_kernel.cc */,
 				9FF02D488CE6FD5017D7D81A /* freqlut.cc */,
+				42D2A2AD8EDACBEF9B884718 /* lfo.cc */,
+				779AFCD7AFEB1CDEACBC0425 /* patch.cc */,
 				97A5CBACD479212282D0BFD6 /* resofilter.cc */,
 				68FD17910F296961541A67E4 /* ringbuffer.cc */,
 				48B6535400CF3AC8BABB3299 /* sawtooth.cc */,
@@ -77,7 +83,7 @@
 			name = Source;
 			sourceTree = "<group>";
 		};
-		72A5A7469C1AF9FDDAB23BD1 /* Build */ = {
+		8512968DD6AB145582824E65 /* Build */ = {
 			isa = PBXGroup;
 			children = (
 				6C1B71FBACD041F20E7F828A /* core.gyp */,
@@ -85,7 +91,7 @@
 			name = Build;
 			sourceTree = "<group>";
 		};
-		ADABDC1FC75C07B5469F92DE /* Products */ = {
+		E53EB7DD466ADEEC9F094623 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				8B1FC9FF853D5C32F4771091 /* libcore.a */,
@@ -122,12 +128,8 @@
 			};
 			buildConfigurationList = 2F684B8427DC8F5001D9A5B0 /* Build configuration list for PBXProject "core" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
-			knownRegions = (
-				en,
-			);
-			mainGroup = 1CE02724939AB46300B24440;
+			mainGroup = 19BC3E7E3EDF760717F26DF5;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -141,18 +143,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2FB5AF9855596821669CAE1F /* dx7note.cc in Sources */,
-				36D08A0FEA591FC0EF188469 /* env.cc in Sources */,
-				1DBA85B761236957DF00CF7B /* fm_core.cc in Sources */,
-				8D41064389CC8FD281956BF7 /* fm_op_kernel.cc in Sources */,
-				5FA224E159A6B07188657BA8 /* freqlut.cc in Sources */,
-				D5ECD09EBEB1684C00616248 /* resofilter.cc in Sources */,
-				908EAB1EE59231C41FD88BCD /* ringbuffer.cc in Sources */,
-				71911D7305F0175DC4A3FF17 /* sawtooth.cc in Sources */,
-				4FB7FFF436D333023EC91E2C /* sin.cc in Sources */,
-				A16F70FD02394895C6FA7326 /* synth_unit.cc in Sources */,
-				80D3C6DC6F5236826B6AB404 /* test_ringbuffer.cc in Sources */,
-				AECC016D16C70F9300FBD4E4 /* patch.cc in Sources */,
+				391223C6D7249361C00A14AF /* dx7note.cc in Sources */,
+				3DFFE98F73F04D2F66DA9FA4 /* env.cc in Sources */,
+				2DD71F3E9AE0C4253B8B7747 /* exp2.cc in Sources */,
+				D80FBC17492647DCFDE96F75 /* fm_core.cc in Sources */,
+				79D1CB0F9A4671DA79729544 /* fm_op_kernel.cc in Sources */,
+				FB78A2E9904695ABCC799CC3 /* freqlut.cc in Sources */,
+				97788F06DA1810835D9F0A50 /* lfo.cc in Sources */,
+				B64D26CA7CC8017052D3E963 /* patch.cc in Sources */,
+				AA1CD32CDCFEB4469067D98E /* resofilter.cc in Sources */,
+				6E01450F6BFF126216C8164C /* ringbuffer.cc in Sources */,
+				E31A9F6965B9E56115BAE59F /* sawtooth.cc in Sources */,
+				AA0F43347EBDEE6D29032DAF /* sin.cc in Sources */,
+				E2649182D734B708D5E72B66 /* synth_unit.cc in Sources */,
+				50C9BC20B9DB9E51A9B852BC /* test_ringbuffer.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

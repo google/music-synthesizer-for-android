@@ -7,20 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		070048C57FCB5F31827D61CD /* midi_in_mac.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9CC658C4805259001BB2BA70 /* midi_in_mac.cc */; };
-		444FC1A8A4F4BFBB71A55578 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 106567A2B2FDE65A2547B9C0 /* InfoPlist.strings */; };
-		4EC6E0A88AFE158936E7DF22 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3EDCE57490308092B70255E /* CoreFoundation.framework */; };
-		6004825C9C1BA9246F032431 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D3126A377165245C44B6C8A /* CoreAudio.framework */; };
-		6824545AE8F4DAFB95F6CDDB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB723D6CDE6B962FBA69894 /* main.m */; };
-		752469DD01013D889966B42C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F664EAAFF41058799553650 /* AudioUnit.framework */; };
-		7E84D499B82B6C02EB8AA96C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D651559601BF84BEA261778D /* MainMenu.xib */; };
-		7F9707F48C04E2AE1EB5C866 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4618975BF19F21FC2A429474 /* Cocoa.framework */; };
-		9366D617A2CE978AEA3555B3 /* libcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BACEAAFABBABE1D12902220B /* libcore.a */; };
-		982E3B747974F63D8B4482B2 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9DC34125BEDD68ABCAB055D /* AudioToolbox.framework */; };
-		98F8F0314510BD0F6AA320CE /* SynthMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = AFA13CCA8E0B32555D59A9B3 /* SynthMain.mm */; };
-		B6BA9FF151AD9A0D309C0D53 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1680278C574FAEFF7657992 /* CoreMIDI.framework */; };
-		C5E74E9A85CDC29EB3DCCBF7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0638CA1C453E326E762DA4BE /* Carbon.framework */; };
-		D6CAF0C6797908C34B18E987 /* SynthAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 22758A226C30B8A0C2E095B2 /* SynthAppDelegate.mm */; };
+		0AF9B4E130CD067B67982EBD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB723D6CDE6B962FBA69894 /* main.m */; };
+		1C5DE660EC77BB10207B2287 /* SynthMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = AFA13CCA8E0B32555D59A9B3 /* SynthMain.mm */; };
+		2BA8FE676832264E0511D537 /* midi_in_mac.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9CC658C4805259001BB2BA70 /* midi_in_mac.cc */; };
+		5EAECBD70CBEA73B2779206F /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0638CA1C453E326E762DA4BE /* Carbon.framework */; };
+		8F78BB0F8E5ABD62E94E9033 /* libcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BACEAAFABBABE1D12902220B /* libcore.a */; };
+		934113319D00751E8E25D151 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9DC34125BEDD68ABCAB055D /* AudioToolbox.framework */; };
+		99BC8AF04EDB098B35258E82 /* SynthAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 22758A226C30B8A0C2E095B2 /* SynthAppDelegate.mm */; };
+		B4DE673655497871A3BBC156 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3EDCE57490308092B70255E /* CoreFoundation.framework */; };
+		D19B14BE69AE22E170B65E39 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D3126A377165245C44B6C8A /* CoreAudio.framework */; };
+		D981AAA9AAF8D88A04A6C48B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3E06DBD96E36EB93BEA0FC1B /* InfoPlist.strings */; };
+		E55D320615482E26123191C2 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F664EAAFF41058799553650 /* AudioUnit.framework */; };
+		F7624EA1A8133B1F867A515E /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B1680278C574FAEFF7657992 /* CoreMIDI.framework */; };
+		FB09285A67966501565CC485 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = CF2DC82EE50B750198149118 /* MainMenu.xib */; };
+		FEDE0E473529E7B58EAA6CF3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4618975BF19F21FC2A429474 /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,21 +65,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9366D617A2CE978AEA3555B3 /* libcore.a in Frameworks */,
-				982E3B747974F63D8B4482B2 /* AudioToolbox.framework in Frameworks */,
-				752469DD01013D889966B42C /* AudioUnit.framework in Frameworks */,
-				C5E74E9A85CDC29EB3DCCBF7 /* Carbon.framework in Frameworks */,
-				7F9707F48C04E2AE1EB5C866 /* Cocoa.framework in Frameworks */,
-				6004825C9C1BA9246F032431 /* CoreAudio.framework in Frameworks */,
-				4EC6E0A88AFE158936E7DF22 /* CoreFoundation.framework in Frameworks */,
-				B6BA9FF151AD9A0D309C0D53 /* CoreMIDI.framework in Frameworks */,
+				8F78BB0F8E5ABD62E94E9033 /* libcore.a in Frameworks */,
+				934113319D00751E8E25D151 /* AudioToolbox.framework in Frameworks */,
+				E55D320615482E26123191C2 /* AudioUnit.framework in Frameworks */,
+				5EAECBD70CBEA73B2779206F /* Carbon.framework in Frameworks */,
+				FEDE0E473529E7B58EAA6CF3 /* Cocoa.framework in Frameworks */,
+				D19B14BE69AE22E170B65E39 /* CoreAudio.framework in Frameworks */,
+				B4DE673655497871A3BBC156 /* CoreFoundation.framework in Frameworks */,
+				F7624EA1A8133B1F867A515E /* CoreMIDI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		08D7B67857704EB61BBC1112 /* Frameworks */ = {
+		048E2E4F06C19059DA10948A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E4B4F7598D96CC2CE29666B4 /* SynthApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		06DC9AAFE57AC70F6D82C9B8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BACEAAFABBABE1D12902220B /* libcore.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		571F3C9918276141BDFD1F04 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				F9DC34125BEDD68ABCAB055D /* AudioToolbox.framework */,
@@ -93,26 +109,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		26BC9EF25519FDFECC66EBA5 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				E4B4F7598D96CC2CE29666B4 /* SynthApp.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		56669AEF9C728CE587C3E8A3 = {
-			isa = PBXGroup;
-			children = (
-				C611344839FF3B4608474E37 /* Source */,
-				710624B4F3ADB1F020942DB0 /* Projects */,
-				08D7B67857704EB61BBC1112 /* Frameworks */,
-				26BC9EF25519FDFECC66EBA5 /* Products */,
-				FF670D1787E80284877493D1 /* Build */,
-			);
-			sourceTree = "<group>";
-		};
-		710624B4F3ADB1F020942DB0 /* Projects */ = {
+		652E39EBA60801294DEE7827 /* Projects */ = {
 			isa = PBXGroup;
 			children = (
 				B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */,
@@ -120,11 +117,11 @@
 			name = Projects;
 			sourceTree = "<group>";
 		};
-		C611344839FF3B4608474E37 /* Source */ = {
+		8C541AB012A6421C156ED3CC /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				106567A2B2FDE65A2547B9C0 /* InfoPlist.strings */,
-				D651559601BF84BEA261778D /* MainMenu.xib */,
+				3E06DBD96E36EB93BEA0FC1B /* InfoPlist.strings */,
+				CF2DC82EE50B750198149118 /* MainMenu.xib */,
 				22758A226C30B8A0C2E095B2 /* SynthAppDelegate.mm */,
 				3C854865960DE58DBB62E200 /* SynthApp_Prefix.pch */,
 				AFA13CCA8E0B32555D59A9B3 /* SynthMain.mm */,
@@ -135,20 +132,23 @@
 			path = SynthApp;
 			sourceTree = "<group>";
 		};
-		D9149B7557AF29282FBD3555 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				BACEAAFABBABE1D12902220B /* libcore.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		FF670D1787E80284877493D1 /* Build */ = {
+		AE142D1365FF48FD556E86BC /* Build */ = {
 			isa = PBXGroup;
 			children = (
 				645192D86D7D39B0CAB2E0FC /* SynthApp.gyp */,
 			);
 			name = Build;
+			sourceTree = "<group>";
+		};
+		EEAFDBA4970041AA25C22652 = {
+			isa = PBXGroup;
+			children = (
+				8C541AB012A6421C156ED3CC /* Source */,
+				652E39EBA60801294DEE7827 /* Projects */,
+				571F3C9918276141BDFD1F04 /* Frameworks */,
+				048E2E4F06C19059DA10948A /* Products */,
+				AE142D1365FF48FD556E86BC /* Build */,
+			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -185,16 +185,13 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
 			);
-			mainGroup = 56669AEF9C728CE587C3E8A3;
+			mainGroup = EEAFDBA4970041AA25C22652;
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = D9149B7557AF29282FBD3555 /* Products */;
+					ProductGroup = 06DC9AAFE57AC70F6D82C9B8 /* Products */;
 					ProjectRef = B5F1A11C57F7DE82D8F9F9C2 /* core.xcodeproj */;
 				},
 			);
@@ -220,8 +217,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				444FC1A8A4F4BFBB71A55578 /* InfoPlist.strings in Resources */,
-				7E84D499B82B6C02EB8AA96C /* MainMenu.xib in Resources */,
+				D981AAA9AAF8D88A04A6C48B /* InfoPlist.strings in Resources */,
+				FB09285A67966501565CC485 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,10 +229,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6824545AE8F4DAFB95F6CDDB /* main.m in Sources */,
-				070048C57FCB5F31827D61CD /* midi_in_mac.cc in Sources */,
-				D6CAF0C6797908C34B18E987 /* SynthAppDelegate.mm in Sources */,
-				98F8F0314510BD0F6AA320CE /* SynthMain.mm in Sources */,
+				0AF9B4E130CD067B67982EBD /* main.m in Sources */,
+				2BA8FE676832264E0511D537 /* midi_in_mac.cc in Sources */,
+				99BC8AF04EDB098B35258E82 /* SynthAppDelegate.mm in Sources */,
+				1C5DE660EC77BB10207B2287 /* SynthMain.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,7 +247,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		106567A2B2FDE65A2547B9C0 /* InfoPlist.strings */ = {
+		3E06DBD96E36EB93BEA0FC1B /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				AC00D3CE197617EB5BC7110C /* English */,
@@ -258,7 +255,7 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		D651559601BF84BEA261778D /* MainMenu.xib */ = {
+		CF2DC82EE50B750198149118 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				47E3EC1A3593850470FB7E33 /* English */,
