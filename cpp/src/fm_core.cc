@@ -18,6 +18,10 @@
 #include <iostream>
 #endif
 
+#ifdef __ANDROID_API__
+#include <cpu-features.h>
+#endif
+
 #include "synth.h"
 #include "fm_op_kernel.h"
 #include "fm_core.h"
@@ -117,7 +121,7 @@ void FmCore::compute(int32_t *output, FmOpParams *params, int algorithm,
     FmOpParams &param = params[op];
     int inbus = (flags >> 4) & 3;
     int outbus = flags & 3;
-    int32_t *outptr = (outbus == 0) ? output : buf_[outbus - 1];
+    int32_t *outptr = (outbus == 0) ? output : buf_[outbus - 1].get();
     int32_t gain1 = param.gain[0];
     int32_t gain2 = param.gain[1];
     if (gain1 != 0 || gain2 != 0) {
@@ -138,8 +142,8 @@ void FmCore::compute(int32_t *output, FmOpParams *params, int algorithm,
         }
       } else {
         // cout << op << " normal " << inbus << outbus << " " << param.freq << add << endl;
-        FmOpKernel::compute(outptr, buf_[inbus - 1], param.phase, param.freq,
-                            gain1, gain2, add);
+        FmOpKernel::compute(outptr, buf_[inbus - 1].get(),
+                            param.phase, param.freq, gain1, gain2, add);
       }
       has_contents[outbus] = true;
     }

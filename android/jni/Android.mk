@@ -16,12 +16,21 @@ LOCAL_SRC_FILES := android_glue.cc \
                    sin.cc \
                    synth_unit.cc
 
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+    LOCAL_ARM_NEON := true
+    LOCAL_CFLAGS := -DHAVE_NEON=1
+    LOCAL_SRC_FILES += neon_fm_kernel.s
+endif
+
 # for native audio
 LOCAL_LDLIBS    += -lOpenSLES
 # for logging
 LOCAL_LDLIBS    += -llog
 
-LOCAL_CFLAGS := -O3
+LOCAL_STATIC_LIBRARIES += cpufeatures
+
+LOCAL_CFLAGS += -O3
 
 include $(BUILD_SHARED_LIBRARY)
 
+$(call import-module,android/cpufeatures)

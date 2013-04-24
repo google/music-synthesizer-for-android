@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef __FM_CORE_H
-#define __FM_CORE_H
+// A convenient wrapper for buffers with alignment constraints
 
-#include "aligned_buf.h"
+// Note that if we were on C++11, we'd use aligned_storage or somesuch.
 
-struct FmOpParams {
-  int32_t gain[2];
-  int32_t freq;
-  int32_t phase;
-};
+#ifndef __ALIGNED_BUF_H
+#define __ALIGNED_BUF_H
 
-class FmCore {
+template<typename T, size_t size, size_t alignment = 16>
+class AlignedBuf {
  public:
-  static void dump();
-  void compute(int32_t *output, FmOpParams *params, int algorithm,
-               int32_t *fb_buf, int32_t feedback_gain);
+  T *get() {
+    return (T *)((((intptr_t)storage_) + alignment - 1) & -alignment);
+  }
  private:
-  AlignedBuf<int32_t, N>buf_[2];
+  unsigned char storage_[size * sizeof(T) + alignment];
 };
 
-#endif  // __FM_CORE_H
+#endif  // __ALIGNED_BUF_H

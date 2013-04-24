@@ -22,6 +22,7 @@
 
 #include "synth.h"
 #include "synth_unit.h"
+#include "aligned_buf.h"
 
 char epiano[] = {
   95, 29, 20, 50, 99, 95, 0, 0, 41, 0, 19, 0, 115, 24, 79, 2, 0,
@@ -193,17 +194,17 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
   ConsumeInput(input_offset);
 
   for (int i = 0; i < n_samples; i += N) {
-    int32_t audiobuf[N];
+    AlignedBuf<int32_t, N> audiobuf;
     int32_t audiobuf2[N];
     for (int j = 0; j < N; ++j) {
-      audiobuf[j] = 0;
+      audiobuf.get()[j] = 0;
     }
     for (int note = 0; note < max_active_notes; ++note) {
       if (active_note_[note].dx7_note != NULL) {
-        active_note_[note].dx7_note->compute(audiobuf);
+        active_note_[note].dx7_note->compute(audiobuf.get());
       }
     }
-    const int32_t *bufs[] = { audiobuf };
+    const int32_t *bufs[] = { audiobuf.get() };
     int32_t *bufs2[] = { audiobuf2 };
     filter_.process(bufs, filter_control_, filter_control_, bufs2);
     for (int j = 0; j < N; ++j) {

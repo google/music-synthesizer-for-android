@@ -16,10 +16,32 @@
 
 #include <math.h>
 
+#ifdef HAVE_NEON
+#include <cpu-features.h>
+#endif
+
 #include "synth.h"
 
 #include "sin.h"
 #include "fm_op_kernel.h"
+
+#ifdef HAVE_NEON
+static bool hasNeon() {
+  return true;
+  return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
+}
+
+extern "C"
+void neon_fm_kernel(const int *in, const int *busin, int *out, int count,
+  int32_t phase0, int32_t freq, int32_t gain1, int32_t dgain);
+
+const int32_t __attribute__ ((aligned(16))) zeros[N] = {0};
+
+#else
+static bool hasNeon() {
+  return false;
+}
+#endif
 
 void FmOpKernel::compute(int32_t *output, const int32_t *input,
                          int32_t phase0, int32_t freq,
@@ -27,19 +49,26 @@ void FmOpKernel::compute(int32_t *output, const int32_t *input,
   int32_t dgain = (gain2 - gain1 + (N >> 1)) >> LG_N;
   int32_t gain = gain1;
   int32_t phase = phase0;
-  if (add) {
-    for (int i = 0; i < N; i++) {
-      gain += dgain;
-      int32_t y = Sin::lookup(phase + input[i]);
-      output[i] += ((int64_t)y * (int64_t)gain) >> 24;
-      phase += freq;
-    }
+  if (hasNeon()) {
+#ifdef HAVE_NEON
+    neon_fm_kernel(input, add ? output : zeros, output, N,
+      phase0, freq, gain, dgain);
+#endif
   } else {
-    for (int i = 0; i < N; i++) {
-      gain += dgain;
-      int32_t y = Sin::lookup(phase + input[i]);
-      output[i] = ((int64_t)y * (int64_t)gain) >> 24;
-      phase += freq;
+    if (add) {
+      for (int i = 0; i < N; i++) {
+        gain += dgain;
+        int32_t y = Sin::lookup(phase + input[i]);
+        output[i] += ((int64_t)y * (int64_t)gain) >> 24;
+        phase += freq;
+      }
+    } else {
+      for (int i = 0; i < N; i++) {
+        gain += dgain;
+        int32_t y = Sin::lookup(phase + input[i]);
+        output[i] = ((int64_t)y * (int64_t)gain) >> 24;
+        phase += freq;
+      }
     }
   }
 }
@@ -50,19 +79,26 @@ void FmOpKernel::compute_pure(int32_t *output, int32_t phase0, int32_t freq,
   int32_t dgain = (gain2 - gain1 + (N >> 1)) >> LG_N;
   int32_t gain = gain1;
   int32_t phase = phase0;
-  if (add) {
-    for (int i = 0; i < N; i++) {
-      gain += dgain;
-      int32_t y = Sin::lookup(phase);
-      output[i] += ((int64_t)y * (int64_t)gain) >> 24;
-      phase += freq;
-    }
+  if (hasNeon()) {
+#ifdef HAVE_NEON
+    neon_fm_kernel(zeros, add ? output : zeros, output, N,
+      phase0, freq, gain, dgain);
+#endif
   } else {
-    for (int i = 0; i < N; i++) {
-      gain += dgain;
-      int32_t y = Sin::lookup(phase);
-      output[i] = ((int64_t)y * (int64_t)gain) >> 24;
-      phase += freq;
+    if (add) {
+      for (int i = 0; i < N; i++) {
+        gain += dgain;
+        int32_t y = Sin::lookup(phase);
+        output[i] += ((int64_t)y * (int64_t)gain) >> 24;
+        phase += freq;
+      }
+    } else {
+      for (int i = 0; i < N; i++) {
+        gain += dgain;
+        int32_t y = Sin::lookup(phase);
+        output[i] = ((int64_t)y * (int64_t)gain) >> 24;
+        phase += freq;
+      }
     }
   }
 }
