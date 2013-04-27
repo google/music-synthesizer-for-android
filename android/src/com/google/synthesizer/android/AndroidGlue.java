@@ -14,7 +14,7 @@ public class AndroidGlue extends MessageOutputProcessor {
   /**
    * Create and initialize the engine. This should be done once per process.
    */
-  public native void start();
+  public native void start(int sample_rate, int buf_size);
 
   /**
    *  Shut down the OpenSL ES engine and audio synthesizer.

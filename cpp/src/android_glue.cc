@@ -32,9 +32,10 @@ RingBuffer *ring_buffer;
 SynthUnit *synth_unit;
 
 const int N_BUFFERS = 2;
-const int BUFFER_SIZE = 384;
+const int MAX_BUFFER_SIZE = 1024;
+int buffer_size;
 
-int16_t buffer[BUFFER_SIZE * N_BUFFERS];
+int16_t buffer[MAX_BUFFER_SIZE * N_BUFFERS];
 int cur_buffer = 0;
 int count = 0;
 
@@ -54,10 +55,10 @@ static SLBufferQueueItf buffer_queue_itf;
 extern "C" void BqPlayerCallback(SLAndroidSimpleBufferQueueItf queueItf,
   void *data) {
   if (count >= 1000) return;
-  int16_t *buf_ptr = buffer + BUFFER_SIZE * cur_buffer;
-  synth_unit->GetSamples(BUFFER_SIZE, buf_ptr);
+  int16_t *buf_ptr = buffer + buffer_size * cur_buffer;
+  synth_unit->GetSamples(buffer_size, buf_ptr);
   SLresult result = (*queueItf)->Enqueue(bq_player_buffer_queue,
-    buf_ptr, BUFFER_SIZE * 2);
+    buf_ptr, buffer_size * 2);
   assert(SL_RESULT_SUCCESS == result);
   cur_buffer = (cur_buffer + 1) % N_BUFFERS;
 }
@@ -84,12 +85,12 @@ SLresult result;
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
-    jobject thiz) {
+    jobject thiz, jint sample_rate, jint buf_size) {
   CreateEngine();
   SLDataLocator_AndroidSimpleBufferQueue loc_bufq =
     {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, N_BUFFERS};
   SLDataFormat_PCM format_pcm = {
-    SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_44_1,
+    SL_DATAFORMAT_PCM, 1, sample_rate * 1000,
     SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
     SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN
       // TODO: compute real endianness
@@ -117,7 +118,7 @@ Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
         &BqPlayerCallback, NULL);
   assert(SL_RESULT_SUCCESS == result);
 
-  double sample_rate = 44100.0;
+  buffer_size = buf_size;
   Freqlut::init(sample_rate);
   Sin::init();
   ring_buffer = new RingBuffer();

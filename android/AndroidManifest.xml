@@ -5,7 +5,7 @@
     android:versionCode="2"
     android:versionName="0.9">
   <uses-sdk android:minSdkVersion="9" 
-      android:targetSdkVersion="14"
+      android:targetSdkVersion="17"
       /> <!-- 9 = Gingerbread -->
   <uses-feature android:name="android.hardware.usb.host" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

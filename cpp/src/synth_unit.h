@@ -42,7 +42,7 @@ class SynthUnit {
   int ProcessMidiMessage(const uint8_t *buf, int buf_size);
 
   RingBuffer *ring_buffer_;
-  static const int max_active_notes = 8;
+  static const int max_active_notes = 16;
   ActiveNote active_note_[max_active_notes];
   int current_note_;
   uint8_t input_buffer_[8192];
@@ -54,4 +54,8 @@ class SynthUnit {
   ResoFilter filter_;
   int32_t filter_control_[2];
   bool sustain_;
+
+  // Extra buffering for when GetSamples wants a buffer not a multiple of N
+  int16_t extra_buf_[N];
+  int extra_buf_size_;
 };

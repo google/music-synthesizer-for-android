@@ -18,6 +18,11 @@
 #include <iostream>
 #endif
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "synth", __VA_ARGS__)
+#endif
+
 #include <string.h>
 
 #include "synth.h"
@@ -50,6 +55,7 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   filter_control_[0] = 258847126;
   filter_control_[1] = 0;
   sustain_ = false;
+  extra_buf_size_ = 0;
 }
 
 // Transfer as many bytes as possible from ring buffer to input buffer.
@@ -193,7 +199,19 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
   }
   ConsumeInput(input_offset);
 
-  for (int i = 0; i < n_samples; i += N) {
+  int i;
+  for (i = 0; i < n_samples && i < extra_buf_size_; i++) {
+    buffer[i] = extra_buf_[i];
+  }
+  if (extra_buf_size_ > n_samples) {
+    for (int j = 0; j < extra_buf_size_ - n_samples; j++) {
+      extra_buf_[j] = extra_buf_[j + n_samples];
+    }
+    extra_buf_size_ -= n_samples;
+    return;
+  }
+
+  for (; i < n_samples; i += N) {
     AlignedBuf<int32_t, N> audiobuf;
     int32_t audiobuf2[N];
     for (int j = 0; j < N; ++j) {
@@ -207,12 +225,18 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
     const int32_t *bufs[] = { audiobuf.get() };
     int32_t *bufs2[] = { audiobuf2 };
     filter_.process(bufs, filter_control_, filter_control_, bufs2);
+    int jmax = n_samples - i;
     for (int j = 0; j < N; ++j) {
       int32_t val = audiobuf2[j] >> 4;
       int clip_val = val < -(1 << 24) ? 0x8000 : val >= (1 << 24) ? 0x7fff :
         val >> 9;
       // TODO: maybe some dithering?
-      buffer[i + j] = clip_val;
+      if (j < jmax) {
+        buffer[i + j] = clip_val;
+      } else {
+        extra_buf_[j - jmax] = clip_val;
+      }
     }
   }
+  extra_buf_size_ = i - n_samples;
 }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.usb.UsbConstants;
@@ -29,6 +30,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -64,8 +66,15 @@ public class PianoActivity2 extends Activity {
     resonanceKnob_ = (KnobView)findViewById(R.id.resonanceKnob);
     presetSpinner_ = (Spinner)findViewById(R.id.presetSpinner);
 
+    AudioParams params = new AudioParams(44100, 384);
+    // TODO: for pre-JB-MR1 devices, do some matching against known devices to
+    // get best audio parameters.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      getJbMr1Params(params);
+    }
+
     androidGlue_ = new AndroidGlue();
-    androidGlue_.start();
+    androidGlue_.start(params.sampleRate, params.bufferSize);
 
     InputStream patchIs = getResources().openRawResource(R.raw.rom1a);
     byte[] patchData = new byte[4104];
@@ -128,6 +137,7 @@ public class PianoActivity2 extends Activity {
     super.onResume();
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   private UsbEndpoint getInputEndpoint(UsbInterface usbIf) {
     int nEndpoints = usbIf.getEndpointCount();
     for (int i = 0; i < nEndpoints; i++) {
@@ -140,6 +150,7 @@ public class PianoActivity2 extends Activity {
     return null;
   }
   
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   private void startUsbThread(final UsbDeviceConnection connection, final UsbEndpoint endpoint) {
     Thread thread = new Thread(new Runnable() {
       public void run() {
@@ -166,6 +177,7 @@ public class PianoActivity2 extends Activity {
     });
     thread.start();
   }
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   private void tryConnectUsb() {
     UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
     HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
@@ -185,7 +197,32 @@ public class PianoActivity2 extends Activity {
       }
     }
   }
-  
+
+  class AudioParams {
+    AudioParams(int sr, int bs) {
+      confident = false;
+      sampleRate = sr;
+      bufferSize = bs;
+    }
+    public String toString() {
+      return "sampleRate=" + sampleRate + " bufferSize=" + bufferSize;
+    }
+    boolean confident;
+    int sampleRate;
+    int bufferSize;
+  }
+
+  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+  void getJbMr1Params(AudioParams params) {
+      AudioManager audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+    String sr = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+    String bs = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+    params.confident = true;
+    params.sampleRate = Integer.parseInt(sr);
+    params.bufferSize = Integer.parseInt(bs);
+    //log("from platform: " + params);
+  }
+
   private AndroidGlue androidGlue_;
   private PianoView piano_;
   private KnobView cutoffKnob_;
