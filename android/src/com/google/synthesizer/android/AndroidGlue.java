@@ -40,6 +40,13 @@ public class AndroidGlue extends MessageOutputProcessor {
     sendMidi(midiData);
   }
 
+  /**
+   * @return Number of stats bytes available from synth core
+   */
+  public native int statsBytesAvailable();
+
+  public native int readStatsBytes(byte[] buf, int off, int len);
+
   static {
     System.loadLibrary("synth");
   }

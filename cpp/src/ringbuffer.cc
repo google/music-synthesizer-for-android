@@ -29,6 +29,10 @@ int RingBuffer::BytesAvailable() {
   return (wr_ix_ - rd_ix_) & (kBufSize - 1);
 }
 
+int RingBuffer::WriteBytesAvailable() {
+  return (rd_ix_ - wr_ix_ - 1) & (kBufSize - 1);
+}
+
 int RingBuffer::Read(int size, uint8_t *bytes) {
   int rd_ix = rd_ix_;
   SynthMemoryBarrier();  // read barrier, make sure data is committed before ix

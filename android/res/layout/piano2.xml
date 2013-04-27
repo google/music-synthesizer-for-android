@@ -46,11 +46,21 @@
         app:min="0"
         app:max="1"
         android:layout_margin="2px" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_span="4" >
     <Spinner
         android:id="@+id/presetSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_span="4" />
+        />
+      <TextView
+          android:id="@+id/status"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_span="6"
+      />
+    </LinearLayout>
   </TableRow>
   <TableRow>
     <LinearLayout

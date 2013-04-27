@@ -24,6 +24,9 @@ class RingBuffer {
   // Returns number of bytes available for reading.
   int BytesAvailable();
 
+  // Returns number of bytes that can be written without blocking.
+  int WriteBytesAvailable();
+
   // Reads bytes. It is the caller's responsibility to make sure that
   // size <= a previous value of BytesAvailable().
   int Read(int size, uint8_t *bytes);
@@ -34,8 +37,8 @@ class RingBuffer {
  private:
   static const int kBufSize = 8192;
   uint8_t buf_[kBufSize];
-  volatile int rd_ix_;
-  volatile int wr_ix_;
+  volatile unsigned int rd_ix_;
+  volatile unsigned int wr_ix_;
 };
 
 #endif  // SYNTH_RINGBUFFER_H_

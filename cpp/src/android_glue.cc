@@ -16,6 +16,8 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <time.h>
 #include <jni.h>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -29,6 +31,7 @@
 #include "synth_unit.h"
 
 RingBuffer *ring_buffer;
+RingBuffer *stats_ring_buffer;
 SynthUnit *synth_unit;
 
 const int N_BUFFERS = 2;
@@ -37,7 +40,6 @@ int buffer_size;
 
 int16_t buffer[MAX_BUFFER_SIZE * N_BUFFERS];
 int cur_buffer = 0;
-int count = 0;
 
 // engine interfaces
 static SLObjectItf engineObject = NULL;
@@ -52,15 +54,30 @@ static SLPlayItf bq_player_play;
 static SLAndroidSimpleBufferQueueItf bq_player_buffer_queue;
 static SLBufferQueueItf buffer_queue_itf;
 
+double ts_to_double(const struct timespec *tp) {
+  return tp->tv_sec + 1e-9 * tp->tv_nsec;
+}
+
 extern "C" void BqPlayerCallback(SLAndroidSimpleBufferQueueItf queueItf,
   void *data) {
-  if (count >= 1000) return;
+  struct timespec tp;
+  clock_gettime(CLOCK_MONOTONIC, &tp);
+  double start_time = ts_to_double(&tp);
   int16_t *buf_ptr = buffer + buffer_size * cur_buffer;
   synth_unit->GetSamples(buffer_size, buf_ptr);
+  clock_gettime(CLOCK_MONOTONIC, &tp);
+  double end_time = ts_to_double(&tp);
   SLresult result = (*queueItf)->Enqueue(bq_player_buffer_queue,
     buf_ptr, buffer_size * 2);
   assert(SL_RESULT_SUCCESS == result);
   cur_buffer = (cur_buffer + 1) % N_BUFFERS;
+  char buf[64];
+  int n = sprintf(buf, "ts %.6f %.6f\n", start_time, end_time);
+  if (n <= stats_ring_buffer->WriteBytesAvailable()) {
+    stats_ring_buffer->Write((const uint8_t *)buf, n);
+  }
+  // Could potentially defer writing indication of overrun, but probably
+  // not worth it.
 }
 
 void CreateEngine() {
@@ -122,6 +139,7 @@ Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
   Freqlut::init(sample_rate);
   Sin::init();
   ring_buffer = new RingBuffer();
+  stats_ring_buffer = new RingBuffer();
   synth_unit = new SynthUnit(ring_buffer);
   for (int i = 0; i < N_BUFFERS - 1; ++i) {
     BqPlayerCallback(bq_player_buffer_queue, NULL);
@@ -153,6 +171,8 @@ Java_com_google_synthesizer_android_AndroidGlue_shutdown(JNIEnv *env,
   }
   delete ring_buffer;
   ring_buffer = NULL;
+  delete stats_ring_buffer;
+  stats_ring_buffer = NULL;
   delete synth_unit;
   synth_unit = NULL;
 }
@@ -175,3 +195,28 @@ Java_com_google_synthesizer_android_AndroidGlue_setPlayState(JNIEnv *env,
   assert(SL_RESULT_SUCCESS == result);
 }
 
+extern "C" JNIEXPORT jint JNICALL
+Java_com_google_synthesizer_android_AndroidGlue_statsBytesAvailable(
+    JNIEnv *env, jobject thiz) {
+  return stats_ring_buffer->BytesAvailable();
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_google_synthesizer_android_AndroidGlue_readStatsBytes(
+    JNIEnv *env, jobject thiz, jbyteArray jb, jint off, jint len) {
+  int bytes_available = stats_ring_buffer->BytesAvailable();
+  int n = min(bytes_available, len);
+  if (n) {
+    size_t uoff = off;
+    size_t ulen = len;
+    if (off >= 0 && len >= 0 && uoff + ulen <= env->GetArrayLength(jb)) {
+      uint8_t *buf = (uint8_t *)env->GetByteArrayElements(jb, NULL);
+      stats_ring_buffer->Read(n, buf + uoff);
+      env->ReleaseByteArrayElements(jb, (jbyte *)buf, 0);
+    } else {
+      env->ThrowNew(env->FindClass("java/lang/ArrayIndexOutOfBoundsException"),
+        "out of bounds in AndroidGlue.readStatsBytes");
+    }
+  }
+  return n;
+}

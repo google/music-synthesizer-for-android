@@ -18,6 +18,7 @@ package com.google.synthesizer.android.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,6 +34,7 @@ import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -117,6 +119,26 @@ public class PianoActivity2 extends Activity {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       tryConnectUsb();
     }
+
+    statusHandler_ = new Handler();
+    statusRunnable_ = new Runnable() {
+      public void run() {
+        int n = androidGlue_.statsBytesAvailable();
+        if (n > 0) {
+          byte[] buf = new byte[n];
+          androidGlue_.readStatsBytes(buf, 0, n);
+          TextView statusTextView = (TextView)findViewById(R.id.status);
+          String statusString = new String(buf);
+          int nlIndex = statusString.indexOf('\n');
+          if (nlIndex >= 0) {
+            statusString = statusString.substring(0, nlIndex);
+          }
+          statusTextView.setText(statusString);
+        }
+        statusHandler_.postDelayed(statusRunnable_, 10);
+      }
+    };
+    statusRunnable_.run();
   }
 
   @Override
@@ -228,4 +250,6 @@ public class PianoActivity2 extends Activity {
   private KnobView cutoffKnob_;
   private KnobView resonanceKnob_;
   private Spinner presetSpinner_;
+  private Handler statusHandler_;
+  private Runnable statusRunnable_;
 }
