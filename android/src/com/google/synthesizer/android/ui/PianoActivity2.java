@@ -18,7 +18,6 @@ package com.google.synthesizer.android.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -46,6 +45,7 @@ import android.widget.TextView;
 
 import com.google.synthesizer.R;
 import com.google.synthesizer.android.AndroidGlue;
+import com.google.synthesizer.android.stats.JitterStats;
 import com.google.synthesizer.android.widgets.knob.KnobListener;
 import com.google.synthesizer.android.widgets.knob.KnobView;
 import com.google.synthesizer.android.widgets.piano.PianoView;
@@ -120,6 +120,7 @@ public class PianoActivity2 extends Activity {
       tryConnectUsb();
     }
 
+    jitterStats_ = new JitterStats();
     statusHandler_ = new Handler();
     statusRunnable_ = new Runnable() {
       public void run() {
@@ -127,15 +128,11 @@ public class PianoActivity2 extends Activity {
         if (n > 0) {
           byte[] buf = new byte[n];
           androidGlue_.readStatsBytes(buf, 0, n);
+          jitterStats_.aggregate(buf);
           TextView statusTextView = (TextView)findViewById(R.id.status);
-          String statusString = new String(buf);
-          int nlIndex = statusString.indexOf('\n');
-          if (nlIndex >= 0) {
-            statusString = statusString.substring(0, nlIndex);
-          }
-          statusTextView.setText(statusString);
+          statusTextView.setText(jitterStats_.report());
         }
-        statusHandler_.postDelayed(statusRunnable_, 10);
+        statusHandler_.postDelayed(statusRunnable_, 100);
       }
     };
     statusRunnable_.run();
@@ -252,4 +249,5 @@ public class PianoActivity2 extends Activity {
   private Spinner presetSpinner_;
   private Handler statusHandler_;
   private Runnable statusRunnable_;
+  private JitterStats jitterStats_;
 }

@@ -27,6 +27,7 @@
 
 #include "synth.h"
 #include "freqlut.h"
+#include "exp2.h"
 #include "sin.h"
 #include "synth_unit.h"
 
@@ -137,6 +138,7 @@ Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
 
   buffer_size = buf_size;
   Freqlut::init(sample_rate);
+  Exp2::init();
   Sin::init();
   ring_buffer = new RingBuffer();
   stats_ring_buffer = new RingBuffer();

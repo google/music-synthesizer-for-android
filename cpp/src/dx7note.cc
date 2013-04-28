@@ -21,6 +21,7 @@
 #include "synth.h"
 #include "freqlut.h"
 #include "patch.h"
+#include "exp2.h"
 #include "dx7note.h"
 
 using namespace std;
@@ -171,8 +172,8 @@ void Dx7Note::compute(int32_t *buf) {
   for (int op = 0; op < 6; op++) {
     params_[op].gain[0] = params_[op].gain[1];
     int32_t level = env_[op].getsample();
-    // TODO: replace pow with faster calculation
-    int32_t gain = pow(2, 10 + level * (1.0 / (1 << 24)));
+    int32_t gain = Exp2::lookup(level - (14 * (1 << 24)));
+    //int32_t gain = pow(2, 10 + level * (1.0 / (1 << 24)));
     params_[op].gain[1] = gain;
   }
   core_.compute(buf, params_, algorithm_, fb_buf_, fb_shift_);

@@ -6,6 +6,7 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_SRC_FILES := android_glue.cc \
                    dx7note.cc \
                    env.cc \
+                   exp2.cc \
                    fm_core.cc \
                    fm_op_kernel.cc \
                    freqlut.cc \
