@@ -55,8 +55,31 @@ static SLPlayItf bq_player_play;
 static SLAndroidSimpleBufferQueueItf bq_player_buffer_queue;
 static SLBufferQueueItf buffer_queue_itf;
 
-double ts_to_double(const struct timespec *tp) {
+static double ts_to_double(const struct timespec *tp) {
   return tp->tv_sec + 1e-9 * tp->tv_nsec;
+}
+
+// Roll our own decimal printing to guarantee no allocs
+static size_t simple_ftoa(char *buf, double f) {
+  size_t i = 0;
+  uint32_t intpart = (uint32_t)f;
+  uint32_t fracpart = (int)((f - intpart) * 1000000);
+  do {
+    buf[i++] = '0' + intpart % 10;
+    intpart /= 10;
+  } while (intpart > 0);
+  for (size_t j = 0; j < i >> 1; j++) {
+    char tmp = buf[j];
+    buf[j] = buf[i - j - 1];
+    buf[i - j - 1] = tmp;
+  }
+  buf[i++] = '.';
+  const size_t nfrac = 6;
+  for (size_t j = 0; j < nfrac; j++) {
+    buf[i + nfrac - 1 - j] = '0' + fracpart % 10;
+    fracpart /= 10;
+  }
+  return i + nfrac;
 }
 
 extern "C" void BqPlayerCallback(SLAndroidSimpleBufferQueueItf queueItf,
@@ -73,9 +96,17 @@ extern "C" void BqPlayerCallback(SLAndroidSimpleBufferQueueItf queueItf,
   assert(SL_RESULT_SUCCESS == result);
   cur_buffer = (cur_buffer + 1) % N_BUFFERS;
   char buf[64];
-  int n = sprintf(buf, "ts %.6f %.6f\n", start_time, end_time);
-  if (n <= stats_ring_buffer->WriteBytesAvailable()) {
-    stats_ring_buffer->Write((const uint8_t *)buf, n);
+  size_t i = 0;
+  buf[i++] = 't';
+  buf[i++] = 's';
+  buf[i++] = ' ';
+  i += simple_ftoa(buf + i, start_time);
+  buf[i++] = ' ';
+  i += simple_ftoa(buf + i, end_time);
+  buf[i++] = '\n';
+  buf[i] = 0;
+  if (i <= stats_ring_buffer->WriteBytesAvailable()) {
+    stats_ring_buffer->Write((const uint8_t *)buf, i);
   }
   // Could potentially defer writing indication of overrun, but probably
   // not worth it.
