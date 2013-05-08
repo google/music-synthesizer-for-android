@@ -37,9 +37,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -74,6 +76,8 @@ public class PianoActivity2 extends Activity {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       getJbMr1Params(params);
     }
+    //params.sampleRate = 44100;
+    //params.bufferSize = 976;
 
     androidGlue_ = new AndroidGlue();
     androidGlue_.start(params.sampleRate, params.bufferSize);
@@ -121,6 +125,7 @@ public class PianoActivity2 extends Activity {
     }
 
     jitterStats_ = new JitterStats();
+    jitterStats_.setNominalCb(params.bufferSize / (double)params.sampleRate);
     statusHandler_ = new Handler();
     statusRunnable_ = new Runnable() {
       public void run() {
@@ -136,6 +141,30 @@ public class PianoActivity2 extends Activity {
       }
     };
     statusRunnable_.run();
+
+    // Create burst of load -- test code to be removed. Ultimately we'll
+    // be able to get this kind of functionality by hooking up the sequencer
+    if (false) {
+      new Handler().postDelayed(new Runnable() {
+        public void run() {
+          int n = 110;
+          byte[] midi = new byte[n * 3];
+          for (int i = 0; i < n; i++) {
+            midi[i * 3] = (byte)0x90;
+            midi[i * 3 + 1] = (byte)(1 + i);
+            midi[i * 3 + 2] = 64;
+          }
+          androidGlue_.sendMidi(midi);
+        }
+      }, 10000);
+    }
+    Button captureButton = (Button) findViewById(R.id.capture);
+    captureButton.setOnClickListener(new OnClickListener() {
+      public void onClick(View v) {
+        TextView stats = (TextView) findViewById(R.id.stats);
+        stats.setText(jitterStats_.reportLong());
+      }
+    });
   }
 
   @Override

@@ -77,4 +77,6 @@
     <item>Amplification</item>
     <item>Effects</item>
   </string-array>
+
+  <string name="capture">Capture</string>
 </resources>

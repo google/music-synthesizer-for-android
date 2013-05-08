@@ -18,19 +18,15 @@
         android:gravity="center_horizontal" />
     <TextView
         android:text=""
-        android:id="@+id/emptyLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text=""
-        android:id="@+id/emptyLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text=""
-        android:id="@+id/emptyLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text=""
-        android:id="@+id/emptyLabel"
         android:gravity="center_horizontal" />
   </TableRow>
   <TableRow>
@@ -39,13 +35,13 @@
         app:value="1.0"
         app:min="0"
         app:max="1"
-        android:layout_margin="2px" />
+        android:layout_margin="2dp" />
     <com.google.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/resonanceKnob"
         app:value="0.0"
         app:min="0"
         app:max="1"
-        android:layout_margin="2px" />
+        android:layout_margin="2dp" />
     <LinearLayout
         android:orientation="vertical"
         android:layout_span="4" >
@@ -58,8 +54,19 @@
           android:id="@+id/status"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_span="6"
       />
+      <Button
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/capture"
+          android:text="@string/capture"
+          />
+      <TextView
+          android:id="@+id/stats"
+          android:layout_width="fill_parent"
+          android:layout_height="40dp"
+          android:textIsSelectable="true"
+          />
     </LinearLayout>
   </TableRow>
   <TableRow>

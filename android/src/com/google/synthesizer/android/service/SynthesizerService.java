@@ -69,13 +69,13 @@ public class SynthesizerService extends Service {
     // For now, cap the sample rate to reduce cpu requirements.
     sampleRateInHz = Math.min(sampleRateInHz, 11025);
     SoundFontReader sampleLibrary = null;
-    InputStream sampleLibraryFile = getResources().openRawResource(R.raw.drums);
-    try {
-      sampleLibrary = new SoundFontReader(sampleLibraryFile);
-    } catch (IOException e) {
-      logger_.log(Level.SEVERE, "Unable to load sample library.", e);
-      sampleLibrary = null;
-    }
+    //InputStream sampleLibraryFile = getResources().openRawResource(R.raw.drums);
+    //try {
+    //  sampleLibrary = new SoundFontReader(sampleLibraryFile);
+    //} catch (IOException e) {
+    //  logger_.log(Level.SEVERE, "Unable to load sample library.", e);
+    //  sampleLibrary = null;
+    //}
     synthesizer_ = new MultiChannelSynthesizer(CHANNELS, FINGERS, sampleRateInHz, sampleLibrary);
 
     // Load the presets from a file.

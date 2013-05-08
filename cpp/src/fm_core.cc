@@ -18,10 +18,6 @@
 #include <iostream>
 #endif
 
-#ifdef __ANDROID_API__
-#include <cpu-features.h>
-#endif
-
 #include "synth.h"
 #include "fm_op_kernel.h"
 #include "fm_core.h"

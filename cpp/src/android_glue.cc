@@ -89,13 +89,16 @@ extern "C" void BqPlayerCallback(SLAndroidSimpleBufferQueueItf queueItf,
   double start_time = ts_to_double(&tp);
   int16_t *buf_ptr = buffer + buffer_size * cur_buffer;
   synth_unit->GetSamples(buffer_size, buf_ptr);
+  char buf[64];
+  //uint8_t *mem = new uint8_t[1024];
+  //delete[] mem;
+  //sprintf(buf, "%.6f", start_time);
   clock_gettime(CLOCK_MONOTONIC, &tp);
   double end_time = ts_to_double(&tp);
   SLresult result = (*queueItf)->Enqueue(bq_player_buffer_queue,
     buf_ptr, buffer_size * 2);
   assert(SL_RESULT_SUCCESS == result);
   cur_buffer = (cur_buffer + 1) % N_BUFFERS;
-  char buf[64];
   size_t i = 0;
   buf[i++] = 't';
   buf[i++] = 's';

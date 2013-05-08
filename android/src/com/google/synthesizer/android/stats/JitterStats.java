@@ -35,10 +35,27 @@ public class JitterStats {
     return "max cb = " + Double.toString(maxCbTime * 1000) + "ms";
   }
 
+  public void setNominalCb(double nominalCb) {
+    nominalCbPeriod_ = nominalCb;
+  }
+
+  public String reportLong() {
+    StringBuilder sb = new StringBuilder();
+    double startTime = startTime_[bufIx_];
+    for (int i = 0; i < N_STATS; i++) {
+      double nominalStart = startTime + nominalCbPeriod_ * i;
+      double thisStart = startTime_[(bufIx_ + i) % N_STATS] - nominalStart;
+      double thisEnd = endTime_[(bufIx_ + i) % N_STATS] - nominalStart;
+      sb.append(thisStart + " " + thisEnd + "\n");
+    }
+    return sb.toString();
+  }
+
   static final int N_STATS = 2000;
   double meanCbTime_;
   double startTime_[];
   double endTime_[];
+  double nominalCbPeriod_;
   int bufIx_ = 0;
 
 }
