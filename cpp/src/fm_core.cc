@@ -109,6 +109,7 @@ void FmCore::dump() {
 
 void FmCore::compute(int32_t *output, FmOpParams *params, int algorithm,
                      int32_t *fb_buf, int feedback_shift) {
+  const int kLevelThresh = 1120;
   const FmAlgorithm alg = algorithms[algorithm];
   bool has_contents[3] = { true, false, false };
   for (int op = 0; op < 6; op++) {
@@ -120,7 +121,7 @@ void FmCore::compute(int32_t *output, FmOpParams *params, int algorithm,
     int32_t *outptr = (outbus == 0) ? output : buf_[outbus - 1].get();
     int32_t gain1 = param.gain[0];
     int32_t gain2 = param.gain[1];
-    if (gain1 != 0 || gain2 != 0) {
+    if (gain1 >= kLevelThresh || gain2 >= kLevelThresh) {
       if (!has_contents[outbus]) {
         add = false;
       }

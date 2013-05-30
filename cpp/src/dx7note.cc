@@ -50,11 +50,13 @@ int32_t osc_freq(int midinote, int mode, int coarse, int fine, int detune) {
       // (1 << 24) / log(2)
       logfreq += (int32_t)floor(24204406.323123 * log(1 + 0.01 * fine) + 0.5);
     }
-    // TODO: detune
+    // This was measured at 7.213Hz per count at 9600Hz, but the exact
+    // value is somewhat dependent on midinote. Close enough for now.
+    logfreq += 12606 * (detune - 7);
   } else {
     // ((1 << 24) * log(10) / log(2) * .01) << 3
-     logfreq = (4458616 * ((coarse & 3) * 100 + fine)) >> 3;
-    // TODO: detune
+    logfreq = (4458616 * ((coarse & 3) * 100 + fine)) >> 3;
+    logfreq += detune > 7 ? 13457 * (detune - 7) : 0;
   }
   int32_t base_freq = Freqlut::lookup(logfreq);
   return base_freq;
@@ -122,8 +124,7 @@ int ScaleLevel(int midinote, int break_pt, int left_depth, int right_depth,
   }
 }
 
-// Considering making this an init method...
-Dx7Note::Dx7Note(const char bulk[128], int midinote, int velocity) {
+void Dx7Note::init(const char bulk[128], int midinote, int velocity) {
   char patch[156];
   UnpackPatch(bulk, patch);  // TODO: move this out, take unpacked patch
   for (int op = 0; op < 6; op++) {
@@ -135,6 +136,7 @@ Dx7Note::Dx7Note(const char bulk[128], int midinote, int velocity) {
       levels[i] = patch[off + 4 + i];
     }
     int outlevel = patch[off + 16];
+    outlevel = Env::scaleoutlevel(outlevel);
 #ifdef VERBOSE
     for (int j = 8; j < 12; j++) {
       cout << (int)patch[off + j] << " ";
@@ -143,7 +145,7 @@ Dx7Note::Dx7Note(const char bulk[128], int midinote, int velocity) {
     int level_scaling = ScaleLevel(midinote, patch[off + 8], patch[off + 9],
         patch[off + 10], patch[off + 11], patch[off + 12]);
     outlevel += level_scaling;
-    outlevel = min(99, outlevel);
+    outlevel = min(127, outlevel);
 #ifdef VERBOSE
     cout << op << ": " << level_scaling << " " << outlevel << endl;
 #endif

@@ -73,16 +73,19 @@ void Env::setparam(int param, int value) {
 }
 
 const int levellut[] = {
-  0, 2, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
+  0, 5, 9, 13, 17, 20, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 42, 43, 45, 46
 };
+
+int Env::scaleoutlevel(int outlevel) {
+  return outlevel >= 20 ? 28 + outlevel : levellut[outlevel];
+}
 
 void Env::advance(int newix) {
   ix_ = newix;
   if (ix_ < 4) {
     int newlevel = levels_[ix_];
-    int actuallevel = newlevel >= 19 ?
-      14 + (newlevel >> 1) : levellut[newlevel];
-    actuallevel = (actuallevel << 6) + outlevel_ - 3360;
+    int actuallevel = scaleoutlevel(newlevel) >> 1;
+    actuallevel = (actuallevel << 6) + outlevel_ - 4256;
     actuallevel = actuallevel < 16 ? 16 : actuallevel;
     // level here is same as Java impl
     targetlevel_ = actuallevel << 16;

@@ -22,6 +22,7 @@ struct ActiveNote {
   int midi_note;
   bool keydown;
   bool sustained;
+  bool live;
   Dx7Note *dx7_note;
 };
 

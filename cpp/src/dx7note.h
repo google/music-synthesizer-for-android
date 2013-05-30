@@ -31,7 +31,7 @@ class Dx7Note {
   // Interesting question: should the setup be in the constructor, or should
   // there be an init method? The latter would make it easier to use a fixed
   // pool of note objects.
-  Dx7Note(const char patch[128], int midinote, int velocity);
+  void init(const char patch[128], int midinote, int velocity);
 
   // Note: this _adds_ to the buffer. Interesting question whether it's
   // worth it...

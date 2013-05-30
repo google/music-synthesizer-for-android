@@ -44,9 +44,10 @@ char epiano[] = {
 SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   ring_buffer_ = ring_buffer;
   for (int note = 0; note < max_active_notes; ++note) {
-    active_note_[note].dx7_note = NULL;
+    active_note_[note].dx7_note = new Dx7Note;
     active_note_[note].keydown = false;
     active_note_[note].sustained = false;
+    active_note_[note].live = false;
   }
   input_buffer_index_ = 0;
   memcpy(patch_data_, epiano, sizeof(epiano));
@@ -117,13 +118,13 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       // note on
       int note_ix = AllocateNote();
       if (note_ix >= 0) {
-        delete active_note_[note_ix].dx7_note;
         active_note_[note_ix].midi_note = buf[1];
         active_note_[note_ix].keydown = true;
         active_note_[note_ix].sustained = sustain_;
+        active_note_[note_ix].live = true;
         const uint8_t *patch = patch_data_ + 128 * current_patch_;
-        active_note_[note_ix].dx7_note =
-          new Dx7Note((const char *)patch, buf[1], buf[2]);
+        active_note_[note_ix].dx7_note->init(
+          (const char *)patch, buf[1], buf[2]);
       }
       return 3;
     }
@@ -218,7 +219,7 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
       audiobuf.get()[j] = 0;
     }
     for (int note = 0; note < max_active_notes; ++note) {
-      if (active_note_[note].dx7_note != NULL) {
+      if (active_note_[note].live) {
         active_note_[note].dx7_note->compute(audiobuf.get());
       }
     }
