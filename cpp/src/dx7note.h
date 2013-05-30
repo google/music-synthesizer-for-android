@@ -24,6 +24,7 @@
 // and real-time control of parameters live here.
 
 #include "env.h"
+#include "pitchenv.h"
 #include "fm_core.h"
 
 class Dx7Note {
@@ -50,6 +51,8 @@ class Dx7Note {
   FmCore core_;
   Env env_[6];
   FmOpParams params_[6];
+  PitchEnv pitchenv_;
+  int32_t basepitch_[6];
   int32_t fb_buf_[2];
   int32_t fb_shift_;
 

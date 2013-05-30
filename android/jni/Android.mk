@@ -11,6 +11,7 @@ LOCAL_SRC_FILES := android_glue.cc \
                    fm_op_kernel.cc \
                    freqlut.cc \
                    patch.cc \
+                   pitchenv.cc \
                    resofilter.cc \
                    ringbuffer.cc \
                    sawtooth.cc \

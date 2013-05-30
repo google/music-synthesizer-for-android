@@ -58,8 +58,7 @@ int32_t osc_freq(int midinote, int mode, int coarse, int fine, int detune) {
     logfreq = (4458616 * ((coarse & 3) * 100 + fine)) >> 3;
     logfreq += detune > 7 ? 13457 * (detune - 7) : 0;
   }
-  int32_t base_freq = Freqlut::lookup(logfreq);
-  return base_freq;
+  return logfreq;
 }
 
 const uint8_t velocity_data[64] = {
@@ -127,10 +126,10 @@ int ScaleLevel(int midinote, int break_pt, int left_depth, int right_depth,
 void Dx7Note::init(const char bulk[128], int midinote, int velocity) {
   char patch[156];
   UnpackPatch(bulk, patch);  // TODO: move this out, take unpacked patch
+  int rates[4];
+  int levels[4];
   for (int op = 0; op < 6; op++) {
     int off = op * 21;
-    int rates[4];
-    int levels[4];
     for (int i = 0; i < 4; i++) {
       rates[i] = patch[off + i];
       levels[i] = patch[off + 4 + i];
@@ -160,22 +159,30 @@ void Dx7Note::init(const char bulk[128], int midinote, int velocity) {
     int fine = patch[off + 19];
     int detune = patch[off + 20];
     int32_t freq = osc_freq(midinote, mode, coarse, fine, detune);
-    params_[op].freq = freq;
+    basepitch_[op] = freq;
     // cout << op << " freq: " << freq << endl;
     params_[op].phase = 0;
     params_[op].gain[1] = 0;
   }
+  for (int i = 0; i < 4; i++) {
+    rates[i] = patch[126 + i];
+    levels[i] = patch[130 + i];
+  }
+  pitchenv_.init(rates, levels);
   algorithm_ = patch[134];
   int feedback = patch[135];
   fb_shift_ = feedback != 0 ? 8 - feedback : 16;
 }
 
 void Dx7Note::compute(int32_t *buf) {
+  int32_t pitchenvlevel = pitchenv_.getsample();
   for (int op = 0; op < 6; op++) {
     params_[op].gain[0] = params_[op].gain[1];
     int32_t level = env_[op].getsample();
     int32_t gain = Exp2::lookup(level - (14 * (1 << 24)));
     //int32_t gain = pow(2, 10 + level * (1.0 / (1 << 24)));
+    // TODO: probably don't apply pitch env to fixed freq
+    params_[op].freq = Freqlut::lookup(basepitch_[op] + pitchenvlevel);
     params_[op].gain[1] = gain;
   }
   core_.compute(buf, params_, algorithm_, fb_buf_, fb_shift_);
@@ -184,6 +191,7 @@ void Dx7Note::compute(int32_t *buf) {
 void Dx7Note::keyup() {
   for (int op = 0; op < 6; op++) {
     env_[op].keydown(false);
+    pitchenv_.keydown(false);
   }
 }
 

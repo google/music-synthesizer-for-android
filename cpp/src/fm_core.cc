@@ -143,6 +143,8 @@ void FmCore::compute(int32_t *output, FmOpParams *params, int algorithm,
                             param.phase, param.freq, gain1, gain2, add);
       }
       has_contents[outbus] = true;
+    } else if (!add) {
+      has_contents[outbus] = false;
     }
     param.phase += param.freq << LG_N;
   }

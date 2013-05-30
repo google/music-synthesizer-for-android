@@ -12,6 +12,7 @@
         'freqlut.cc',
         'lfo.cc',
         'patch.cc',
+        'pitchenv.cc',
         'resofilter.cc',
         'ringbuffer.cc',
         'sawtooth.cc',
