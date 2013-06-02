@@ -15,6 +15,7 @@
  */
 
 #include "dx7note.h"
+#include "lfo.h"
 #include "ringbuffer.h"
 #include "resofilter.h"
 
@@ -28,6 +29,8 @@ struct ActiveNote {
 
 class SynthUnit {
  public:
+  static void Init(double sample_rate);
+
   explicit SynthUnit(RingBuffer *ring_buffer);
 
   void GetSamples(int n_samples, int16_t *buffer);
@@ -40,6 +43,9 @@ class SynthUnit {
   // none available.
   int AllocateNote();
 
+  // zero-based
+  void ProgramChange(int p);
+
   int ProcessMidiMessage(const uint8_t *buf, int buf_size);
 
   RingBuffer *ring_buffer_;
@@ -51,6 +57,11 @@ class SynthUnit {
 
   uint8_t patch_data_[4096];
   int current_patch_;
+
+  char unpacked_patch_[156];
+
+  // The original DX7 had one single LFO. Later units had an LFO per note.
+  Lfo lfo_;
 
   ResoFilter filter_;
   int32_t filter_control_[2];

@@ -21,6 +21,8 @@
 #include "sin.h"
 #include "lfo.h"
 
+uint32_t Lfo::unit_;
+
 void Lfo::init(double sample_rate) {
   // constant is 1 << 32 / 15.5s / 11
   Lfo::unit_ = (int32_t)(N * 25190424 / sample_rate + 0.5);
@@ -31,6 +33,17 @@ void Lfo::reset(const char params[6]) {
   int sr = rate == 0 ? 1 : (165 * rate) >> 6;
   sr *= sr < 160 ? 11 : (11 + ((sr - 160) >> 4));
   delta_ = unit_ * sr;
+  int a = 99 - params[1];  // LFO delay
+  if (a == 99) {
+    delayinc_ = ~0u;
+    delayinc2_ = ~0u;
+  } else {
+  a = (16 + (a & 15)) << (1 + (a >> 4));
+    delayinc_ = unit_ * a;
+    a &= 0xff80;
+    a = max(0x80, a);
+    delayinc2_ = unit_ * a;
+  }
   waveform_ = params[5];
   sync_ = params[4] != 0;
 }
@@ -62,8 +75,23 @@ int32_t Lfo::getsample() {
   return 1 << 23;
 }
 
+int32_t Lfo::getdelay() {
+  uint32_t delta = delaystate_ < (1U << 31) ? delayinc_ : delayinc2_;
+  uint32_t d = delaystate_ + delta;
+  if (d < delayinc_) {
+    return 1 << 24;
+  }
+  delaystate_ = d;
+  if (d < (1U << 31)) {
+    return 0;
+  } else {
+    return (d >> 7) & ((1 << 24) - 1);
+  }
+}
+
 void Lfo::keydown() {
   if (sync_) {
     phase_ = (1U << 31) - 1;
   }
+  delaystate_ = 0;
 }

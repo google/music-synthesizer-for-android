@@ -123,9 +123,11 @@ int ScaleLevel(int midinote, int break_pt, int left_depth, int right_depth,
   }
 }
 
-void Dx7Note::init(const char bulk[128], int midinote, int velocity) {
-  char patch[156];
-  UnpackPatch(bulk, patch);  // TODO: move this out, take unpacked patch
+static const uint8_t pitchmodsenstab[] = {
+  0, 10, 20, 33, 55, 92, 153, 255
+};
+
+void Dx7Note::init(const char patch[156], int midinote, int velocity) {
   int rates[4];
   int levels[4];
   for (int op = 0; op < 6; op++) {
@@ -172,17 +174,24 @@ void Dx7Note::init(const char bulk[128], int midinote, int velocity) {
   algorithm_ = patch[134];
   int feedback = patch[135];
   fb_shift_ = feedback != 0 ? 8 - feedback : 16;
+  pitchmoddepth_ = (patch[139] * 165) >> 6;
+  pitchmodsens_ = pitchmodsenstab[patch[143] & 7];
 }
 
-void Dx7Note::compute(int32_t *buf) {
-  int32_t pitchenvlevel = pitchenv_.getsample();
+void Dx7Note::compute(int32_t *buf, int32_t lfo_val, int32_t lfo_delay) {
+  int32_t pitchmod = pitchenv_.getsample();
+  uint32_t pmd = pitchmoddepth_ * lfo_delay;  // Q32
+  // TODO: add modulation sources (mod wheel, etc)
+  int32_t senslfo = pitchmodsens_ * (lfo_val - (1 << 23));
+  pitchmod += (((int64_t)pmd) * (int64_t)senslfo) >> 39;
+  // TODO: add pitch bend
   for (int op = 0; op < 6; op++) {
     params_[op].gain[0] = params_[op].gain[1];
     int32_t level = env_[op].getsample();
     int32_t gain = Exp2::lookup(level - (14 * (1 << 24)));
     //int32_t gain = pow(2, 10 + level * (1.0 / (1 << 24)));
     // TODO: probably don't apply pitch env to fixed freq
-    params_[op].freq = Freqlut::lookup(basepitch_[op] + pitchenvlevel);
+    params_[op].freq = Freqlut::lookup(basepitch_[op] + pitchmod);
     params_[op].gain[1] = gain;
   }
   core_.compute(buf, params_, algorithm_, fb_buf_, fb_shift_);

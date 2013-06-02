@@ -26,6 +26,10 @@
 #include <string.h>
 
 #include "synth.h"
+#include "freqlut.h"
+#include "sin.h"
+#include "exp2.h"
+#include "patch.h"
 #include "synth_unit.h"
 #include "aligned_buf.h"
 
@@ -40,6 +44,13 @@ char epiano[] = {
   94, 67, 95, 60, 50, 50, 50, 50, 4, 6, 34, 33, 0, 0, 56, 24,
   69, 46, 80, 73, 65, 78, 79, 32, 49, 32
 };
+
+void SynthUnit::Init(double sample_rate) {
+  Freqlut::init(sample_rate);
+  Exp2::init();
+  Sin::init();
+  Lfo::init(sample_rate);
+}
 
 SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   ring_buffer_ = ring_buffer;
@@ -93,6 +104,13 @@ int SynthUnit::AllocateNote() {
   return -1;
 }
 
+void SynthUnit::ProgramChange(int p) {
+  current_patch_ = p;
+  const uint8_t *patch = patch_data_ + 128 * current_patch_;
+  UnpackPatch((const char *)patch, unpacked_patch_);
+  lfo_.reset(unpacked_patch_ + 137);
+}
+
 int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
   uint8_t cmd = buf[0];
   uint8_t cmd_type = cmd & 0xf0;
@@ -118,13 +136,12 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       // note on
       int note_ix = AllocateNote();
       if (note_ix >= 0) {
+        lfo_.keydown();  // TODO: should only do this if # keys down was 0
         active_note_[note_ix].midi_note = buf[1];
         active_note_[note_ix].keydown = true;
         active_note_[note_ix].sustained = sustain_;
         active_note_[note_ix].live = true;
-        const uint8_t *patch = patch_data_ + 128 * current_patch_;
-        active_note_[note_ix].dx7_note->init(
-          (const char *)patch, buf[1], buf[2]);
+        active_note_[note_ix].dx7_note->init(unpacked_patch_, buf[1], buf[2]);
       }
       return 3;
     }
@@ -154,9 +171,9 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
     if (buf_size >= 2) {
       // program change
       int program_number = buf[1];
-      current_patch_ = min(program_number, 31);
+      ProgramChange(min(program_number, 31));
       char name[11];
-      memcpy(name, patch_data_ + 128 * current_patch_ + 118, 10);
+      memcpy(name, unpacked_patch_ + 145, 10);
       name[10] = 0;
 #ifdef VERBOSE
       std::cout << "Loaded patch " << current_patch_ << ": " << name << "\r";
@@ -172,6 +189,7 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       if (buf_size >= 4104) {
         // TODO: check checksum?
         memcpy(patch_data_, buf + 6, 4096);
+        ProgramChange(current_patch_);
         return 4104;
       }
       return 0;
@@ -218,9 +236,11 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
     for (int j = 0; j < N; ++j) {
       audiobuf.get()[j] = 0;
     }
+    int32_t lfovalue = lfo_.getsample();
+    int32_t lfodelay = lfo_.getdelay();
     for (int note = 0; note < max_active_notes; ++note) {
       if (active_note_[note].live) {
-        active_note_[note].dx7_note->compute(audiobuf.get());
+        active_note_[note].dx7_note->compute(audiobuf.get(), lfovalue, lfodelay);
       }
     }
     const int32_t *bufs[] = { audiobuf.get() };

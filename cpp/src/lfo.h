@@ -24,6 +24,9 @@ class Lfo {
   // result is 0..1 in Q24
   int32_t getsample();
 
+  // result is 0..1 in Q24
+  int32_t getdelay();
+
   void keydown();
  private:
   static uint32_t unit_;
@@ -33,4 +36,8 @@ class Lfo {
   uint8_t waveform_;
   uint8_t randstate_;
   bool sync_;
+
+  uint32_t delaystate_;
+  uint32_t delayinc_;
+  uint32_t delayinc2_;
 };

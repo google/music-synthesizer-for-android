@@ -26,9 +26,6 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "synth", __VA_ARGS__)
 
 #include "synth.h"
-#include "freqlut.h"
-#include "exp2.h"
-#include "sin.h"
 #include "synth_unit.h"
 
 RingBuffer *ring_buffer;
@@ -171,9 +168,7 @@ Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
   assert(SL_RESULT_SUCCESS == result);
 
   buffer_size = buf_size;
-  Freqlut::init(sample_rate);
-  Exp2::init();
-  Sin::init();
+  SynthUnit::Init(sample_rate);
   ring_buffer = new RingBuffer();
   stats_ring_buffer = new RingBuffer();
   synth_unit = new SynthUnit(ring_buffer);
