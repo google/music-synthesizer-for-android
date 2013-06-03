@@ -29,6 +29,7 @@
 #include "freqlut.h"
 #include "sin.h"
 #include "exp2.h"
+#include "pitchenv.h"
 #include "patch.h"
 #include "synth_unit.h"
 #include "aligned_buf.h"
@@ -50,6 +51,7 @@ void SynthUnit::Init(double sample_rate) {
   Exp2::init();
   Sin::init();
   Lfo::init(sample_rate);
+  PitchEnv::init(sample_rate);
 }
 
 SynthUnit::SynthUnit(RingBuffer *ring_buffer) {

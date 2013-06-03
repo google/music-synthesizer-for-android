@@ -19,7 +19,13 @@
 
 using namespace std;
 
-void PitchEnv::init(const int r[4], const int l[4]) {
+int PitchEnv::unit_;
+
+void PitchEnv::init(double sample_rate) {
+  unit_ = N * (1 << 24) / (21.3 * sample_rate) + 0.5;
+}
+
+void PitchEnv::set(const int r[4], const int l[4]) {
   for (int i = 0; i < 4; i++) {
     rates_[i] = r[i];
     levels_[i] = l[i];
@@ -81,9 +87,7 @@ void PitchEnv::advance(int newix) {
     targetlevel_ = pitchtab[newlevel] << 19;
     rising_ = (targetlevel_ > level_);
 
-    // TODO: adapt to sample rate
-    // const is 1<<12 / 0.0104 * 44100
-    inc_ = ratetab[rates_[ix_]] * (8 * N);
+    inc_ = ratetab[rates_[ix_]] * unit_;
   }
 }
 

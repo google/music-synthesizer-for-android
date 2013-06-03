@@ -170,7 +170,7 @@ void Dx7Note::init(const char patch[156], int midinote, int velocity) {
     rates[i] = patch[126 + i];
     levels[i] = patch[130 + i];
   }
-  pitchenv_.init(rates, levels);
+  pitchenv_.set(rates, levels);
   algorithm_ = patch[134];
   int feedback = patch[135];
   fb_shift_ = feedback != 0 ? 8 - feedback : 16;
@@ -190,7 +190,6 @@ void Dx7Note::compute(int32_t *buf, int32_t lfo_val, int32_t lfo_delay) {
     int32_t level = env_[op].getsample();
     int32_t gain = Exp2::lookup(level - (14 * (1 << 24)));
     //int32_t gain = pow(2, 10 + level * (1.0 / (1 << 24)));
-    // TODO: probably don't apply pitch env to fixed freq
     params_[op].freq = Freqlut::lookup(basepitch_[op] + pitchmod);
     params_[op].gain[1] = gain;
   }
