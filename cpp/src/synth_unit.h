@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "controllers.h"
 #include "dx7note.h"
 #include "lfo.h"
 #include "ringbuffer.h"
@@ -46,6 +47,8 @@ class SynthUnit {
   // zero-based
   void ProgramChange(int p);
 
+  void SetController(int controller, int value);
+
   int ProcessMidiMessage(const uint8_t *buf, int buf_size);
 
   RingBuffer *ring_buffer_;
@@ -62,6 +65,9 @@ class SynthUnit {
 
   // The original DX7 had one single LFO. Later units had an LFO per note.
   Lfo lfo_;
+
+  // in MIDI units (0x4000 is neutral)
+  Controllers controllers_;
 
   ResoFilter filter_;
   int32_t filter_control_[2];

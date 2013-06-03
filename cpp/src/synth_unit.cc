@@ -64,10 +64,11 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   }
   input_buffer_index_ = 0;
   memcpy(patch_data_, epiano, sizeof(epiano));
-  current_patch_ = 0;
+  ProgramChange(0);
   current_note_ = 0;
   filter_control_[0] = 258847126;
   filter_control_[1] = 0;
+  controllers_.values_[kControllerPitch] = 0x2000;
   sustain_ = false;
   extra_buf_size_ = 0;
 }
@@ -113,6 +114,10 @@ void SynthUnit::ProgramChange(int p) {
   lfo_.reset(unpacked_patch_ + 137);
 }
 
+void SynthUnit::SetController(int controller, int value) {
+  controllers_.values_[controller] = value;
+}
+
 int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
   uint8_t cmd = buf[0];
   uint8_t cmd_type = cmd & 0xf0;
@@ -150,6 +155,8 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
     return 0;
   } else if (cmd_type == 0xb0) {
     if (buf_size >= 3) {
+      // controller
+      // TODO: move more logic into SetController
       int controller = buf[1];
       int value = buf[2];
       if (controller == 1) {
@@ -184,6 +191,10 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       return 2;
     }
     return 0;
+  } else if (cmd == 0xe0) {
+    // pitch bend
+    SetController(kControllerPitch, buf[1] | (buf[2] << 7));
+    return 3;
   } else if (cmd == 0xf0) {
     // sysex
     if (buf_size >= 6 && buf[1] == 0x43 && buf[2] == 0x00 && buf[3] == 0x09 &&
@@ -242,7 +253,8 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
     int32_t lfodelay = lfo_.getdelay();
     for (int note = 0; note < max_active_notes; ++note) {
       if (active_note_[note].live) {
-        active_note_[note].dx7_note->compute(audiobuf.get(), lfovalue, lfodelay);
+        active_note_[note].dx7_note->compute(audiobuf.get(), lfovalue, lfodelay,
+          &controllers_);
       }
     }
     const int32_t *bufs[] = { audiobuf.get() };

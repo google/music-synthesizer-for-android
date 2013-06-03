@@ -22,6 +22,7 @@
 #include "freqlut.h"
 #include "patch.h"
 #include "exp2.h"
+#include "controllers.h"
 #include "dx7note.h"
 
 using namespace std;
@@ -178,13 +179,18 @@ void Dx7Note::init(const char patch[156], int midinote, int velocity) {
   pitchmodsens_ = pitchmodsenstab[patch[143] & 7];
 }
 
-void Dx7Note::compute(int32_t *buf, int32_t lfo_val, int32_t lfo_delay) {
+void Dx7Note::compute(int32_t *buf, int32_t lfo_val, int32_t lfo_delay,
+  const Controllers *ctrls) {
   int32_t pitchmod = pitchenv_.getsample();
   uint32_t pmd = pitchmoddepth_ * lfo_delay;  // Q32
   // TODO: add modulation sources (mod wheel, etc)
   int32_t senslfo = pitchmodsens_ * (lfo_val - (1 << 23));
   pitchmod += (((int64_t)pmd) * (int64_t)senslfo) >> 39;
-  // TODO: add pitch bend
+
+  // hardcodes a pitchbend range of 3 semitones, TODO make configurable
+  int pitchbend = ctrls->values_[kControllerPitch];
+  int32_t pb = (pitchbend - 0x2000) << 9;
+  pitchmod += pb;
   for (int op = 0; op < 6; op++) {
     params_[op].gain[0] = params_[op].gain[1];
     int32_t level = env_[op].getsample();
