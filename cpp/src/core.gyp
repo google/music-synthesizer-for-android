@@ -11,6 +11,7 @@
         'fm_op_kernel.cc',
         'freqlut.cc',
         'lfo.cc',
+        'log2.cc',
         'patch.cc',
         'pitchenv.cc',
         'resofilter.cc',

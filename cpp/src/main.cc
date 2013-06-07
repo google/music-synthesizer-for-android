@@ -25,10 +25,13 @@
 #include "sawtooth.h"
 #include "sin.h"
 #include "exp2.h"
+#include "log2.h"
 #include "resofilter.h"
 #include "fm_core.h"
 #include "fm_op_kernel.h"
 #include "env.h"
+#include "patch.h"
+#include "controllers.h"
 #include "dx7note.h"
 
 using namespace std;
@@ -60,7 +63,22 @@ void test_sin_accuracy() {
     double err = fabs(y - yd);
     if (err > maxerr) maxerr = err;
   }
-  cout << "Max error: " << maxerr;
+  cout << "Max error: " << maxerr << endl;
+}
+
+void test_log_accuracy() {
+  double maxerr = 0;
+  for (int i = 0; i < 1000000; i++) {
+    uint32_t x = rand();
+    int32_t y = Log2::lookup(x);
+    double yd = (1 << 24) * log(x * (1.0 / (1 << 24))) / log(2);
+    double err = fabs(y - yd);
+    if (err > maxerr) {
+      maxerr = err;
+      cout << "x = " << x << ", y = " << y << ", yd = " << (int)yd << endl;
+    }
+  }
+  cout << "Max error: " << maxerr << endl;
 }
 
 void test_pure_accuracy() {
@@ -197,7 +215,12 @@ void mkdx7note(double sample_rate) {
   const int n_samples = 400 * 1024;
   WavOut w("/tmp/foo.wav", sample_rate, n_samples);
 
-  Dx7Note note(epiano, 57, 64);
+  Dx7Note note;
+  char unpacked_patch[156];
+  UnpackPatch(epiano, unpacked_patch);
+  note.init(unpacked_patch, 57, 64);
+  Controllers controllers;
+  controllers.values_[kControllerPitch] = 0x2000;
   int32_t buf[N];
 
   for (int i = 0; i < n_samples; i += N) {
@@ -207,7 +230,7 @@ void mkdx7note(double sample_rate) {
     if (i == n_samples / 2) {
       note.keyup();
     }
-     note.compute(buf);
+     note.compute(buf, 0, 0, &controllers);
     for (int j = 0; j < N; j++) {
       buf[j] >>= 2;
     }
@@ -236,17 +259,19 @@ int main(int argc, char **argv) {
   Sawtooth::init(sample_rate);
   Sin::init();
   Exp2::init();
+  Log2::init();
 
   //FmCore::dump();
   //test_sin_accuracy();
+  test_log_accuracy();
   //benchmark_fm_op();
   //test_pure_accuracy();
   //benchmark_sin();
   //int32_t freq = atoi(argv[1]);
   //cout << "Logfreq(" << freq << ") = " << Freqlut::lookup(freq) << endl;
 
-  //mkdx7note(sample_rate);
-  mksaw(sample_rate);
+  mkdx7note(sample_rate);
+  //mksaw(sample_rate);
   //test_ringbuffer();
   test_exp2();
   return 0;
