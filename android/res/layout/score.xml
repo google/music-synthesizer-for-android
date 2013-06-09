@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    xmlns:app="http://schemas.android.com/apk/res/com.levien.synthesizer"
     android:id="@+id/TableLayout01"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -12,14 +12,14 @@
         android:layout_height="fill_parent"
         android:layout_span="6"
         android:orientation="vertical">
-      <com.google.synthesizer.android.widgets.score.ScoreView
+      <com.levien.synthesizer.android.widgets.score.ScoreView
           android:id="@+id/score"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"
           android:layout_weight="1"
           app:octaves="2"
           app:first_octave="4" />
-      <com.google.synthesizer.android.widgets.score.ScoreViewToolbar
+      <com.levien.synthesizer.android.widgets.score.ScoreViewToolbar
           android:id="@+id/toolbar"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"

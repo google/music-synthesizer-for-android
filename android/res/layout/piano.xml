@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    xmlns:app="http://schemas.android.com/apk/res/com.levien.synthesizer"
     android:id="@+id/TableLayout01"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -34,7 +34,7 @@
         android:gravity="center_horizontal" />
   </TableRow>
   <TableRow>
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/volumeKnob"
         app:value="0.0"
         app:min="0"
@@ -51,7 +51,7 @@
         android:layout_height="fill_parent"
         android:layout_span="6"
         android:orientation="vertical">
-      <com.google.synthesizer.android.widgets.piano.PianoView
+      <com.levien.synthesizer.android.widgets.piano.PianoView
           android:id="@+id/piano"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"

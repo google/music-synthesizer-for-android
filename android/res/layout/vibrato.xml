@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    xmlns:app="http://schemas.android.com/apk/res/com.levien.synthesizer"
     android:id="@+id/TableLayout01"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -34,34 +34,34 @@
         android:gravity="center_horizontal" />
   </TableRow>
   <TableRow>
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/rateKnob"
         app:value="0.0"
         app:min="0"
         app:max="10"
         android:layout_margin="2px" />
-    <com.google.synthesizer.android.widgets.knob.KnobPlaceholderView
+    <com.levien.synthesizer.android.widgets.knob.KnobPlaceholderView
         android:id="@+id/depthKnob"
         android:layout_margin="2px" />
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/attackKnob"
         app:value="0.0"
         app:min="0"
         app:max="5"
         android:layout_margin="2px" />
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/decayKnob"
         app:value="0.0"
         app:min="0"
         app:max="5"
         android:layout_margin="2px" />
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/sustainKnob"
         app:value="1.0"
         app:min="0"
         app:max="1"
         android:layout_margin="2px" />
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/releaseKnob"
         app:value="0.0"
         app:min="0"
@@ -73,12 +73,12 @@
         android:layout_height="fill_parent"
         android:layout_span="6"
         android:orientation="vertical">
-      <com.google.synthesizer.android.widgets.waveform.WaveformRowView
+      <com.levien.synthesizer.android.widgets.waveform.WaveformRowView
           android:id="@+id/waveform"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"
           android:layout_weight="1"/>
-      <com.google.synthesizer.android.widgets.piano.PianoView
+      <com.levien.synthesizer.android.widgets.piano.PianoView
           android:id="@+id/piano"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"

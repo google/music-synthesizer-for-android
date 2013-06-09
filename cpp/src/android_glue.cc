@@ -133,7 +133,7 @@ SLresult result;
   }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
+Java_com_levien_synthesizer_android_AndroidGlue_start(JNIEnv *env,
     jobject thiz, jint sample_rate, jint buf_size) {
   CreateEngine();
   SLDataLocator_AndroidSimpleBufferQueue loc_bufq =
@@ -182,7 +182,7 @@ Java_com_google_synthesizer_android_AndroidGlue_start(JNIEnv *env,
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_shutdown(JNIEnv *env,
+Java_com_levien_synthesizer_android_AndroidGlue_shutdown(JNIEnv *env,
     jobject thiz) {
   LOGI("shutting down engine");
   if (bqPlayerObject != NULL) {
@@ -209,7 +209,7 @@ Java_com_google_synthesizer_android_AndroidGlue_shutdown(JNIEnv *env,
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_sendMidi(JNIEnv *env,
+Java_com_levien_synthesizer_android_AndroidGlue_sendMidi(JNIEnv *env,
     jobject thiz, jbyteArray jb) {
   uint8_t *data = (uint8_t *)env->GetByteArrayElements(jb, NULL);
   if (data != NULL) {
@@ -219,7 +219,7 @@ Java_com_google_synthesizer_android_AndroidGlue_sendMidi(JNIEnv *env,
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_setPlayState(JNIEnv *env,
+Java_com_levien_synthesizer_android_AndroidGlue_setPlayState(JNIEnv *env,
     jobject thiz, jboolean isPlaying) {
   SLresult result = (*bq_player_play)->SetPlayState(bq_player_play,
       isPlaying ? SL_PLAYSTATE_PLAYING : SL_PLAYSTATE_PAUSED);
@@ -227,13 +227,13 @@ Java_com_google_synthesizer_android_AndroidGlue_setPlayState(JNIEnv *env,
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_statsBytesAvailable(
+Java_com_levien_synthesizer_android_AndroidGlue_statsBytesAvailable(
     JNIEnv *env, jobject thiz) {
   return stats_ring_buffer->BytesAvailable();
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_google_synthesizer_android_AndroidGlue_readStatsBytes(
+Java_com_levien_synthesizer_android_AndroidGlue_readStatsBytes(
     JNIEnv *env, jobject thiz, jbyteArray jb, jint off, jint len) {
   int bytes_available = stats_ring_buffer->BytesAvailable();
   int n = min(bytes_available, len);

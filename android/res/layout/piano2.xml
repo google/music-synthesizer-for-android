@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.google.synthesizer"
+    xmlns:app="http://schemas.android.com/apk/res/com.levien.synthesizer"
     android:id="@+id/TableLayout01"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -10,10 +10,12 @@
   <TableRow>
     <TextView
         android:text="@string/cutoff"
+        android:width="30sp"
         android:id="@+id/cutoffLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text="@+string/resonance"
+        android:width="30sp"
         android:id="@+id/resonanceLabel"
         android:gravity="center_horizontal" />
     <TextView
@@ -30,13 +32,13 @@
         android:gravity="center_horizontal" />
   </TableRow>
   <TableRow>
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/cutoffKnob"
         app:value="1.0"
         app:min="0"
         app:max="1"
         android:layout_margin="2dp" />
-    <com.google.synthesizer.android.widgets.knob.KnobView
+    <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/resonanceKnob"
         app:value="0.0"
         app:min="0"
@@ -52,10 +54,12 @@
         />
       <TextView
           android:id="@+id/status"
+          android:visibility="invisible"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
       />
       <Button
+          android:visibility="invisible"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:id="@+id/capture"
@@ -74,7 +78,7 @@
         android:layout_height="fill_parent"
         android:layout_span="6"
         android:orientation="vertical">
-      <com.google.synthesizer.android.widgets.piano.PianoView
+      <com.levien.synthesizer.android.widgets.piano.PianoView
           android:id="@+id/piano"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"
