@@ -160,7 +160,7 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
       int controller = buf[1];
       int value = buf[2];
       if (controller == 1) {
-        filter_control_[0] = 129423563 + value * 1019083;
+        filter_control_[0] = 142365917 + value * 917175;
       } else if (controller == 2) {
         filter_control_[1] = value * 528416;
       } else if (controller == 64) {

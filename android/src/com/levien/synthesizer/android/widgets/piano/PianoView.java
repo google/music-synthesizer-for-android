@@ -413,7 +413,7 @@ public class PianoView extends View {
   private PianoViewListener pianoViewListener_;
 
   // The number of simultaneous fingers supported by this control.
-  protected static final int FINGERS = 5;
+  protected static final int FINGERS = 10;
   
   // Whether to use pressure (doesn't work well on all hardware)
   private boolean usePressure_ = false;

@@ -228,7 +228,7 @@ public class PianoActivity2 extends Activity {
   private void tryConnectUsb() {
     UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
     HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
-    TextView label = (TextView)findViewById(R.id.volumeLabel);
+    TextView label = (TextView)findViewById(R.id.status);
     if (!deviceList.isEmpty()) {
       UsbDevice device = deviceList.values().iterator().next();
       //label.setText("ic:" + device.getInterfaceCount());
@@ -240,7 +240,9 @@ public class PianoActivity2 extends Activity {
         //label.setText(endpoint.toString());
         startUsbThread(connection, endpoint);
       } else {
-        label.setText("error opening device");
+        if (label != null) {
+          label.setText("error opening device");
+        }
       }
     }
   }
