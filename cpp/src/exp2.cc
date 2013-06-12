@@ -19,6 +19,8 @@
 #include "synth.h"
 #include "exp2.h"
 
+#include <stdio.h>
+
 int32_t exp2tab[EXP2_N_SAMPLES << 1];
 
 void Exp2::init() {
@@ -34,3 +36,30 @@ void Exp2::init() {
   exp2tab[(EXP2_N_SAMPLES << 1) - 2] = (1U << 31) - exp2tab[(EXP2_N_SAMPLES << 1) - 1];
 }
 
+int32_t tanhtab[TANH_N_SAMPLES << 1];
+
+static double dtanh(double y) {
+  return 1 - y * y;
+}
+
+void Tanh::init() {
+  double step = 4.0 / TANH_N_SAMPLES;
+  double y = 0;
+  for (int i = 0; i < TANH_N_SAMPLES; i++) {
+    tanhtab[(i << 1) + 1] = (1 << 24) * y + 0.5;
+    //printf("%d\n", tanhtab[(i << 1) + 1]);
+    // Use a basic 4th order Runge-Kutte to compute tanh from its
+    // differential equation.
+    double k1 = dtanh(y);
+    double k2 = dtanh(y + 0.5 * step * k1);
+    double k3 = dtanh(y + 0.5 * step * k2);
+    double k4 = dtanh(y + step * k3);
+    double dy = (step / 6) * (k1 + k4 + 2 * (k2 + k3));
+    y += dy;
+  }
+  for (int i = 0; i < TANH_N_SAMPLES - 1; i++) {
+    tanhtab[i << 1] = tanhtab[(i << 1) + 3] - tanhtab[(i << 1) + 1];
+  }
+  int32_t lasty = (1 << 24) * y + 0.5;
+  tanhtab[(TANH_N_SAMPLES << 1) - 2] = lasty - tanhtab[(TANH_N_SAMPLES << 1) - 1];
+}

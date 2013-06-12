@@ -81,6 +81,22 @@ void test_log_accuracy() {
   cout << "Max error: " << maxerr << endl;
 }
 
+void test_tanh_accuracy() {
+  Tanh::init();
+  double maxerr = 0;
+  for (int i = 0; i < 1000000; i++) {
+    int32_t x = (rand() & ((1 << 29) - 1)) - (1 << 28);
+    int32_t y = Tanh::lookup(x);
+    double yd = (1 << 24) * tanh(x * (1.0 / (1 << 24)));
+    double err = fabs(y - yd);
+    if (err > maxerr) {
+      cout << "x = " << x << ", y = " << y << ", yd = " << (int)yd << endl;
+      maxerr = err;
+    }
+  }
+  cout << "Max error: " << maxerr << endl;
+}
+
 void test_pure_accuracy() {
   int32_t worstfreq;
   int32_t worstphase;
@@ -264,6 +280,7 @@ int main(int argc, char **argv) {
   //FmCore::dump();
   //test_sin_accuracy();
   test_log_accuracy();
+  test_tanh_accuracy();
   //benchmark_fm_op();
   //test_pure_accuracy();
   //benchmark_sin();

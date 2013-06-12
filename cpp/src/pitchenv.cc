@@ -17,8 +17,6 @@
 #include "synth.h"
 #include "pitchenv.h"
 
-using namespace std;
-
 int PitchEnv::unit_;
 
 void PitchEnv::init(double sample_rate) {
