@@ -24,6 +24,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -230,6 +231,7 @@ public class PianoView extends View {
   public boolean onTouchEvent(MotionEvent event) {
     int action = event.getAction();
     int actionCode = action & MotionEvent.ACTION_MASK;
+    //Log.i("synth", "actionCode = " + actionCode);
     boolean redraw = false;
     if (actionCode == MotionEvent.ACTION_DOWN) {
       int pointerId = event.getPointerId(0);
@@ -238,6 +240,8 @@ public class PianoView extends View {
         int y = (int)event.getY();
         float pressure = event.getPressure();
         redraw |= onTouchDown(pointerId, x, y, pressure);
+      } else {
+        Log.i("synth", "Discarded ACTION_DOWN pointerId=" + pointerId);
       }
     } else if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {
       int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
@@ -248,6 +252,8 @@ public class PianoView extends View {
         int y = (int)event.getY(pointerIndex);
         float pressure = event.getPressure(pointerIndex);
         redraw |= onTouchDown(pointerId, x, y, pressure);
+      } else {
+        Log.i("synth", "Discarded ACTION_POINTER_DOWN pointerId=" + pointerId);
       }
     } else if (actionCode == MotionEvent.ACTION_MOVE) {
       for (int pointerIndex = 0; pointerIndex < event.getPointerCount(); ++pointerIndex) {
@@ -277,7 +283,11 @@ public class PianoView extends View {
           }
         }
         if (!found) {
-          redraw |= onTouchUp(pointerId);
+          boolean thisRedraw = onTouchUp(pointerId);
+          if (thisRedraw) {
+            Log.i("synth", "ACTION_UP cleaned up pointerId=" + pointerId);
+          }
+          redraw |= thisRedraw;
         }
       }
     } else if (actionCode == MotionEvent.ACTION_POINTER_UP) {
@@ -296,7 +306,11 @@ public class PianoView extends View {
           }
         }
         if (!found) {
-          redraw |= onTouchUp(pointerId);
+          boolean thisRedraw = onTouchUp(pointerId);
+          if (thisRedraw) {
+            Log.i("synth", "ACTION_POINTER_UP cleaned up pointerId=" + pointerId);
+          }
+          redraw |= thisRedraw;
         }
       }
     } else {

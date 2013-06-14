@@ -35,7 +35,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -123,23 +122,27 @@ public class PianoActivity2 extends Activity {
       tryConnectUsb();
     }
 
-    jitterStats_ = new JitterStats();
-    jitterStats_.setNominalCb(params.bufferSize / (double)params.sampleRate);
-    statusHandler_ = new Handler();
-    statusRunnable_ = new Runnable() {
-      public void run() {
-        int n = androidGlue_.statsBytesAvailable();
-        if (n > 0) {
-          byte[] buf = new byte[n];
-          androidGlue_.readStatsBytes(buf, 0, n);
-          jitterStats_.aggregate(buf);
-          TextView statusTextView = (TextView)findViewById(R.id.status);
-          statusTextView.setText(jitterStats_.report());
+    final boolean doStats = false;
+
+    if (doStats) {
+      jitterStats_ = new JitterStats();
+      jitterStats_.setNominalCb(params.bufferSize / (double)params.sampleRate);
+      statusHandler_ = new Handler();
+      statusRunnable_ = new Runnable() {
+        public void run() {
+          int n = androidGlue_.statsBytesAvailable();
+          if (n > 0) {
+            byte[] buf = new byte[n];
+            androidGlue_.readStatsBytes(buf, 0, n);
+            jitterStats_.aggregate(buf);
+            TextView statusTextView = (TextView)findViewById(R.id.status);
+            statusTextView.setText(jitterStats_.report());
+          }
+          statusHandler_.postDelayed(statusRunnable_, 100);
         }
-        statusHandler_.postDelayed(statusRunnable_, 100);
-      }
-    };
-    statusRunnable_.run();
+      };
+      statusRunnable_.run();
+    }
 
     // Create burst of load -- test code to be removed. Ultimately we'll
     // be able to get this kind of functionality by hooking up the sequencer
@@ -229,21 +232,31 @@ public class PianoActivity2 extends Activity {
     UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
     HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
     TextView label = (TextView)findViewById(R.id.status);
-    if (!deviceList.isEmpty()) {
-      UsbDevice device = deviceList.values().iterator().next();
+    Log.i("synth", "USB device count=" + deviceList.size());
+    for (UsbDevice device : deviceList.values()) {
       //label.setText("ic:" + device.getInterfaceCount());
+      Log.i("synth", "usb name=" + device.toString() + " #if=" + device.getInterfaceCount());
+      if (device.getInterfaceCount() < 2) {
+        continue;
+      }
       UsbInterface usbIf = device.getInterface(1);
+      if (usbIf.getInterfaceClass() != 1 || usbIf.getInterfaceSubclass() != 3) {
+        continue;
+      }
       UsbDeviceConnection connection = usbManager.openDevice(device);
       if (connection != null) {
         connection.claimInterface(usbIf, true);
         UsbEndpoint endpoint = getInputEndpoint(usbIf);
         //label.setText(endpoint.toString());
+        Log.i("synth", "MIDI keyboard detected, starting USB thread");
         startUsbThread(connection, endpoint);
       } else {
         if (label != null) {
+          Log.i("synth", "error opening USB MIDI device");
           label.setText("error opening device");
         }
       }
+      break;
     }
   }
 
