@@ -21,6 +21,9 @@
 // The full implementation requires both a tuning table and 2x
 // oversampling, neither of which are present yet, but we'll get there. 
 
+#include <string.h>
+#include <stdio.h>
+
 #include "synth.h"
 #include "freqlut.h"
 #include "exp2.h"
@@ -46,6 +49,147 @@ int32_t compute_alpha(int32_t logf) {
   return min(1 << 24, Freqlut::lookup(logf));
 }
 
+// Some really generic 4x4 matrix multiplication operations, suitable
+// for NEON'ing
+
+static void matmult4(float dst[16], const float a[16], const float b[16]) {
+  dst[0] = a[0] * b[0] + a[4] * b[1] + a[8] * b[2] + a[12] * b[3];
+  dst[1] = a[1] * b[0] + a[5] * b[1] + a[9] * b[2] + a[13] * b[3];
+  dst[2] = a[2] * b[0] + a[6] * b[1] + a[10] * b[2] + a[14] * b[3];
+  dst[3] = a[3] * b[0] + a[7] * b[1] + a[11] * b[2] + a[15] * b[3];
+  dst[4] = a[0] * b[4] + a[4] * b[5] + a[8] * b[6] + a[12] * b[7];
+  dst[5] = a[1] * b[4] + a[5] * b[5] + a[9] * b[6] + a[13] * b[7];
+  dst[6] = a[2] * b[4] + a[6] * b[5] + a[10] * b[6] + a[14] * b[7];
+  dst[7] = a[3] * b[4] + a[7] * b[5] + a[11] * b[6] + a[15] * b[7];
+  dst[8] = a[0] * b[8] + a[4] * b[9] + a[8] * b[10] + a[12] * b[11];
+  dst[9] = a[1] * b[8] + a[5] * b[9] + a[9] * b[10] + a[13] * b[11];
+  dst[10] = a[2] * b[8] + a[6] * b[9] + a[10] * b[10] + a[14] * b[11];
+  dst[11] = a[3] * b[8] + a[7] * b[9] + a[11] * b[10] + a[15] * b[11];
+  dst[12] = a[0] * b[12] + a[4] * b[13] + a[8] * b[14] + a[12] * b[15];
+  dst[13] = a[1] * b[12] + a[5] * b[13] + a[9] * b[14] + a[13] * b[15];
+  dst[14] = a[2] * b[12] + a[6] * b[13] + a[10] * b[14] + a[14] * b[15];
+  dst[15] = a[3] * b[12] + a[7] * b[13] + a[11] * b[14] + a[15] * b[15];
+}
+
+static void matvec4(float dst[4], const float a[16], const float b[4]) {
+  dst[0] = a[0] * b[0] + a[4] * b[1] + a[8] * b[2] + a[12] * b[3];
+  dst[1] = a[1] * b[0] + a[5] * b[1] + a[9] * b[2] + a[13] * b[3];
+  dst[2] = a[2] * b[0] + a[6] * b[1] + a[10] * b[2] + a[14] * b[3];
+  dst[3] = a[3] * b[0] + a[7] * b[1] + a[11] * b[2] + a[15] * b[3];
+}
+
+static void vecupdate4(float dst[4], float x, const float a[4]) {
+  for (int i = 0; i < 4; i++) {
+    dst[i] += x * a[i];
+  }
+}
+
+/* compute dst := dst + x * a */
+static void matupdate4(float dst[16], float x, const float a[16]) {
+  for (int i = 0; i < 16; i++) {
+    dst[i] += x * a[i];
+  }
+}
+
+static void matcopy(float *dst, const float *src, int n) {
+  memcpy(dst, src, n * sizeof(float));
+}
+
+void dump_matrix(const float a[20]) {
+  for (int row = 0; row < 5; row++) {
+    printf("%s[", row == 0 ? "[" : " ");
+    for (int col = 0; col < 5; col++) {
+      float x = row == 0 ? (col == 0 ? 1.0 : 0.0) : a[col * 4 + (row - 1)];
+      printf("%6f ", x);
+    }
+    printf("]%s\n", row == 4 ? "]" : "");
+  }
+}
+
+static void make_state_transition(float result[20], int32_t f0, int32_t k) {
+  // TODO: these should depend on k, and be just enough to meet error bound
+  int n1 = 4;
+  int n2 = 4;
+  float f = f0 * (1.0 / (1 << (24 + n2)));
+  float k_f = k * (1.0 / (1 << 24));
+  k_f = min(k_f, 3.98f);
+
+  // these are 5x5 matrices of which we store the bottom 5x4
+  // Top row of Jacobian is all zeros
+  float j[20] = {0};
+
+  // set up initial jacobian
+  j[0] = f;
+  j[4] = -f;
+  j[5] = f;
+  j[9] = -f;
+  j[10] = f;
+  j[14] = -f;
+  j[15] = f;
+  j[16] = -k_f * f;
+  j[19] = -f;
+
+  // Top row of exponential is [1 0 0 0 0]
+  float a[20] = {0};
+  a[4] = 1.0;
+  a[9] = 1.0;
+  a[14] = 1.0;
+  a[19] = 1.0;
+
+  float c[20];
+  matcopy(c, j, 20);
+
+  static const float scales[4] = {1.0, 1/2.0, 1/6.0, 1/24.0};
+  // taylor's series to n1
+  for (int i = 0; i < n1; i++) {
+    float scale = scales[i];
+    vecupdate4(a, scale, c);
+    matupdate4(a+4, scale, c + 4);
+    if (i < n1 - 1) {
+      float tmp[20];
+      matvec4(tmp, c + 4, j);
+      matmult4(tmp + 4, c + 4, j + 4);
+      matcopy(c, tmp, 20);
+    }
+  }
+
+  // repeated squaring
+  for (int i = 0; i < n2; i++) {
+    float tmp[20];
+    matvec4(tmp, a + 4, a);
+    matmult4(tmp + 4, a + 4, a + 4);
+    for (int j = 0; j < 4; j++) {
+      a[j] += tmp[j];
+    }
+    matcopy(a + 4, tmp + 4, 16);
+  }
+  matcopy(result, a, 20);
+}
+
+void test_matrix() {
+  float a[20];
+  make_state_transition(a, 1.0 * (1 << 24), 3.99 * (1 << 24));
+  dump_matrix(a);
+}
+
+#if defined(USE_MATRIX)
+void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
+                         const int32_t *control_last, int32_t **outbufs) {
+  float a[20];
+  make_state_transition(a, compute_alpha(control_in[0]), control_in[1]);
+  const int32_t *ibuf = inbufs[0];
+  int32_t *obuf = outbufs[0];
+  for (int i = 0; i < n; i++) {
+    float signal = ibuf[i];
+    float tmp[4];
+    matvec4(tmp, a + 4, x);
+    for (int k = 0; k < 4; k++) {
+      x[k] = tmp[k] + signal * a[k];
+      obuf[i] = x[3];
+    }
+  }
+}
+#else
 void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
                          const int32_t *control_last, int32_t **outbufs) {
   int32_t alpha = compute_alpha(control_last[0]);
@@ -72,7 +216,7 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
   int32_t w2 = w[2];
   int32_t w3 = w[3];
   int32_t yy0 = yy;
-#endif;
+#endif
   for (int i = 0; i < n; i++) {
     alpha += delta_alpha;
     k += delta_k;
@@ -111,3 +255,4 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
   yy = yy0;
 #endif
 }
+#endif  // USE_MATRIX

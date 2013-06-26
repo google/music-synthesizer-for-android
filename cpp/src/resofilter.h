@@ -19,6 +19,8 @@
 
 #include "module.h"
 
+#define USE_MATRIX
+
 class ResoFilter : Module {
  public:
   ResoFilter();
@@ -28,11 +30,18 @@ class ResoFilter : Module {
   void process(const int32_t **inbufs, const int32_t *control_in,
 			   const int32_t *control_last, int32_t **outbufs);
  private:
+ #if defined(USE_MATRIX)
+  float x[4];
+#else
   int32_t x[4];
 #if defined(NONLINEARITY)
   int32_t w[4];
   int32_t yy;
 #endif
+#endif
 };
+
+// remove when done
+void test_matrix();
 
 #endif  // SYNTH_RESOFILTER_H_
