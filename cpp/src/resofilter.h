@@ -29,6 +29,10 @@ class ResoFilter : Module {
 			   const int32_t *control_last, int32_t **outbufs);
  private:
   int32_t x[4];
+#if defined(NONLINEARITY)
+  int32_t w[4];
+  int32_t yy;
+#endif
 };
 
 #endif  // SYNTH_RESOFILTER_H_
