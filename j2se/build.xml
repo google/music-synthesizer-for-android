@@ -37,7 +37,7 @@ limitations under the License.
     </javac>
     <jar jarfile="j2se.jar" basedir="build">
       <manifest>
-        <attribute name="Main-Class" value="com.google.synthesizer.j2se.Perform"/>
+        <attribute name="Main-Class" value="com.levien.synthesizer.j2se.Perform"/>
       </manifest>
     </jar>
   </target>

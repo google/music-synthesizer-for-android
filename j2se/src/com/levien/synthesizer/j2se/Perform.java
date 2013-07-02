@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.synthesizer.j2se;
+package com.levien.synthesizer.j2se;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -32,12 +32,12 @@ import java.util.logging.Logger;
 
 import javax.sound.midi.MidiMessage;
 
-import com.google.synthesizer.core.midi.MessageOutputProcessor;
-import com.google.synthesizer.core.midi.MidiFilePlayer;
-import com.google.synthesizer.core.midi.MidiListener;
-import com.google.synthesizer.core.model.composite.MultiChannelSynthesizer;
-import com.google.synthesizer.core.soundfont.SoundFontReader;
-import com.google.synthesizer.core.wave.WaveAdapter;
+import com.levien.synthesizer.core.midi.MessageOutputProcessor;
+import com.levien.synthesizer.core.midi.MidiFilePlayer;
+import com.levien.synthesizer.core.midi.MidiListener;
+import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
+import com.levien.synthesizer.core.soundfont.SoundFontReader;
+import com.levien.synthesizer.core.wave.WaveAdapter;
 
 /**
  * Perform is a simple little command-line app for debugging the synthesizer.
