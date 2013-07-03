@@ -19,7 +19,9 @@
         android:id="@+id/resonanceLabel"
         android:gravity="center_horizontal" />
     <TextView
-        android:text=""
+        android:text="@+string/overdrive"
+        android:width="30sp"
+        android:id="@+id/overdriveLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text=""
@@ -44,9 +46,15 @@
         app:min="0"
         app:max="1"
         android:layout_margin="2dp" />
+    <com.levien.synthesizer.android.widgets.knob.KnobView
+        android:id="@+id/overdriveKnob"
+        app:value="0.0"
+        app:min="0"
+        app:max="1"
+        android:layout_margin="2dp" />
     <LinearLayout
         android:orientation="vertical"
-        android:layout_span="4" >
+        android:layout_span="3" >
     <Spinner
         android:id="@+id/presetSpinner"
         android:layout_width="wrap_content"

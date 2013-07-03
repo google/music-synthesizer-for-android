@@ -68,6 +68,7 @@ public class PianoActivity2 extends Activity {
     piano_ = (PianoView)findViewById(R.id.piano);
     cutoffKnob_ = (KnobView)findViewById(R.id.cutoffKnob);
     resonanceKnob_ = (KnobView)findViewById(R.id.resonanceKnob);
+    overdriveKnob_ = (KnobView)findViewById(R.id.overdriveKnob);
     presetSpinner_ = (Spinner)findViewById(R.id.presetSpinner);
 
     AudioParams params = new AudioParams(44100, 64);
@@ -108,13 +109,19 @@ public class PianoActivity2 extends Activity {
       public void onKnobChanged(double newValue) {
         int value = (int)Math.round(newValue * 127);
         androidGlue_.onController(0, 1, value);
-      }      
+      }
     });
     resonanceKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
         int value = (int)Math.round(newValue * 127);
         androidGlue_.onController(0, 2, value);
-      }      
+      }
+    });
+    overdriveKnob_.setKnobListener(new KnobListener() {
+      public void onKnobChanged(double newValue) {
+        int value = (int)Math.round(newValue * 127);
+        androidGlue_.onController(0, 3, value);
+      }
     });
     
     piano_.bindTo(androidGlue_);
@@ -289,6 +296,7 @@ public class PianoActivity2 extends Activity {
   private PianoView piano_;
   private KnobView cutoffKnob_;
   private KnobView resonanceKnob_;
+  private KnobView overdriveKnob_;
   private Spinner presetSpinner_;
   private Handler statusHandler_;
   private Runnable statusRunnable_;

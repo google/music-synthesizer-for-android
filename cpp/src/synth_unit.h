@@ -70,7 +70,7 @@ class SynthUnit {
   Controllers controllers_;
 
   ResoFilter filter_;
-  int32_t filter_control_[2];
+  int32_t filter_control_[3];
   bool sustain_;
 
   // Extra buffering for when GetSamples wants a buffer not a multiple of N

@@ -23,10 +23,12 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "synth.h"
 #include "freqlut.h"
 #include "exp2.h"
+#include "aligned_buf.h"
 #include "resofilter.h"
 
 double this_sample_rate;
@@ -173,19 +175,49 @@ void test_matrix() {
 }
 
 #if defined(USE_MATRIX)
+static float sigmoid(float x, float overdrive) {
+  float xs = overdrive * x * (1.0 / (1 << 24));
+  float isq = 1.0 / sqrtf(1 + xs * xs);
+  return x * isq;
+}
+
 void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
                          const int32_t *control_last, int32_t **outbufs) {
-  float a[20];
-  make_state_transition(a, compute_alpha(control_in[0]), control_in[1]);
+  AlignedBuf<float, 20> a;
+  make_state_transition(a.get(), compute_alpha(control_in[0]), control_in[1]);
+  float overdrive = control_in[2] * (1.0 / (1 << 24));
   const int32_t *ibuf = inbufs[0];
   int32_t *obuf = outbufs[0];
-  for (int i = 0; i < n; i++) {
-    float signal = ibuf[i];
-    float tmp[4];
-    matvec4(tmp, a + 4, x);
-    for (int k = 0; k < 4; k++) {
-      x[k] = tmp[k] + signal * a[k];
-      obuf[i] = x[3];
+  if (overdrive == 0) {
+    for (int i = 0; i < n; i++) {
+      float signal = ibuf[i];
+      float tmp[4];
+      matvec4(tmp, a.get() + 4, x);
+      for (int k = 0; k < 4; k++) {
+        x[k] = tmp[k] + signal * a.get()[k];
+        obuf[i] = x[3];
+      }
+    }
+  } else {
+    float ogain = 1 + overdrive;
+    float k = control_in[1] * (1.0 / (1<<24));
+    for (int i = 0; i < 4; i++) {
+      a.get()[4 + 5 * i] -= 1.0;
+      a.get()[16 + i] += k * a.get()[i];
+    }
+    for (int i = 0; i < n; i++) {
+      float signal = ibuf[i];
+      float tmp[4];
+      float tx[4];
+      for (int j = 0; j < 4; j++) {
+        tx[j] = sigmoid(x[j], overdrive);
+      }
+      matvec4(tmp, a.get() + 4, tx);
+      float xin = sigmoid(signal - k * x[3], overdrive);
+      for (int j = 0; j < 4; j++) {
+        x[j] += tmp[j] + xin * a.get()[j];
+        obuf[i] = x[3] * ogain;
+      }
     }
   }
 }

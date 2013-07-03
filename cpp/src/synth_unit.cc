@@ -49,6 +49,7 @@ char epiano[] = {
 void SynthUnit::Init(double sample_rate) {
   Freqlut::init(sample_rate);
   Exp2::init();
+  Tanh::init();
   Sin::init();
   Lfo::init(sample_rate);
   PitchEnv::init(sample_rate);
@@ -68,6 +69,7 @@ SynthUnit::SynthUnit(RingBuffer *ring_buffer) {
   current_note_ = 0;
   filter_control_[0] = 258847126;
   filter_control_[1] = 0;
+  filter_control_[2] = 0;
   controllers_.values_[kControllerPitch] = 0x2000;
   sustain_ = false;
   extra_buf_size_ = 0;
@@ -121,6 +123,7 @@ void SynthUnit::SetController(int controller, int value) {
 int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
   uint8_t cmd = buf[0];
   uint8_t cmd_type = cmd & 0xf0;
+  //LOGI("got %d midi: %02x %02x %02x", buf_size, buf[0], buf[1], buf[2]);
   if (cmd_type == 0x80 || (cmd_type == 0x90 && buf[2] == 0)) {
     if (buf_size >= 3) {
       // note off
@@ -163,6 +166,8 @@ int SynthUnit::ProcessMidiMessage(const uint8_t *buf, int buf_size) {
         filter_control_[0] = 142365917 + value * 917175;
       } else if (controller == 2) {
         filter_control_[1] = value * 528416;
+      } else if (controller == 3) {
+        filter_control_[2] = value * 528416;
       } else if (controller == 64) {
         sustain_ = value != 0;
         if (!sustain_) {
