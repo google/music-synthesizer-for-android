@@ -31,7 +31,7 @@ class ResoFilter : Module {
 			   const int32_t *control_last, int32_t **outbufs);
  private:
  #if defined(USE_MATRIX)
-  float x[4];
+  AlignedBuf<float, 4> x;
 #else
   int32_t x[4];
 #if defined(NONLINEARITY)

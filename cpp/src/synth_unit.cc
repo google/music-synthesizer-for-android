@@ -250,7 +250,7 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
 
   for (; i < n_samples; i += N) {
     AlignedBuf<int32_t, N> audiobuf;
-    int32_t audiobuf2[N];
+    AlignedBuf<int32_t, N> audiobuf2;
     for (int j = 0; j < N; ++j) {
       audiobuf.get()[j] = 0;
     }
@@ -263,11 +263,11 @@ void SynthUnit::GetSamples(int n_samples, int16_t *buffer) {
       }
     }
     const int32_t *bufs[] = { audiobuf.get() };
-    int32_t *bufs2[] = { audiobuf2 };
+    int32_t *bufs2[] = { audiobuf2.get() };
     filter_.process(bufs, filter_control_, filter_control_, bufs2);
     int jmax = n_samples - i;
     for (int j = 0; j < N; ++j) {
-      int32_t val = audiobuf2[j] >> 4;
+      int32_t val = audiobuf2.get()[j] >> 4;
       int clip_val = val < -(1 << 24) ? 0x8000 : val >= (1 << 24) ? 0x7fff :
         val >> 9;
       // TODO: maybe some dithering?

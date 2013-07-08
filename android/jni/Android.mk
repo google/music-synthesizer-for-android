@@ -22,7 +22,8 @@ LOCAL_SRC_FILES := android_glue.cc \
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_ARM_NEON := true
     LOCAL_CFLAGS := -DHAVE_NEON=1
-    LOCAL_SRC_FILES += neon_fm_kernel.s
+    LOCAL_SRC_FILES += neon_fm_kernel.s \
+                       neon_ladder.s
 endif
 
 # for native audio
@@ -35,5 +36,24 @@ LOCAL_STATIC_LIBRARIES += cpufeatures
 LOCAL_CFLAGS += -O3
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := test_neon.cc \
+  resofilter.cc
+
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+    LOCAL_ARM_NEON := true
+    LOCAL_CFLAGS := -DHAVE_NEON=1
+    LOCAL_SRC_FILES += neon_fm_kernel.s \
+                       neon_ladder.s
+endif
+
+LOCAL_CFLAGS += -O3
+
+LOCAL_STATIC_LIBRARIES += cpufeatures
+
+LOCAL_MODULE := test_neon
+
+include $(BUILD_EXECUTABLE)
 
 $(call import-module,android/cpufeatures)

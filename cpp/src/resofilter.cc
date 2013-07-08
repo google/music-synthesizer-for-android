@@ -31,6 +31,15 @@
 #include "aligned_buf.h"
 #include "resofilter.h"
 
+#ifdef HAVE_NEON
+extern "C"
+void neon_ladder_nl(const int32_t *in, const float *a, int32_t *out, int count,
+  float *state);
+extern "C"
+void neon_ladder_lin(const int32_t *in, const float *a, int32_t *out, int count,
+  float *state);
+#endif
+
 double this_sample_rate;
 
 void ResoFilter::init(double sample_rate) {
@@ -39,7 +48,7 @@ void ResoFilter::init(double sample_rate) {
 
 ResoFilter::ResoFilter() {
   for (int i = 0; i < 4; i++) {
-    x[i] = 0;
+    x.get()[i] = 0;
 #if defined(NONLINEARITY)
     w[i] = 0;
 #endif
@@ -188,14 +197,28 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
   float overdrive = control_in[2] * (1.0 / (1 << 24));
   const int32_t *ibuf = inbufs[0];
   int32_t *obuf = outbufs[0];
+  bool useneon = false;
+#ifdef HAVE_NEON
+  useneon = true;  // TODO: detect
+#endif
+
   if (overdrive == 0) {
-    for (int i = 0; i < n; i++) {
-      float signal = ibuf[i];
-      float tmp[4];
-      matvec4(tmp, a.get() + 4, x);
-      for (int k = 0; k < 4; k++) {
-        x[k] = tmp[k] + signal * a.get()[k];
-        obuf[i] = x[3];
+    if (useneon) {
+#ifdef HAVE_NEON
+      AlignedBuf<float, 20> a_neon;
+      matcopy(a_neon.get(), a.get() + 4, 16);
+      matcopy(a_neon.get() + 16, a.get(), 4);
+      neon_ladder_lin(ibuf, a_neon.get(), obuf, n, x.get());
+#endif
+    } else {
+      for (int i = 0; i < n; i++) {
+        float signal = ibuf[i];
+        float tmp[4];
+        matvec4(tmp, a.get() + 4, x.get());
+        for (int k = 0; k < 4; k++) {
+          x.get()[k] = tmp[k] + signal * a.get()[k];
+          obuf[i] = x.get()[3];
+        }
       }
     }
   } else {
@@ -205,18 +228,31 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
       a.get()[4 + 5 * i] -= 1.0;
       a.get()[16 + i] += k * a.get()[i];
     }
-    for (int i = 0; i < n; i++) {
-      float signal = ibuf[i];
-      float tmp[4];
-      float tx[4];
-      for (int j = 0; j < 4; j++) {
-        tx[j] = sigmoid(x[j], overdrive);
-      }
-      matvec4(tmp, a.get() + 4, tx);
-      float xin = sigmoid(signal - k * x[3], overdrive);
-      for (int j = 0; j < 4; j++) {
-        x[j] += tmp[j] + xin * a.get()[j];
-        obuf[i] = x[3] * ogain;
+    if (useneon) {
+#ifdef HAVE_NEON
+      // Neon implementation has A first, then B
+      AlignedBuf<float, 23> a_neon;
+      matcopy(a_neon.get(), a.get() + 4, 16);
+      matcopy(a_neon.get() + 16, a.get(), 4);
+      a_neon.get()[20] = k;
+      a_neon.get()[21] = overdrive * (1.0 / (1 << 24));
+      a_neon.get()[22] = ogain;
+      neon_ladder_nl(ibuf, a_neon.get(), obuf, n, x.get());
+#endif
+    } else {
+      for (int i = 0; i < n; i++) {
+        float signal = ibuf[i];
+        float tmp[4];
+        float tx[4];
+        for (int j = 0; j < 4; j++) {
+          tx[j] = sigmoid(x.get()[j], overdrive);
+        }
+        matvec4(tmp, a.get() + 4, tx);
+        float xin = sigmoid(signal - k * x.get()[3], overdrive);
+        for (int j = 0; j < 4; j++) {
+          x.get()[j] += tmp[j] + xin * a.get()[j];
+          obuf[i] = x.get()[3] * ogain;
+        }
       }
     }
   }
@@ -288,3 +324,25 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
 #endif
 }
 #endif  // USE_MATRIX
+
+void reso_benchmark(int niter, bool nonlinear) {
+#ifdef HAVE_NEON
+  AlignedBuf<float, 23> a_neon;
+  for (int i = 0; i < 23; i++) {
+    float y = 0.0;
+    if (i < 20 && (i % 5) == 0) y = 1.0;
+    a_neon.get()[i] = y;
+  }
+  const int n = 64;
+  AlignedBuf<int32_t, n> inbuf;
+  AlignedBuf<int32_t, n> outbuf;
+  AlignedBuf<float, 4> x;
+  for (int i = 0; i < niter; i++) {
+    if (nonlinear) {
+      neon_ladder_nl(inbuf.get(), a_neon.get(), outbuf.get(), n, x.get());
+    } else {
+      neon_ladder_lin(inbuf.get(), a_neon.get(), outbuf.get(), n, x.get());
+    }
+  }
+#endif
+}
