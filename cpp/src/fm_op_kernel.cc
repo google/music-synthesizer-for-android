@@ -16,20 +16,12 @@
 
 #include <math.h>
 
-#ifdef HAVE_NEON
-#include <cpu-features.h>
-#endif
-
 #include "synth.h"
 
 #include "sin.h"
 #include "fm_op_kernel.h"
 
 #ifdef HAVE_NEON
-static bool hasNeon() {
-  return true;
-  return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-}
 
 extern "C"
 void neon_fm_kernel(const int *in, const int *busin, int *out, int count,
@@ -37,10 +29,6 @@ void neon_fm_kernel(const int *in, const int *busin, int *out, int count,
 
 const int32_t __attribute__ ((aligned(16))) zeros[N] = {0};
 
-#else
-static bool hasNeon() {
-  return false;
-}
 #endif
 
 void FmOpKernel::compute(int32_t *output, const int32_t *input,

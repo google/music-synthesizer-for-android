@@ -197,12 +197,9 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
   float overdrive = control_in[2] * (1.0 / (1 << 24));
   const int32_t *ibuf = inbufs[0];
   int32_t *obuf = outbufs[0];
-  bool useneon = false;
-#ifdef HAVE_NEON
-  useneon = true;  // TODO: detect
-#endif
+  bool useneon = hasNeon();
 
-  if (overdrive == 0) {
+  if (overdrive < 0.01) {
     if (useneon) {
 #ifdef HAVE_NEON
       AlignedBuf<float, 20> a_neon;

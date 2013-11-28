@@ -21,6 +21,7 @@
 // See http://stackoverflow.com/questions/126279/c99-stdint-h-header-and-ms-visual-studio
 #include <stdint.h>
 
+// TODO(raph): move from fixed to variable N
 #define LG_N 6
 #define N (1 << LG_N)
 
@@ -49,5 +50,19 @@ template<typename T>
 inline static T max(const T& a, const T& b) {
     return a > b ? a : b;
 }
+
+#ifdef HAVE_NEON
+#include <cpu-features.h>
+
+static inline bool hasNeon() {
+  return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
+}
+#else
+static inline bool hasNeon() {
+  return false;
+}
+#endif
+
+
 
 #endif  // __SYNTH_H
