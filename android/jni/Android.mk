@@ -7,6 +7,7 @@ LOCAL_SRC_FILES := android_glue.cc \
                    dx7note.cc \
                    env.cc \
                    exp2.cc \
+                   fir.cc \
                    fm_core.cc \
                    fm_op_kernel.cc \
                    freqlut.cc \
@@ -23,7 +24,8 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_ARM_NEON := true
     LOCAL_CFLAGS := -DHAVE_NEON=1
     LOCAL_SRC_FILES += neon_fm_kernel.s \
-                       neon_ladder.s
+                       neon_ladder.s \
+                       neon_fir.s
 endif
 
 # for native audio
@@ -45,7 +47,8 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_ARM_NEON := true
     LOCAL_CFLAGS := -DHAVE_NEON=1
     LOCAL_SRC_FILES += neon_fm_kernel.s \
-                       neon_ladder.s
+                       neon_ladder.s \
+                       neon_fir.s
 endif
 
 LOCAL_CFLAGS += -O3
@@ -55,5 +58,22 @@ LOCAL_STATIC_LIBRARIES += cpufeatures
 LOCAL_MODULE := test_neon
 
 include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := test_fir.cc \
+  fir.cc
+
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+    LOCAL_ARM_NEON := true
+    LOCAL_CFLAGS := -DHAVE_NEON=1
+    LOCAL_SRC_FILES += neon_fir.s
+endif
+
+LOCAL_CFLAGS += -O3
+LOCAL_STATIC_LIBRARIES += cpufeatures
+LOCAL_MODULE := test_fir
+include $(BUILD_EXECUTABLE)
+
 
 $(call import-module,android/cpufeatures)
