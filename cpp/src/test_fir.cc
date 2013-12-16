@@ -37,7 +37,7 @@ void condition_governor() {
   struct timespec ts;
   ts.tv_sec = 0;
   ts.tv_nsec = 900000000 + (v & 1); // 900ms
-  nanosleep(&ts, NULL);
+  //nanosleep(&ts, NULL);
 
   // consume cpu a bit to try to coax max cpufreq
   uint32_t x = v;
@@ -58,14 +58,14 @@ float *mkrandom(size_t size) {
   return result;
 }
 
-double test_accuracy(FirFilter *f1, FirFilter *f2, const float *inp, int nblock) {
+double test_accuracy(FirFilter<float, float> *f1, FirFilter<float, float> *f2, const float *inp, int nblock) {
   float *out1 = (float *)malloc_aligned(16, nblock * sizeof(out1[0]));
   float *out2 = (float *)malloc_aligned(16, nblock * sizeof(out2[0]));
   f1->process(inp + 1, out1, nblock);
   f2->process(inp + 1, out2, nblock);
   double err = 0;
   for (int i = 0; i < nblock; i++) {
-    //printf("%d: %f %f\n", i, out1[i], out2[i]);
+    printf("#%d: %f %f\n", i, out1[i], out2[i]);
     err += fabs(out1[i] - out2[i]);
   }
   free(out1);
@@ -80,28 +80,39 @@ void benchfir(int size, int experiment) {
   float *kernel = mkrandom(size);
   float *inp = mkrandom(size + nblock);
   float *out = (float *)malloc_aligned(16, nblock * sizeof(out[0]));
-  FirFilter *f;
+  FirFilter<float, float> *f;
 
   switch(experiment) {
     case 0:
       f = new SimpleFirFilter(kernel, size);
       break;
+#ifdef HAVE_NEON
+    // this will crash on non-NEON devices, but we're only interested
+    // in testing NEON for now
     case 1:
       f = new NeonFirFilter(kernel, size);
+      break;
+    case 2:
+    case 3:
+      f = new Neon16FirFilter(kernel, size, experiment == 3);
+      break;
+#endif
+    case 4:
+      f = new HalfRateFirFilter(kernel, size, nblock);
       break;
   }
 
 
   double start = now();
   for (int j = 0; j < 15625; j++) {
-    f->process(inp + 1, out, 64);
+    f->process(inp + 1, out, nblock);
   }
   double elapsed = now() - start;
   printf("%i %f\n", size, 1e3 * elapsed);
 
-  FirFilter *fbase = new SimpleFirFilter(kernel, size);
+  FirFilter<float, float> *fbase = new SimpleFirFilter(kernel, size);
   double accuracy = test_accuracy(fbase, f, inp, nblock);
-  //printf("accuracy = %g\n", accuracy);
+  printf("#accuracy = %g\n", accuracy);
 
   delete f;
   delete fbase;
@@ -114,9 +125,9 @@ int main(int argc, char **argv) {
   printf("set style data linespoints\n"
     "set xlabel 'FIR kernel size'\n"
     "set ylabel 'ns per sample'\n"
-    "plot '-' title 'scalar', '-' title '4x4 block'\n");
-  for (int experiment = 0; experiment < 2; experiment++) {
-    for (int i = 16; i <= 128; i += 16) {
+    "plot '-' title 'scalar', '-' title '4x4 block', '-' title 'fixed16', '-' title 'fixed16 mirror', '-' title 'half rate'\n");
+  for (int experiment = 0; experiment < 5; experiment++) {
+    for (int i = 16; i <= 256; i += 16) {
       benchfir(i, experiment);
     }
     printf("e\n");

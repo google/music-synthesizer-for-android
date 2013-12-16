@@ -18,15 +18,15 @@
 void *malloc_aligned(size_t alignment, size_t nbytes);
 
 // Abstract class
-class FirFilter {
+template <typename T, typename U> class FirFilter {
  public:
   // preconditions:
   // in + (nk - 1) is aligned to 128 bits
   // out is aligned to 128 bits
-  virtual void process(const float *in, float *out, size_t n) = 0;
+  virtual void process(const T *in, U *out, size_t n) = 0;
 };
 
-class SimpleFirFilter : public FirFilter {
+class SimpleFirFilter : public FirFilter<float, float> {
  public:
   SimpleFirFilter(const float *kernel, size_t nk);
   ~SimpleFirFilter();
@@ -36,8 +36,25 @@ class SimpleFirFilter : public FirFilter {
   float *k;
 };
 
-// should make conditional compilation?
-class NeonFirFilter : public FirFilter {
+class HalfRateFirFilter : public FirFilter<float, float> {
+ public:
+  HalfRateFirFilter(const float *kernel, size_t nk, size_t n);
+  ~HalfRateFirFilter();
+  void process(const float *in, float *out, size_t n);
+ private:
+  static const int kMaxNk = 256;
+  size_t nk;
+  float *i0, *i1, *i2;
+  float *y0, *y1, *y2;
+  float *k2;
+  FirFilter *f0;
+  FirFilter *f1;
+  FirFilter *f2;
+};
+
+#ifdef HAVE_NEON
+
+class NeonFirFilter : public FirFilter<float, float> {
  public:
   NeonFirFilter(const float *kernel, size_t nk);
   ~NeonFirFilter();
@@ -46,3 +63,16 @@ class NeonFirFilter : public FirFilter {
   size_t nk;
   float *k;
 };
+
+class Neon16FirFilter : public FirFilter<float, float> {
+ public:
+  Neon16FirFilter(const float *kernel, size_t nk, bool mirror);
+  ~Neon16FirFilter();
+  void process(const float *in, float *out, size_t n);
+ private:
+  size_t nk;
+  int16_t *k;
+  bool mirror;
+};
+
+#endif  // HAVE_NEON
