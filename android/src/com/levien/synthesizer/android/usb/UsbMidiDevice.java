@@ -79,7 +79,7 @@ public class UsbMidiDevice {
             return;
           }
         }
-        final int TIMEOUT = 1000;
+        final int TIMEOUT = 0;
         int nBytes = mDeviceConnection.bulkTransfer(mEndpoint, buf, buf.length, TIMEOUT);
         if (nBytes < 0) {
           Log.e("synth", "bulkTransfer error " + nBytes);
