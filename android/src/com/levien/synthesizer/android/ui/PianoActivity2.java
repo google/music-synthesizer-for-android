@@ -23,11 +23,12 @@ import java.util.HashMap;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.hardware.usb.UsbConstants;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
@@ -48,6 +49,7 @@ import android.widget.TextView;
 import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.AndroidGlue;
 import com.levien.synthesizer.android.stats.JitterStats;
+import com.levien.synthesizer.android.usb.UsbMidiDevice;
 import com.levien.synthesizer.android.widgets.knob.KnobListener;
 import com.levien.synthesizer.android.widgets.knob.KnobView;
 import com.levien.synthesizer.android.widgets.piano.PianoView;
@@ -60,6 +62,7 @@ import com.levien.synthesizer.android.widgets.piano.PianoView;
 public class PianoActivity2 extends Activity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    Log.d("synth", "activity onCreate");
     super.onCreate(savedInstanceState);
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN |
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -125,9 +128,8 @@ public class PianoActivity2 extends Activity {
     });
     
     piano_.bindTo(androidGlue_);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-      tryConnectUsb();
-    }
+    // This is now done in onResume
+    //tryConnectUsb();
 
     final boolean doStats = false;
 
@@ -178,93 +180,128 @@ public class PianoActivity2 extends Activity {
 
   @Override
   protected void onDestroy() {
+    Log.d("synth", "activity onDestroy");
     androidGlue_.shutdown();
     super.onDestroy();
   }
   
   @Override
   protected void onPause() {
+    Log.d("synth", "activity onPause");
     androidGlue_.setPlayState(false);
+    unregisterReceiver(usbReceiver_);
+    setMidiInterface(null, null);
     super.onPause();
   }
 
   @Override
   protected void onResume() {
+    Log.d("synth", "activity onResume");
     androidGlue_.setPlayState(true);
+    tryConnectUsb();
     super.onResume();
   }
 
+  @Override
+  protected void onNewIntent(Intent intent) {
+    Log.d("synth", "activity onNewIntent " + intent);
+  }
+
   @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  private UsbEndpoint getInputEndpoint(UsbInterface usbIf) {
-    int nEndpoints = usbIf.getEndpointCount();
-    for (int i = 0; i < nEndpoints; i++) {
-      UsbEndpoint endpoint = usbIf.getEndpoint(i);
-      if (endpoint.getDirection() == UsbConstants.USB_DIR_IN &&
-              endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-        return endpoint;
+  static private UsbInterface findMidiInterface(UsbDevice device) {
+    int count = device.getInterfaceCount();
+    for (int i = 0; i < count; i++) {
+      UsbInterface usbIf = device.getInterface(i);
+      if (usbIf.getInterfaceClass() == 1 && usbIf.getInterfaceSubclass() == 3) {
+        return usbIf;
       }
     }
     return null;
   }
   
   @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  private void startUsbThread(final UsbDeviceConnection connection, final UsbEndpoint endpoint) {
-    Thread thread = new Thread(new Runnable() {
-      public void run() {
-        byte[] buf = new byte[endpoint.getMaxPacketSize()];
-        while (true) {
-          int nBytes = connection.bulkTransfer(endpoint, buf, buf.length, 10000);
-          for (int i = 0; i < nBytes; i += 4) {
-            int codeIndexNumber = buf[i] & 0xf;
-            int payloadBytes = 0;
-            if (codeIndexNumber == 8 || codeIndexNumber == 9 || codeIndexNumber == 11 ||
-                    codeIndexNumber == 14) {
-              payloadBytes = 3;
-            } else if (codeIndexNumber == 12) {
-              payloadBytes = 2;
-            }
-            if (payloadBytes > 0) {
-              byte[] newBuf = new byte[payloadBytes];
-              System.arraycopy(buf, i + 1, newBuf, 0, payloadBytes);
-              androidGlue_.onMessage(newBuf);
-            }
-          }
-        }
+  private boolean setMidiInterface(UsbDevice device, UsbInterface intf) {
+    if (usbMidiConnection_ != null) {
+      if (usbMidiDevice_ != null) {
+        usbMidiDevice_.stop();
+        usbMidiDevice_ = null;
       }
-    });
-    thread.start();
-  }
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  private void tryConnectUsb() {
-    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-    HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
-    TextView label = (TextView)findViewById(R.id.status);
-    Log.i("synth", "USB device count=" + deviceList.size());
-    for (UsbDevice device : deviceList.values()) {
-      //label.setText("ic:" + device.getInterfaceCount());
-      Log.i("synth", "usb name=" + device.toString() + " #if=" + device.getInterfaceCount());
-      if (device.getInterfaceCount() < 2) {
-        continue;
+      if (usbMidiInterface_ != null) {
+        usbMidiConnection_.releaseInterface(usbMidiInterface_);
       }
-      UsbInterface usbIf = device.getInterface(1);
-      if (usbIf.getInterfaceClass() != 1 || usbIf.getInterfaceSubclass() != 3) {
-        continue;
-      }
+      usbMidiConnection_.close();
+      usbMidiDeviceName_ = null;
+      usbMidiConnection_ = null;
+    }
+    if (device != null && intf != null) {
+      UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
       UsbDeviceConnection connection = usbManager.openDevice(device);
       if (connection != null) {
-        connection.claimInterface(usbIf, true);
-        UsbEndpoint endpoint = getInputEndpoint(usbIf);
-        //label.setText(endpoint.toString());
-        Log.i("synth", "MIDI keyboard detected, starting USB thread");
-        startUsbThread(connection, endpoint);
+        if (connection.claimInterface(intf, true)) {
+          usbMidiDeviceName_ = device.getDeviceName();
+          usbMidiConnection_ = connection;
+          usbMidiInterface_ = intf;
+          usbMidiDevice_ = new UsbMidiDevice(this, usbMidiConnection_, intf);
+          usbMidiDevice_.start();
+          return true;
+        } else {
+          Log.e("synth", "failed to claim USB interface");
+          connection.close();
+        }
       } else {
-        if (label != null) {
-          Log.i("synth", "error opening USB MIDI device");
-          label.setText("error opening device");
+        Log.e("synth", "open device failed");
+      }
+    }
+    return false;
+  }
+
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+  private void tryConnectUsb() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1) {
+      return;
+    }
+    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+    HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+    Log.i("synth", "USB device count=" + deviceList.size());
+    for (UsbDevice device : deviceList.values()) {
+      Log.i("synth", "usb name=" + device.toString() + " #if=" + device.getInterfaceCount());
+      UsbInterface usbIf = findMidiInterface(device);
+      if (setMidiInterface(device, usbIf)) {
+        break;
+      }
+    }
+    IntentFilter filter = new IntentFilter();
+    // Attach intent is handled in manifest, don't want to get it twice.
+    //filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+    filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+    registerReceiver(usbReceiver_, filter);
+  }
+
+  BroadcastReceiver usbReceiver_ = new BroadcastReceiver() {
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+    public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+        Log.i("synth", "broadcast receiver: attach");
+        UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        UsbInterface intf = findMidiInterface(device);
+        if (intf != null) {
+          setMidiInterface(device, intf);
+        }
+      } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+        Log.i("synth", "broadcast receiver: detach");
+        UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        String deviceName = device.getDeviceName();
+        if (usbMidiDeviceName_ != null && usbMidiDeviceName_.equals(deviceName)) {
+          setMidiInterface(null, null);
         }
       }
-      break;
     }
+  };
+
+  public void sendMidiBytes(byte[] buf) {
+    // TODO: in future we'll want to reflect MIDI to UI (knobs turn, keys press)
+    androidGlue_.sendMidi(buf);
   }
 
   class AudioParams {
@@ -301,4 +338,8 @@ public class PianoActivity2 extends Activity {
   private Handler statusHandler_;
   private Runnable statusRunnable_;
   private JitterStats jitterStats_;
+  private UsbDeviceConnection usbMidiConnection_;
+  private UsbMidiDevice usbMidiDevice_;
+  private UsbInterface usbMidiInterface_;
+  private String usbMidiDeviceName_;
 }
