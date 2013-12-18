@@ -227,11 +227,13 @@ public class PianoActivity2 extends Activity {
         usbMidiDevice_ = null;
       }
       if (usbMidiInterface_ != null) {
-        usbMidiConnection_.releaseInterface(usbMidiInterface_);
+        // Note: releasing the interface seems to trigger bugs, so
+        // based on experimentation just closing seems more robust
+        //usbMidiConnection_.releaseInterface(usbMidiInterface_);
       }
       usbMidiConnection_.close();
-      usbMidiDeviceName_ = null;
       usbMidiConnection_ = null;
+      usbMidiDeviceName_ = null;
     }
     if (device != null && intf != null) {
       UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
