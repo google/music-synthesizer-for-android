@@ -189,7 +189,9 @@ public class PianoActivity2 extends Activity {
   protected void onPause() {
     Log.d("synth", "activity onPause");
     androidGlue_.setPlayState(false);
-    unregisterReceiver(usbReceiver_);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+      unregisterReceiver(usbReceiver_);
+    }
     setMidiInterface(null, null);
     super.onPause();
   }
