@@ -80,6 +80,9 @@ public class PianoActivity2 extends Activity {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       getJbMr1Params(params);
     }
+    // Empirical testing shows better performance with small buffer size
+    // than actually matching the media server's reported buffer size.
+    params.bufferSize = 64;
 
     androidGlue_ = new AndroidGlue();
     androidGlue_.start(params.sampleRate, params.bufferSize);
