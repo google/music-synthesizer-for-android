@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,20 +18,23 @@ package com.levien.synthesizer.android.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
+import android.annotation.TargetApi;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.media.AudioTrack;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.levien.synthesizer.R;
+import com.levien.synthesizer.android.AndroidGlue;
+import com.levien.synthesizer.core.midi.MidiListener;
 import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
-import com.levien.synthesizer.core.soundfont.SoundFontReader;
 
 /**
  * An Android Service that plays audio from a synthesizer.
@@ -47,14 +50,12 @@ public class SynthesizerService extends Service {
 
     /**
      * Gets the underlying synthesizer powering this service.
+     *
+     * Obsolete, to be deleted.
      */
     public MultiChannelSynthesizer getSynthesizer() {
-      return SynthesizerService.this.synthesizer_;
+      return null;
     }
-  }
-
-  public SynthesizerService() {
-    logger_ = Logger.getLogger(getClass().getName());
   }
 
   /**
@@ -62,36 +63,34 @@ public class SynthesizerService extends Service {
    */
   @Override
   public void onCreate() {
-    super.onCreate();
+    Log.d("synth", "service onCreate");
+    if (androidGlue_ == null) {
+      AudioParams params = new AudioParams(44100, 64);
+      // TODO: for pre-JB-MR1 devices, do some matching against known devices to
+      // get best audio parameters.
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        getJbMr1Params(params);
+      }
+      // Empirical testing shows better performance with small buffer size
+      // than actually matching the media server's reported buffer size.
+      params.bufferSize = 64;
 
-    // Get the native audio settings.
-    int sampleRateInHz = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC);
-    // For now, cap the sample rate to reduce cpu requirements.
-    sampleRateInHz = Math.min(sampleRateInHz, 11025);
-    SoundFontReader sampleLibrary = null;
-    //InputStream sampleLibraryFile = getResources().openRawResource(R.raw.drums);
-    //try {
-    //  sampleLibrary = new SoundFontReader(sampleLibraryFile);
-    //} catch (IOException e) {
-    //  logger_.log(Level.SEVERE, "Unable to load sample library.", e);
-    //  sampleLibrary = null;
-    //}
-    synthesizer_ = new MultiChannelSynthesizer(CHANNELS, FINGERS, sampleRateInHz, sampleLibrary);
-
-    // Load the presets from a file.
-    InputStream presetsFile = getResources().openRawResource(R.raw.presets);
-    try {
-      synthesizer_.loadLibraryFromText(presetsFile);
-    } catch (IOException e) {
-      Log.e(getClass().getName(), "Unable to load presets from raw file.", e);
+      androidGlue_ = new AndroidGlue();
+      androidGlue_.start(params.sampleRate, params.bufferSize);
+      InputStream patchIs = getResources().openRawResource(R.raw.rom1a);
+      byte[] patchData = new byte[4104];
+      try {
+        patchIs.read(patchData);
+        androidGlue_.sendMidi(patchData);
+        patchNames_ = new ArrayList<String>();
+        for (int i = 0; i < 32; i++) {
+          patchNames_.add(new String(patchData, 124 + 128 * i, 10, "ISO-8859-1"));
+        }
+      } catch (IOException e) {
+        Log.e(getClass().getName(), "loading patches failed");
+      }
     }
-
-    // Start a synthsizer thread playing the data.
-    synthesizerThread_ = new SynthesizerThread(synthesizer_, sampleRateInHz);
-    synthesizerThread_.play();
-
-    // No Activities are yet bound to this Service.
-    referenceCount_ = 0;
+    androidGlue_.setPlayState(true);
   }
 
   /**
@@ -99,12 +98,7 @@ public class SynthesizerService extends Service {
    */
   @Override
   public void onDestroy() {
-    super.onDestroy();
-
-    // Free up the underlying data structures.
-    synthesizerThread_.stop();
-    synthesizerThread_ = null;
-    synthesizer_ = null;
+    androidGlue_.setPlayState(false);
   }
 
   /**
@@ -112,39 +106,54 @@ public class SynthesizerService extends Service {
    */
   @Override
   public IBinder onBind(Intent intent) {
-    ++referenceCount_;
     return binder_;
   }
 
+  public MidiListener getMidiListener() {
+    return androidGlue_;
+  }
+
   /**
-   * Run when any Activity unbinds from this Service.
+   * Sends raw MIDI data to the synthesizer.
+   *
+   * @param buf MIDI bytes to send
    */
-  @Override
-  public boolean onUnbind(Intent intent) {
-    if (--referenceCount_ == 0) {
-      // No more Activities are using this Service, so kill it.
-      stopSelf();
+  public void sendRawMidi(byte[] buf) {
+    androidGlue_.sendMidi(buf);
+  }
+
+  public List<String> getPatchNames() {
+    return patchNames_;
+  }
+
+  class AudioParams {
+    AudioParams(int sr, int bs) {
+      confident = false;
+      sampleRate = sr;
+      bufferSize = bs;
     }
-    return super.onUnbind(intent);
+    public String toString() {
+      return "sampleRate=" + sampleRate + " bufferSize=" + bufferSize;
+    }
+    boolean confident;
+    int sampleRate;
+    int bufferSize;
+  }
+
+  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+  void getJbMr1Params(AudioParams params) {
+      AudioManager audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+    String sr = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+    String bs = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+    params.confident = true;
+    params.sampleRate = Integer.parseInt(sr);
+    params.bufferSize = Integer.parseInt(bs);
   }
 
   // Binder to use for Activities in this process.
   private final IBinder binder_ = new LocalBinder();
 
-  // The module that provides the sampled audio data.
-  private MultiChannelSynthesizer synthesizer_;
+  private static AndroidGlue androidGlue_;
 
-  // The thread that actually does the work of playing the audio data.
-  private SynthesizerThread synthesizerThread_;
-
-  // How many Activities are currently bound to this Service.
-  private int referenceCount_;
-
-  // The number of channels the synthesizer supports.
-  private static final int CHANNELS = 8;
-
-  // The number of fingers the synthesizer supports.
-  private static final int FINGERS = 5;
-
-  private Logger logger_;
+  private static List<String> patchNames_;
 }

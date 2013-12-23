@@ -1,12 +1,12 @@
 /*
  * Copyright 2012 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,40 +16,35 @@
 
 package com.levien.synthesizer.android.ui;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.levien.synthesizer.R;
-import com.levien.synthesizer.android.AndroidGlue;
-import com.levien.synthesizer.android.stats.JitterStats;
+import com.levien.synthesizer.android.service.SynthesizerService;
 import com.levien.synthesizer.android.usb.UsbMidiDevice;
 import com.levien.synthesizer.android.widgets.knob.KnobListener;
 import com.levien.synthesizer.android.widgets.knob.KnobView;
@@ -75,109 +70,35 @@ public class PianoActivity2 extends Activity {
     overdriveKnob_ = (KnobView)findViewById(R.id.overdriveKnob);
     presetSpinner_ = (Spinner)findViewById(R.id.presetSpinner);
 
-    AudioParams params = new AudioParams(44100, 64);
-    // TODO: for pre-JB-MR1 devices, do some matching against known devices to
-    // get best audio parameters.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      getJbMr1Params(params);
-    }
-    // Empirical testing shows better performance with small buffer size
-    // than actually matching the media server's reported buffer size.
-    params.bufferSize = 64;
-
-    androidGlue_ = new AndroidGlue();
-    androidGlue_.start(params.sampleRate, params.bufferSize);
-
-    InputStream patchIs = getResources().openRawResource(R.raw.rom1a);
-    byte[] patchData = new byte[4104];
-    try {
-      patchIs.read(patchData);
-      androidGlue_.sendMidi(patchData);
-      ArrayList<String> patchNames = new ArrayList<String>();
-      for (int i = 0; i < 32; i++) {
-        patchNames.add(new String(patchData, 124 + 128 * i, 10, "ISO-8859-1"));
-      }
-      ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-              this, android.R.layout.simple_spinner_item, patchNames);
-      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      presetSpinner_.setAdapter(adapter);
-    } catch (IOException e) {
-      Log.e(getClass().getName(), "loading patches failed");
-    }
     presetSpinner_.setOnItemSelectedListener(new OnItemSelectedListener() {
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        androidGlue_.sendMidi(new byte[] {(byte)0xc0, (byte)position});
+        synthesizerService_.getMidiListener().onProgramChange(0, position);
+        sendMidiBytes(new byte[] {(byte)0xc0, (byte)position});
       }
       public void onNothingSelected(AdapterView<?> parent) {
       }
     });
-    
+
     cutoffKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
         int value = (int)Math.round(newValue * 127);
-        androidGlue_.onController(0, 1, value);
+        synthesizerService_.getMidiListener().onController(0, 1, value);
       }
     });
     resonanceKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
         int value = (int)Math.round(newValue * 127);
-        androidGlue_.onController(0, 2, value);
+        synthesizerService_.getMidiListener().onController(0, 2, value);
       }
     });
     overdriveKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
         int value = (int)Math.round(newValue * 127);
-        androidGlue_.onController(0, 3, value);
+        synthesizerService_.getMidiListener().onController(0, 3, value);
       }
     });
-    
-    piano_.bindTo(androidGlue_);
 
-    final boolean doStats = false;
-
-    if (doStats) {
-      jitterStats_ = new JitterStats();
-      jitterStats_.setNominalCb(params.bufferSize / (double)params.sampleRate);
-      statusHandler_ = new Handler();
-      statusRunnable_ = new Runnable() {
-        public void run() {
-          int n = androidGlue_.statsBytesAvailable();
-          if (n > 0) {
-            byte[] buf = new byte[n];
-            androidGlue_.readStatsBytes(buf, 0, n);
-            jitterStats_.aggregate(buf);
-            TextView statusTextView = (TextView)findViewById(R.id.status);
-            statusTextView.setText(jitterStats_.report());
-          }
-          statusHandler_.postDelayed(statusRunnable_, 100);
-        }
-      };
-      statusRunnable_.run();
-    }
-
-    // Create burst of load -- test code to be removed. Ultimately we'll
-    // be able to get this kind of functionality by hooking up the sequencer
-    if (false) {
-      new Handler().postDelayed(new Runnable() {
-        public void run() {
-          int n = 110;
-          byte[] midi = new byte[n * 3];
-          for (int i = 0; i < n; i++) {
-            midi[i * 3] = (byte)0x90;
-            midi[i * 3 + 1] = (byte)(1 + i);
-            midi[i * 3 + 2] = 64;
-          }
-          androidGlue_.sendMidi(midi);
-        }
-      }, 10000);
-    }
-    Button captureButton = (Button) findViewById(R.id.capture);
-    captureButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        TextView stats = (TextView) findViewById(R.id.stats);
-        stats.setText(jitterStats_.reportLong());
-      }
-    });
+    //piano_.bindTo(synthesizerService_.getMidiListener());
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
       setupUsbMidi(getIntent());
@@ -187,17 +108,15 @@ public class PianoActivity2 extends Activity {
   @Override
   protected void onDestroy() {
     Log.d("synth", "activity onDestroy");
-    androidGlue_.shutdown();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
       unregisterReceiver(usbReceiver_);
     }
     super.onDestroy();
   }
-  
+
   @Override
   protected void onPause() {
     Log.d("synth", "activity onPause");
-    androidGlue_.setPlayState(false);
     setMidiInterface(null, null);
     super.onPause();
   }
@@ -205,11 +124,23 @@ public class PianoActivity2 extends Activity {
   @Override
   protected void onResume() {
     Log.d("synth", "activity onResume " + getIntent());
-    androidGlue_.setPlayState(true);
     if (usbDevice_ != null && usbMidiConnection_ == null) {
       connectUsbMidi(usbDevice_);
     }
     super.onResume();
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+    bindService(new Intent(this, SynthesizerService.class),
+      synthesizerConnection_, Context.BIND_AUTO_CREATE);
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
+    unbindService(synthesizerConnection_);
   }
 
   @Override
@@ -356,43 +287,32 @@ public class PianoActivity2 extends Activity {
 
   public void sendMidiBytes(byte[] buf) {
     // TODO: in future we'll want to reflect MIDI to UI (knobs turn, keys press)
-    androidGlue_.sendMidi(buf);
+    synthesizerService_.sendRawMidi(buf);
   }
 
-  class AudioParams {
-    AudioParams(int sr, int bs) {
-      confident = false;
-      sampleRate = sr;
-      bufferSize = bs;
+  private ServiceConnection synthesizerConnection_ = new ServiceConnection() {
+    public void onServiceConnected(ComponentName className, IBinder service) {
+      SynthesizerService.LocalBinder binder = (SynthesizerService.LocalBinder)service;
+      synthesizerService_ = binder.getService();
+      piano_.bindTo(synthesizerService_.getMidiListener());
+      List<String> patchNames = synthesizerService_.getPatchNames();
+      ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+              PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
+      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+      presetSpinner_.setAdapter(adapter);
     }
-    public String toString() {
-      return "sampleRate=" + sampleRate + " bufferSize=" + bufferSize;
+    public void onServiceDisconnected(ComponentName className) {
+      synthesizerService_ = null;
     }
-    boolean confident;
-    int sampleRate;
-    int bufferSize;
-  }
+  };
 
-  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-  void getJbMr1Params(AudioParams params) {
-      AudioManager audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-    String sr = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-    String bs = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-    params.confident = true;
-    params.sampleRate = Integer.parseInt(sr);
-    params.bufferSize = Integer.parseInt(bs);
-    //log("from platform: " + params);
-  }
+  private SynthesizerService synthesizerService_;
 
-  private AndroidGlue androidGlue_;
   private PianoView piano_;
   private KnobView cutoffKnob_;
   private KnobView resonanceKnob_;
   private KnobView overdriveKnob_;
   private Spinner presetSpinner_;
-  private Handler statusHandler_;
-  private Runnable statusRunnable_;
-  private JitterStats jitterStats_;
   private UsbDevice usbDevice_;
   private UsbDeviceConnection usbMidiConnection_;
   private UsbMidiDevice usbMidiDevice_;

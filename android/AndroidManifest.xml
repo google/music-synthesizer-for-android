@@ -74,12 +74,7 @@
         android:name="com.levien.synthesizer.android.ui.KarplusStrongActivity"
         android:label="@string/karplus_strong"
         android:screenOrientation="landscape" />
-    <!-- Don't need the service if we're running native sound engine
     <service android:name=".android.service.SynthesizerService">
-      <intent-filter>
-        <action android:name=".android.service.ISynthesizerService" />
-      </intent-filter>
     </service>
-    -->
   </application>
 </manifest>
