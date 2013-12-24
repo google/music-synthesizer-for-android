@@ -23,8 +23,14 @@ import java.util.List;
 
 import android.annotation.TargetApi;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Build;
@@ -33,6 +39,7 @@ import android.util.Log;
 
 import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.AndroidGlue;
+import com.levien.synthesizer.android.usb.UsbMidiDevice;
 import com.levien.synthesizer.core.midi.MidiListener;
 import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
 
@@ -91,6 +98,13 @@ public class SynthesizerService extends Service {
       }
     }
     androidGlue_.setPlayState(true);
+    if (usbDevice_ != null && usbMidiConnection_ == null) {
+      connectUsbMidi(usbDevice_);
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+      IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
+      registerReceiver(usbReceiver_, filter);
+    }
   }
 
   /**
@@ -99,6 +113,10 @@ public class SynthesizerService extends Service {
   @Override
   public void onDestroy() {
     androidGlue_.setPlayState(false);
+    setMidiInterface(null, null);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+      unregisterReceiver(usbReceiver_);
+    }
   }
 
   /**
@@ -150,10 +168,77 @@ public class SynthesizerService extends Service {
     params.bufferSize = Integer.parseInt(bs);
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+  private boolean setMidiInterface(UsbDevice device, UsbInterface intf) {
+    if (usbMidiConnection_ != null) {
+      if (usbMidiDevice_ != null) {
+        usbMidiDevice_.stop();
+        usbMidiDevice_ = null;
+      }
+      if (usbMidiInterface_ != null) {
+        // Note: releasing the interface seems to trigger bugs, so
+        // based on experimentation just closing seems more robust
+        //usbMidiConnection_.releaseInterface(usbMidiInterface_);
+      }
+      usbMidiConnection_.close();
+      usbMidiConnection_ = null;
+    }
+    if (device != null && intf != null) {
+      UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+      UsbDeviceConnection connection = usbManager.openDevice(device);
+      if (connection != null) {
+        if (connection.claimInterface(intf, true)) {
+          usbDevice_ = device;
+          usbMidiConnection_ = connection;
+          usbMidiInterface_ = intf;
+          usbMidiDevice_ = new UsbMidiDevice(androidGlue_, usbMidiConnection_, intf);
+          usbMidiDevice_.start();
+          return true;
+        } else {
+          Log.e("synth", "failed to claim USB interface");
+          connection.close();
+        }
+      } else {
+        Log.e("synth", "open device failed");
+      }
+    }
+    return false;
+  }
+
+  // Handles both connect and disconnect actions
+  public boolean connectUsbMidi(UsbDevice device) {
+    UsbInterface intf = device != null ? UsbMidiDevice.findMidiInterface(device) : null;
+    Log.d("synth", "connecting USB");
+    boolean success = setMidiInterface(device, intf);
+    Log.d("synth", "connecting USB done");
+    usbDevice_ = success ? device : null;
+    return success;
+  }
+
+  private final BroadcastReceiver usbReceiver_ = new BroadcastReceiver() {
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+    public void onReceive(Context context, Intent intent) {
+      Log.d("synth", "service broadcast receiver got " + intent);
+      String action = intent.getAction();
+      if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+        UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        if (device.equals(usbDevice_)) {
+          connectUsbMidi(null);
+        }
+      }
+    }
+  };
+
   // Binder to use for Activities in this process.
   private final IBinder binder_ = new LocalBinder();
 
   private static AndroidGlue androidGlue_;
 
   private static List<String> patchNames_;
+
+  // State for USB MIDI keyboard connection
+  private static UsbDevice usbDevice_;
+  private UsbDeviceConnection usbMidiConnection_;
+  private UsbMidiDevice usbMidiDevice_;
+  private UsbInterface usbMidiInterface_;
 }

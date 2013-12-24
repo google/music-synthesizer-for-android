@@ -1,12 +1,12 @@
 /*
  * Copyright 2013 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,24 +20,27 @@ package com.levien.synthesizer.android.usb;
 
 import android.annotation.TargetApi;
 import android.hardware.usb.UsbConstants;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.os.Build;
 import android.util.Log;
 
+import com.levien.synthesizer.android.AndroidGlue;
 import com.levien.synthesizer.android.ui.PianoActivity2;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
 public class UsbMidiDevice {
-  private final PianoActivity2 mActivity;
+  // probably want to change this to MessageOutputProcessor
+  private final AndroidGlue mReceiver;
   private final UsbDeviceConnection mDeviceConnection;
   private final UsbEndpoint mEndpoint;
 
   private final WaiterThread mWaiterThread = new WaiterThread();
 
-  public UsbMidiDevice(PianoActivity2 activity, UsbDeviceConnection connection, UsbInterface intf) {
-    mActivity = activity;
+  public UsbMidiDevice(AndroidGlue receiver, UsbDeviceConnection connection, UsbInterface intf) {
+    mReceiver = receiver;
     mDeviceConnection = connection;
 
     mEndpoint = getInputEndpoint(intf);
@@ -65,6 +68,19 @@ public class UsbMidiDevice {
     synchronized (mWaiterThread) {
       mWaiterThread.mStop = true;
     }
+  }
+
+  // A helper function for clients that might want to query whether a
+  // device supports MIDI
+  public static UsbInterface findMidiInterface(UsbDevice device) {
+    int count = device.getInterfaceCount();
+    for (int i = 0; i < count; i++) {
+      UsbInterface usbIf = device.getInterface(i);
+      if (usbIf.getInterfaceClass() == 1 && usbIf.getInterfaceSubclass() == 3) {
+        return usbIf;
+      }
+    }
+    return null;
   }
 
   private class WaiterThread extends Thread {
@@ -98,7 +114,7 @@ public class UsbMidiDevice {
             byte[] newBuf = new byte[payloadBytes];
             System.arraycopy(buf, i + 1, newBuf, 0, payloadBytes);
             Log.d("synth", "sending midi");
-            mActivity.sendMidiBytes(newBuf);
+            mReceiver.sendMidi(newBuf);
           }
         }
       }

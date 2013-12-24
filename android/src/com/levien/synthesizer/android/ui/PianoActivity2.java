@@ -117,16 +117,12 @@ public class PianoActivity2 extends Activity {
   @Override
   protected void onPause() {
     Log.d("synth", "activity onPause");
-    setMidiInterface(null, null);
     super.onPause();
   }
 
   @Override
   protected void onResume() {
     Log.d("synth", "activity onResume " + getIntent());
-    if (usbDevice_ != null && usbMidiConnection_ == null) {
-      connectUsbMidi(usbDevice_);
-    }
     super.onResume();
   }
 
@@ -149,62 +145,6 @@ public class PianoActivity2 extends Activity {
     connectUsbFromIntent(intent);
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  static private UsbInterface findMidiInterface(UsbDevice device) {
-    int count = device.getInterfaceCount();
-    for (int i = 0; i < count; i++) {
-      UsbInterface usbIf = device.getInterface(i);
-      if (usbIf.getInterfaceClass() == 1 && usbIf.getInterfaceSubclass() == 3) {
-        return usbIf;
-      }
-    }
-    return null;
-  }
-
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  private boolean setMidiInterface(UsbDevice device, UsbInterface intf) {
-    if (usbMidiConnection_ != null) {
-      if (usbMidiDevice_ != null) {
-        usbMidiDevice_.stop();
-        usbMidiDevice_ = null;
-      }
-      if (usbMidiInterface_ != null) {
-        // Note: releasing the interface seems to trigger bugs, so
-        // based on experimentation just closing seems more robust
-        //usbMidiConnection_.releaseInterface(usbMidiInterface_);
-      }
-      usbMidiConnection_.close();
-      usbMidiConnection_ = null;
-    }
-    if (device != null && intf != null) {
-      UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-      UsbDeviceConnection connection = usbManager.openDevice(device);
-      if (connection != null) {
-        if (connection.claimInterface(intf, true)) {
-          usbDevice_ = device;
-          usbMidiConnection_ = connection;
-          usbMidiInterface_ = intf;
-          usbMidiDevice_ = new UsbMidiDevice(this, usbMidiConnection_, intf);
-          usbMidiDevice_.start();
-          return true;
-        } else {
-          Log.e("synth", "failed to claim USB interface");
-          connection.close();
-        }
-      } else {
-        Log.e("synth", "open device failed");
-      }
-    }
-    return false;
-  }
-
-  private boolean connectUsbMidi(UsbDevice device) {
-    UsbInterface intf = device != null ? findMidiInterface(device) : null;
-    boolean success = setMidiInterface(device, intf);
-    usbDevice_ = success ? device : null;
-    return success;
-  }
-
   // scan for MIDI devices on the USB bus
   @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   private void scanUsbMidi() {
@@ -212,11 +152,10 @@ public class PianoActivity2 extends Activity {
     HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
     Log.i("synth", "USB device count=" + deviceList.size());
     for (UsbDevice device : deviceList.values()) {
-      UsbInterface intf = findMidiInterface(device);
+      UsbInterface intf = UsbMidiDevice.findMidiInterface(device);
       if (intf != null) {
         if (usbManager.hasPermission(device)) {
-          if (setMidiInterface(device, intf)) {
-            usbDevice_ = device;
+          if (connectUsbMidi(device)) {
             break;
           }
         } else {
@@ -230,6 +169,14 @@ public class PianoActivity2 extends Activity {
         }
       }
     }
+  }
+
+  boolean connectUsbMidi(UsbDevice device) {
+    if (synthesizerService_ != null) {
+      return synthesizerService_.connectUsbMidi(device);
+    }
+    usbDevicePending_ = device;
+    return true;
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
@@ -247,9 +194,6 @@ public class PianoActivity2 extends Activity {
     permissionIntent_ = PendingIntent.getBroadcast(this, 0, new Intent(
             ACTION_USB_PERMISSION), 0);
     IntentFilter filter = new IntentFilter();
-    // Attach intent is handled in manifest, don't want to get it twice.
-    //filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-    filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
     filter.addAction(ACTION_USB_PERMISSION);
     registerReceiver(usbReceiver_, filter);
     if (!connectUsbFromIntent(intent)) {
@@ -262,16 +206,7 @@ public class PianoActivity2 extends Activity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
     public void onReceive(Context context, Intent intent) {
       String action = intent.getAction();
-      if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-        Log.i("synth", "broadcast receiver: attach");
-        connectUsbFromIntent(intent);
-      } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-        Log.i("synth", "broadcast receiver: detach");
-        UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        if (usbDevice_ != null && usbDevice_.equals(device)) {
-          connectUsbMidi(null);
-        }
-      } else if (ACTION_USB_PERMISSION.equals(action)) {
+      if (ACTION_USB_PERMISSION.equals(action)) {
         synchronized (this) {
           UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
           if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
@@ -300,6 +235,10 @@ public class PianoActivity2 extends Activity {
               PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
       adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
       presetSpinner_.setAdapter(adapter);
+      if (usbDevicePending_ != null) {
+        synthesizerService_.connectUsbMidi(usbDevicePending_);
+        usbDevicePending_ = null;
+      }
     }
     public void onServiceDisconnected(ComponentName className) {
       synthesizerService_ = null;
@@ -313,10 +252,7 @@ public class PianoActivity2 extends Activity {
   private KnobView resonanceKnob_;
   private KnobView overdriveKnob_;
   private Spinner presetSpinner_;
-  private UsbDevice usbDevice_;
-  private UsbDeviceConnection usbMidiConnection_;
-  private UsbMidiDevice usbMidiDevice_;
-  private UsbInterface usbMidiInterface_;
   private PendingIntent permissionIntent_;
   private boolean permissionRequestPending_;
+  private UsbDevice usbDevicePending_;
 }
