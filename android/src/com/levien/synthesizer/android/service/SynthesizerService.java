@@ -19,6 +19,7 @@ package com.levien.synthesizer.android.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import android.annotation.TargetApi;
@@ -69,6 +70,7 @@ public class SynthesizerService extends Service {
    * Run when the Service is first created.
    */
   @Override
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   public void onCreate() {
     Log.d("synth", "service onCreate");
     if (androidGlue_ == null) {
@@ -98,12 +100,10 @@ public class SynthesizerService extends Service {
       }
     }
     androidGlue_.setPlayState(true);
-    if (usbDevice_ != null && usbMidiConnection_ == null) {
-      connectUsbMidi(usbDevice_);
-    }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
       IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
       registerReceiver(usbReceiver_, filter);
+      scanUsbMidi();
     }
   }
 
@@ -112,6 +112,7 @@ public class SynthesizerService extends Service {
    */
   @Override
   public void onDestroy() {
+    Log.d("synth", "service onDestroy");
     androidGlue_.setPlayState(false);
     setMidiInterface(null, null);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
@@ -144,6 +145,27 @@ public class SynthesizerService extends Service {
     return patchNames_;
   }
 
+  public boolean connectUsbMidi(UsbDevice device) {
+    usbDeviceNeedsPermission_ = null;
+    if (usbDevice_ == device) {
+      return device != null;
+    }
+    UsbInterface intf = device != null ? UsbMidiDevice.findMidiInterface(device) : null;
+    boolean success = setMidiInterface(device, intf);
+    usbDevice_ = success ? device : null;
+    return success;
+  }
+
+  /**
+   * Call to find out whether there is a device that has been scanned
+   * but not connected to because of missing permission.
+   *
+   * @return Device that needs permission, or null if none.
+   */
+  public UsbDevice usbDeviceNeedsPermission() {
+    return usbDeviceNeedsPermission_;
+  }
+
   class AudioParams {
     AudioParams(int sr, int bs) {
       confident = false;
@@ -159,7 +181,7 @@ public class SynthesizerService extends Service {
   }
 
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-  void getJbMr1Params(AudioParams params) {
+  private void getJbMr1Params(AudioParams params) {
       AudioManager audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
     String sr = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
     String bs = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
@@ -180,6 +202,7 @@ public class SynthesizerService extends Service {
         // based on experimentation just closing seems more robust
         //usbMidiConnection_.releaseInterface(usbMidiInterface_);
       }
+      Log.d("synth", "closing connection " + usbMidiConnection_);
       usbMidiConnection_.close();
       usbMidiConnection_ = null;
     }
@@ -205,14 +228,24 @@ public class SynthesizerService extends Service {
     return false;
   }
 
-  // Handles both connect and disconnect actions
-  public boolean connectUsbMidi(UsbDevice device) {
-    UsbInterface intf = device != null ? UsbMidiDevice.findMidiInterface(device) : null;
-    Log.d("synth", "connecting USB");
-    boolean success = setMidiInterface(device, intf);
-    Log.d("synth", "connecting USB done");
-    usbDevice_ = success ? device : null;
-    return success;
+  // scan for MIDI devices on the USB bus
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+  private void scanUsbMidi() {
+    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+    HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+    Log.i("synth", "USB device count=" + deviceList.size());
+    for (UsbDevice device : deviceList.values()) {
+      UsbInterface intf = UsbMidiDevice.findMidiInterface(device);
+      if (intf != null) {
+        if (usbManager.hasPermission(device)) {
+          if (connectUsbMidi(device)) {
+            break;
+          }
+        } else {
+          usbDeviceNeedsPermission_ = device;
+        }
+      }
+    }
   }
 
   private final BroadcastReceiver usbReceiver_ = new BroadcastReceiver() {
@@ -237,8 +270,9 @@ public class SynthesizerService extends Service {
   private static List<String> patchNames_;
 
   // State for USB MIDI keyboard connection
-  private static UsbDevice usbDevice_;
+  private UsbDevice usbDevice_;
   private UsbDeviceConnection usbMidiConnection_;
   private UsbMidiDevice usbMidiDevice_;
   private UsbInterface usbMidiInterface_;
+  private UsbDevice usbDeviceNeedsPermission_;
 }

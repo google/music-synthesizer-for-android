@@ -145,32 +145,6 @@ public class PianoActivity2 extends Activity {
     connectUsbFromIntent(intent);
   }
 
-  // scan for MIDI devices on the USB bus
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  private void scanUsbMidi() {
-    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-    HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
-    Log.i("synth", "USB device count=" + deviceList.size());
-    for (UsbDevice device : deviceList.values()) {
-      UsbInterface intf = UsbMidiDevice.findMidiInterface(device);
-      if (intf != null) {
-        if (usbManager.hasPermission(device)) {
-          if (connectUsbMidi(device)) {
-            break;
-          }
-        } else {
-          synchronized (usbReceiver_) {
-            if (!permissionRequestPending_) {
-              permissionRequestPending_ = true;
-              usbManager.requestPermission(device, permissionIntent_);
-            }
-          }
-          break;  // Don't try to connect anything else after perms dialog up
-        }
-      }
-    }
-  }
-
   boolean connectUsbMidi(UsbDevice device) {
     if (synthesizerService_ != null) {
       return synthesizerService_.connectUsbMidi(device);
@@ -196,9 +170,7 @@ public class PianoActivity2 extends Activity {
     IntentFilter filter = new IntentFilter();
     filter.addAction(ACTION_USB_PERMISSION);
     registerReceiver(usbReceiver_, filter);
-    if (!connectUsbFromIntent(intent)) {
-      scanUsbMidi();
-    }
+    connectUsbFromIntent(intent);
   }
 
   private static final String ACTION_USB_PERMISSION = "com.levien.synthesizer.USB_PERSMISSION";
@@ -222,10 +194,13 @@ public class PianoActivity2 extends Activity {
 
   public void sendMidiBytes(byte[] buf) {
     // TODO: in future we'll want to reflect MIDI to UI (knobs turn, keys press)
-    synthesizerService_.sendRawMidi(buf);
+    if (synthesizerService_ != null) {
+      synthesizerService_.sendRawMidi(buf);
+    }
   }
 
   private ServiceConnection synthesizerConnection_ = new ServiceConnection() {
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
     public void onServiceConnected(ComponentName className, IBinder service) {
       SynthesizerService.LocalBinder binder = (SynthesizerService.LocalBinder)service;
       synthesizerService_ = binder.getService();
@@ -238,6 +213,17 @@ public class PianoActivity2 extends Activity {
       if (usbDevicePending_ != null) {
         synthesizerService_.connectUsbMidi(usbDevicePending_);
         usbDevicePending_ = null;
+      } else {
+        UsbDevice device = synthesizerService_.usbDeviceNeedsPermission();
+        if (device != null) {
+          synchronized (usbReceiver_) {
+            if (!permissionRequestPending_) {
+              permissionRequestPending_ = true;
+              UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+              usbManager.requestPermission(device, permissionIntent_);
+            }
+          }
+        }
       }
     }
     public void onServiceDisconnected(ComponentName className) {

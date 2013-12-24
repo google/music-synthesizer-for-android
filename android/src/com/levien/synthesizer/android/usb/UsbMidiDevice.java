@@ -95,10 +95,14 @@ public class UsbMidiDevice {
             return;
           }
         }
-        final int TIMEOUT = 0;
+        // Using a timeout here is a hacky workaround to shut down the
+        // thread. If we could call releaseInterface, that would cause
+        // the bulkTransfer to return immediately, but that causes other
+        // problems.
+        final int TIMEOUT = 1000;
         int nBytes = mDeviceConnection.bulkTransfer(mEndpoint, buf, buf.length, TIMEOUT);
         if (nBytes < 0) {
-          Log.e("synth", "bulkTransfer error " + nBytes);
+          //Log.e("synth", "bulkTransfer error " + nBytes);
           //  break;
         }
         for (int i = 0; i < nBytes; i += 4) {
@@ -113,7 +117,7 @@ public class UsbMidiDevice {
           if (payloadBytes > 0) {
             byte[] newBuf = new byte[payloadBytes];
             System.arraycopy(buf, i + 1, newBuf, 0, payloadBytes);
-            Log.d("synth", "sending midi");
+            //Log.d("synth", "sending midi");
             mReceiver.sendMidi(newBuf);
           }
         }
