@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,7 @@ public class PianoView extends View {
     TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.PianoView);
     octaves_ = a.getInteger(R.styleable.PianoView_octaves, 1);
     firstOctave_ = a.getInteger(R.styleable.PianoView_first_octave, 4);
+    a.recycle();
 
     // Set up basic drawing structs, just so we don't have to allocate this later when we draw.
     drawingRect_ = new Rect();
@@ -222,7 +223,7 @@ public class PianoView extends View {
     notifyNoteUp(finger);
     return redraw;
   }
-  
+
 
   /**
    * Handler for all touch events.
@@ -319,7 +320,7 @@ public class PianoView extends View {
     if (redraw) {
       invalidate();
     }
-    return true;    
+    return true;
   }
 
   /**
@@ -335,7 +336,7 @@ public class PianoView extends View {
 
     int width = 0;
     int height = 0;
-    
+
     switch (widthMode) {
       case MeasureSpec.EXACTLY:
         width = widthSize;
@@ -347,7 +348,7 @@ public class PianoView extends View {
         width = 10;
         break;
     }
-    
+
     switch (heightMode) {
       case MeasureSpec.EXACTLY:
         height = heightSize;
@@ -408,6 +409,29 @@ public class PianoView extends View {
     });
   }
 
+  public void setNoteOn(int note, boolean on) {
+    // This is somewhat painful, hopefully can be done better.
+    for (int i = 0; i < keys_.length; i++) {
+      PianoKey key = keys_[i];
+      if (key instanceof NotePianoKey) {
+        int midiNote = Note.getKeyforLog12TET(((NotePianoKey) key).getLogFrequency());
+        if (midiNote == note) {
+          boolean redraw;
+          if (on) {
+            // using the last finger is something of a hack
+            redraw = key.onTouchDown(FINGERS - 1);
+          } else {
+            redraw = key.onTouchUp(FINGERS - 1);
+          }
+          if (redraw) {
+            invalidate();
+          }
+          break;
+        }
+      }
+    }
+  }
+
   // The most recent screen rect that this keyboard was drawn into.
   //
   // This is basically a stack variable for onDraw.  It's a member variable only so that we can
@@ -428,7 +452,7 @@ public class PianoView extends View {
 
   // The number of simultaneous fingers supported by this control.
   protected static final int FINGERS = 10;
-  
+
   // Whether to use pressure (doesn't work well on all hardware)
   private boolean usePressure_ = false;
 }

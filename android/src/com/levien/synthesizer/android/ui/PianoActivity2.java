@@ -72,8 +72,9 @@ public class PianoActivity2 extends Activity {
 
     presetSpinner_.setOnItemSelectedListener(new OnItemSelectedListener() {
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        synthesizerService_.getMidiListener().onProgramChange(0, position);
-        sendMidiBytes(new byte[] {(byte)0xc0, (byte)position});
+        if (synthesizerService_ != null) {
+          synthesizerService_.getMidiListener().onProgramChange(0, position);
+        }
       }
       public void onNothingSelected(AdapterView<?> parent) {
       }
@@ -81,20 +82,27 @@ public class PianoActivity2 extends Activity {
 
     cutoffKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
-        int value = (int)Math.round(newValue * 127);
-        synthesizerService_.getMidiListener().onController(0, 1, value);
+        // Maybe actually bind these at synthesizer service connection time?
+        if (synthesizerService_ != null) {
+          int value = (int)Math.round(newValue * 127);
+          synthesizerService_.getMidiListener().onController(0, 1, value);
+        }
       }
     });
     resonanceKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
-        int value = (int)Math.round(newValue * 127);
-        synthesizerService_.getMidiListener().onController(0, 2, value);
+        if (synthesizerService_ != null) {
+          int value = (int)Math.round(newValue * 127);
+          synthesizerService_.getMidiListener().onController(0, 2, value);
+        }
       }
     });
     overdriveKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
-        int value = (int)Math.round(newValue * 127);
-        synthesizerService_.getMidiListener().onController(0, 3, value);
+        if (synthesizerService_ != null) {
+          int value = (int)Math.round(newValue * 127);
+          synthesizerService_.getMidiListener().onController(0, 3, value);
+        }
       }
     });
 
@@ -243,6 +251,23 @@ public class PianoActivity2 extends Activity {
               } else if (cc == 3) {
                 overdriveKnob_.setValue(value * (1.0 / 127));
               }
+            }
+          });
+        }
+      });
+      synthesizerService_.setOnNoteListeners(new SynthesizerService.OnNoteListener() {
+        public void onNote(final int channel, final int note, final int velocity) {
+          runOnUiThread(new Runnable() {
+            public void run() {
+              piano_.setNoteOn(note, true);
+            }
+          });
+        }
+      }, new SynthesizerService.OnNoteListener() {
+        public void onNote(final int channel, final int note, final int velocity) {
+          runOnUiThread(new Runnable() {
+            public void run() {
+              piano_.setNoteOn(note, false);
             }
           });
         }

@@ -21,14 +21,14 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
+import android.graphics.Paint.Style;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader.TileMode;
 import android.graphics.SweepGradient;
 import android.graphics.Typeface;
-import android.graphics.Paint.Align;
-import android.graphics.Paint.Style;
-import android.graphics.Shader.TileMode;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -52,11 +52,14 @@ public class KnobView extends View {
     knobValue_ = a.getFloat(R.styleable.KnobView_value, 0.5f);
     min_ = a.getFloat(R.styleable.KnobView_min, 0.0f);
     max_ = a.getFloat(R.styleable.KnobView_max, 1.0f);
+    a.recycle();
 
     // Set up the drawing structures.
     knobPaint_ = new Paint();
     knobPaint_.setAntiAlias(true);
     knobPaint_.setColor(Color.WHITE);
+    float density = getResources().getDisplayMetrics().density;
+    knobPaint_.setStrokeWidth(2.0f * density);
     rect_ = new Rect();
     rectF_ = new RectF();
     textRect_ = new Rect();
@@ -64,7 +67,8 @@ public class KnobView extends View {
     // The listener has to be set later.
     listener_ = null;
 
-    setPadding(3, 3, 3, 3);
+    int padding = (int)(3.0 * density + 0.5);
+    setPadding(padding, padding, padding, padding);
   }
 
   /**
@@ -262,7 +266,6 @@ public class KnobView extends View {
     knobPaint_.setShader(null);
     knobPaint_.setColor(Color.WHITE);
     knobPaint_.setStyle(Style.STROKE);
-    knobPaint_.setStrokeWidth(4.0f);
     final float arcWidth = 15.0f;
     canvas.drawArc(rectF_,
                    (float)(knobValue_ * 360 * 0.8 + 90 - arcWidth / 2 + 36),
