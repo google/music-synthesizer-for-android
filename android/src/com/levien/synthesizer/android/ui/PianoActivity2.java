@@ -205,11 +205,16 @@ public class PianoActivity2 extends Activity {
       SynthesizerService.LocalBinder binder = (SynthesizerService.LocalBinder)service;
       synthesizerService_ = binder.getService();
       piano_.bindTo(synthesizerService_.getMidiListener());
+
+      // Populate patch names (note: we could update an existing list rather than
+      // creating a new adapter, but it probably wouldn't save all that much).
       List<String> patchNames = synthesizerService_.getPatchNames();
       ArrayAdapter<String> adapter = new ArrayAdapter<String>(
               PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
       adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
       presetSpinner_.setAdapter(adapter);
+
+      // Handle any pending USB device events
       if (usbDevicePending_ != null) {
         synthesizerService_.connectUsbMidi(usbDevicePending_);
         usbDevicePending_ = null;
@@ -225,6 +230,23 @@ public class PianoActivity2 extends Activity {
           }
         }
       }
+
+      // Connect controller changes to knob views
+      synthesizerService_.setOnCcListener(new SynthesizerService.OnCcListener() {
+        public void onCcChange(final int channel, final int cc, final int value) {
+          runOnUiThread(new Runnable() {
+            public void run() {
+              if (cc == 1) {
+                cutoffKnob_.setValue(value * (1.0 / 127));
+              } else if (cc == 2) {
+                resonanceKnob_.setValue(value * (1.0 / 127));
+              } else if (cc == 3) {
+                overdriveKnob_.setValue(value * (1.0 / 127));
+              }
+            }
+          });
+        }
+      });
     }
     public void onServiceDisconnected(ComponentName className) {
       synthesizerService_ = null;

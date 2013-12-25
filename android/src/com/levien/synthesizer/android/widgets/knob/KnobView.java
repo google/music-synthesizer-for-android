@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -83,10 +83,10 @@ public class KnobView extends View {
         diffAngle_ = 0;
         break;
       }
-      
+
       case MotionEvent.ACTION_MOVE: {
         getDrawingRect(rect_);
-        
+
         // Compare the previous angle of the finger position (relative to the center of the control)
         // to the new angle, and update the value accordingly.
         currentTouchAngle_ = knobValue_ * 2 * Math.PI * 0.8 + (Math.PI / 5.0);
@@ -102,7 +102,7 @@ public class KnobView extends View {
         knobValue_ = currentTouchAngle_ / (2.0 * Math.PI);
         if (knobValue_ < 0.1) knobValue_ = 0.1;
         if (knobValue_ > 0.9) knobValue_ = 0.9;
-        knobValue_ -= 0.1; 
+        knobValue_ -= 0.1;
         knobValue_ /= 0.8;
         previousX_ = currentX_;
         previousY_ = currentY_;
@@ -115,7 +115,7 @@ public class KnobView extends View {
 
         break;
       }
-      
+
       case MotionEvent.ACTION_UP: {
         break;
       }
@@ -147,7 +147,9 @@ public class KnobView extends View {
   }
 
   /**
-   * Sets the current value of the knob.
+   * Sets the current value of the knob. Note that this call does not
+   * invoke the listener. The assumption is that any caller will also
+   * update the client.
    */
   public void setValue(double value) {
     if (value < min_) {
@@ -156,9 +158,6 @@ public class KnobView extends View {
       knobValue_ = 1.0;
     } else {
       knobValue_ = (value - min_) / (max_ - min_);
-    }
-    if (listener_ != null) {
-      listener_.onKnobChanged(value);
     }
     invalidate();
   }
@@ -189,30 +188,30 @@ public class KnobView extends View {
       rectF_.left = center - rectF_.height() / 2;
       rectF_.right = center + rectF_.height() / 2;
     }
-    
+
     // Draw outer white glow.
     int[] radialGradientColors = {Color.WHITE,  Color.WHITE, 0x00000000};
     float[] radialGradientPositions = {0.0f, 0.87f, 1.0f};
     radialGradient_ = new RadialGradient(rect_.exactCenterX(),
-                                         rect_.exactCenterY(), 
-                                         Math.min(rect_.width(), rect_.height()) / 2, 
+                                         rect_.exactCenterY(),
+                                         Math.min(rect_.width(), rect_.height()) / 2,
                                          radialGradientColors,
-                                         radialGradientPositions, 
+                                         radialGradientPositions,
                                          TileMode.CLAMP);
-    
+
     knobPaint_.setShader(radialGradient_);
     canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(), 
-                      Math.min(rect_.width(), rect_.height()) / 2, 
+                      rect_.exactCenterY(),
+                      Math.min(rect_.width(), rect_.height()) / 2,
                       knobPaint_);
-    
+
     // Draw outer gauge.
-    final int fullDark = Color.BLACK; 
+    final int fullDark = Color.BLACK;
     final int guageStartColor = 0xff202050;
     final int guageEndColor = 0xff4040A0;
-    
+
     final int adjustedStartColor = Color.argb(
-        0xFF, 
+        0xFF,
         (int)(0.1875 * Color.red(guageStartColor) + (1.0 - 0.1875) * Color.red(guageEndColor)),
         (int)(0.1875 * Color.green(guageStartColor) + (1.0 - 0.1875) * Color.green(guageEndColor)),
         (int)(0.1875 * Color.blue(guageStartColor) + (1.0 - 0.1875) * Color.blue(guageEndColor)));
@@ -243,20 +242,20 @@ public class KnobView extends View {
                       rect_.exactCenterY(),
                       Math.min(rect_.width(), rect_.height()) / 4,
                       knobPaint_);
-    
+
     // Draw inner white glow.
     int[] innerRadialGradientColors = { 0x00000000,  0x00000000, Color.WHITE };
     float[] innerRadialGradientPositions = { 0.0f, 0.6f, 1.0f };
     innerRadialGradient_ = new RadialGradient(rect_.exactCenterX(),
-                                              rect_.exactCenterY(), 
-                                              Math.min(rect_.width(), rect_.height()) / 4f, 
+                                              rect_.exactCenterY(),
+                                              Math.min(rect_.width(), rect_.height()) / 4f,
                                               innerRadialGradientColors,
-                                              innerRadialGradientPositions, 
+                                              innerRadialGradientPositions,
                                               TileMode.CLAMP);
     knobPaint_.setShader(innerRadialGradient_);
     canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(), 
-                      Math.min(rect_.width(),rect_.height()) / 4, 
+                      rect_.exactCenterY(),
+                      Math.min(rect_.width(),rect_.height()) / 4,
                       knobPaint_);
 
     // Draw indicator.
@@ -270,7 +269,7 @@ public class KnobView extends View {
                    (float)arcWidth,
                    false,
                    knobPaint_);
-    
+
     // Draw text.
     String knobValueString = String.format("%.2f", getValue());
     Typeface typeface = Typeface.create(knobPaint_.getTypeface(), Typeface.BOLD);
@@ -329,7 +328,7 @@ public class KnobView extends View {
     if (height > width && heightMode != MeasureSpec.EXACTLY) {
       height = width;
     }
-    
+
     setMeasuredDimension(width, height);
   }
 

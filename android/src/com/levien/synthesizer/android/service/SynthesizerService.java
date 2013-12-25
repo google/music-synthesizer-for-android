@@ -41,6 +41,7 @@ import android.util.Log;
 import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.AndroidGlue;
 import com.levien.synthesizer.android.usb.UsbMidiDevice;
+import com.levien.synthesizer.core.midi.MessageForwarder;
 import com.levien.synthesizer.core.midi.MidiListener;
 import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
 
@@ -85,6 +86,15 @@ public class SynthesizerService extends Service {
       params.bufferSize = 64;
 
       androidGlue_ = new AndroidGlue();
+      midiListener_ = new MessageForwarder(androidGlue_) {
+        @Override
+        public void onController(int channel, int control, int value) {
+          super.onController(channel, control, value);
+          if (onCcListener_!= null) {
+            onCcListener_.onCcChange(channel, control, value);
+          }
+        }
+      };
       androidGlue_.start(params.sampleRate, params.bufferSize);
       InputStream patchIs = getResources().openRawResource(R.raw.rom1a);
       byte[] patchData = new byte[4104];
@@ -129,7 +139,7 @@ public class SynthesizerService extends Service {
   }
 
   public MidiListener getMidiListener() {
-    return androidGlue_;
+    return midiListener_;
   }
 
   /**
@@ -214,7 +224,7 @@ public class SynthesizerService extends Service {
           usbDevice_ = device;
           usbMidiConnection_ = connection;
           usbMidiInterface_ = intf;
-          usbMidiDevice_ = new UsbMidiDevice(androidGlue_, usbMidiConnection_, intf);
+          usbMidiDevice_ = new UsbMidiDevice(midiListener_, usbMidiConnection_, intf);
           usbMidiDevice_.start();
           return true;
         } else {
@@ -262,6 +272,16 @@ public class SynthesizerService extends Service {
     }
   };
 
+  public interface OnCcListener {
+    abstract void onCcChange(int channel, int cc, int value);
+  }
+
+  public void setOnCcListener(OnCcListener onCcListener) {
+    onCcListener_ = onCcListener;
+  }
+
+  private MidiListener midiListener_;
+
   // Binder to use for Activities in this process.
   private final IBinder binder_ = new LocalBinder();
 
@@ -275,4 +295,7 @@ public class SynthesizerService extends Service {
   private UsbMidiDevice usbMidiDevice_;
   private UsbInterface usbMidiInterface_;
   private UsbDevice usbDeviceNeedsPermission_;
+
+  // Plumbing for MIDI events
+  private OnCcListener onCcListener_;
 }
