@@ -27,19 +27,18 @@ import android.hardware.usb.UsbInterface;
 import android.os.Build;
 import android.util.Log;
 
-import com.levien.synthesizer.android.AndroidGlue;
-import com.levien.synthesizer.android.ui.PianoActivity2;
+import com.levien.synthesizer.core.midi.MessageFromBytes;
+import com.levien.synthesizer.core.midi.MidiListener;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
 public class UsbMidiDevice {
-  // probably want to change this to MessageOutputProcessor
-  private final AndroidGlue mReceiver;
+  private final MidiListener mReceiver;
   private final UsbDeviceConnection mDeviceConnection;
   private final UsbEndpoint mEndpoint;
 
   private final WaiterThread mWaiterThread = new WaiterThread();
 
-  public UsbMidiDevice(AndroidGlue receiver, UsbDeviceConnection connection, UsbInterface intf) {
+  public UsbMidiDevice(MidiListener receiver, UsbDeviceConnection connection, UsbInterface intf) {
     mReceiver = receiver;
     mDeviceConnection = connection;
 
@@ -115,10 +114,8 @@ public class UsbMidiDevice {
             payloadBytes = 2;
           }
           if (payloadBytes > 0) {
-            byte[] newBuf = new byte[payloadBytes];
-            System.arraycopy(buf, i + 1, newBuf, 0, payloadBytes);
             //Log.d("synth", "sending midi");
-            mReceiver.sendMidi(newBuf);
+            MessageFromBytes.send(mReceiver, buf, 1, payloadBytes);
           }
         }
       }

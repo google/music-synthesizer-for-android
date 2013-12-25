@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,53 +51,31 @@ public abstract class MessageOutputProcessor implements MidiListener {
   //
 
   public void onNoteOff(int channel, int note, int velocity) {
-    buffer_.write(0x80 | channel);
-    buffer_.write(note);
-    buffer_.write(velocity);
-    notifyMessage();
+    notify3(0x80 | channel, note, velocity);
   }
 
   public void onNoteOn(int channel, int note, int velocity) {
-    buffer_.write(0x90 | channel);
-    buffer_.write(note);
-    buffer_.write(velocity);
-    notifyMessage();
+    notify3(0x90 | channel, note, velocity);
   }
 
   public void onNoteAftertouch(int channel, int note, int aftertouch) {
-    buffer_.write(0xA0 | channel);
-    buffer_.write(note);
-    buffer_.write(aftertouch);
-    notifyMessage();
+    notify3(0xA0 | channel, note, aftertouch);
   }
 
   public void onController(int channel, int control, int value) {
-    buffer_.write(0xB0 | channel);
-    buffer_.write(control);
-    buffer_.write(value);
-    notifyMessage();
+    notify3(0xB0 | channel, control, value);
   }
 
   public void onProgramChange(int channel, int program) {
-    buffer_.write(0xC0 | channel);
-    buffer_.write(program);
-    notifyMessage();
+    notify2(0xC0 | channel, program);
   }
 
   public void onChannelAftertouch(int channel, int aftertouch) {
-    buffer_.write(0xD0 | channel);
-    buffer_.write(aftertouch);
-    notifyMessage();
+    notify2(0xD0 | channel, aftertouch);
   }
 
   public void onPitchBend(int channel, int value) {
-    try {
-      buffer_.write(0xE0 | channel);
-      MidiUtil.writeWord(buffer_, value);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notify3(0xE0 | channel, value & 0x7F, (value >> 7) & 0x7F);
   }
 
   public void onTimingClock() {
@@ -121,87 +99,31 @@ public abstract class MessageOutputProcessor implements MidiListener {
   }
 
   public void onText(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x01);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x01, text);
   }
 
   public void onCopyrightNotice(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x02);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x02, text);
   }
 
   public void onSequenceName(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x03);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x03, text);
   }
 
   public void onInstrumentName(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x04);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x04, text);
   }
 
   public void onLyrics(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x05);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x05, text);
   }
 
   public void onMarker(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x06);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x05, text);
   }
 
   public void onCuePoint(byte[] text) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x07);
-      MidiUtil.writeVarInt(buffer_, text.length);
-      buffer_.write(text);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x07, text);
   }
 
   public void onChannelPrefix(int channel) {
@@ -217,26 +139,11 @@ public abstract class MessageOutputProcessor implements MidiListener {
   }
 
   public void onPort(byte[] data) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x21);
-      MidiUtil.writeVarInt(buffer_, data.length);
-      buffer_.write(data);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x21, data);
   }
 
   public void onEndOfTrack() {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x2F);
-      MidiUtil.writeVarInt(buffer_, 0);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notify3(0xFF, 0x2F, 0x00);
   }
 
   public void onSetTempo(int microsecondsPerQuarterNote) {
@@ -256,15 +163,7 @@ public abstract class MessageOutputProcessor implements MidiListener {
     if (data.length != 5) {
       throw new RuntimeException("Invalid length for smpte offset event " + data.length + ".");
     }
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x54);
-      MidiUtil.writeVarInt(buffer_, 5);
-      buffer_.write(data);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x54, data);
   }
 
   public void onTimeSignature(int numerator, int denominator, int metronomePulse,
@@ -297,15 +196,7 @@ public abstract class MessageOutputProcessor implements MidiListener {
   }
 
   public void onSequencerSpecificEvent(byte[] data) {
-    try {
-      buffer_.write(0xFF);
-      buffer_.write(0x7F);
-      MidiUtil.writeVarInt(buffer_, data.length);
-      buffer_.write(data);
-      notifyMessage();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    notifyMetaBytes(0x7f, data);
   }
 
   /**
@@ -322,6 +213,39 @@ public abstract class MessageOutputProcessor implements MidiListener {
     }
   }
 
+  private void notify2(int b0, int b1) {
+    if (buf2_ == null) {
+      buf2_ = new byte[2];
+    }
+    buf2_[0] = (byte) b0;
+    buf2_[1] = (byte) b1;
+    onMessage(buf2_);
+  }
+
+  private void notify3(int b0, int b1, int b2) {
+    if (buf3_ == null) {
+      buf3_ = new byte[3];
+    }
+    buf3_[0] = (byte) b0;
+    buf3_[1] = (byte) b1;
+    buf3_[2] = (byte) b2;
+    onMessage(buf3_);
+  }
+
+  private void notifyMetaBytes(int type, byte[] data) {
+    try {
+      buffer_.write(0xFF);
+      buffer_.write(type);
+      MidiUtil.writeVarInt(buffer_, data.length);
+      buffer_.write(data);
+      notifyMessage();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   // An internal byte buffer to hold intermediate output.
   private ByteArrayOutputStream buffer_;
+  private byte[] buf2_;
+  private byte[] buf3_;
 }

@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -82,18 +82,18 @@ public class MidiUtil {
     // It's easier to just enumerate them than to make a loop.
     //
     if ((value & 0xF0000000) != 0) {
-      output.write(0x80 | ((value >> 28) & 0xFF));
+      output.write(0x80 | ((value >> 28) & 0x7F));
     }
     if ((value & 0xFFE00000) != 0) {
-      output.write(0x80 | ((value >> 21) & 0xFF));
+      output.write(0x80 | ((value >> 21) & 0x7F));
     }
     if ((value & 0xFFFFC000) != 0) {
-      output.write(0x80 | ((value >> 14) & 0xFF));
+      output.write(0x80 | ((value >> 14) & 0x7F));
     }
     if ((value & 0xFFFFFF80) != 0) {
-      output.write(0x80 | ((value >> 7) & 0xFF));
+      output.write(0x80 | ((value >> 7) & 0x7F));
     }
-    output.write(value & 0xFF);
+    output.write(value & 0x7F);
   }
 
   /**
