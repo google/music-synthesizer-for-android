@@ -41,7 +41,7 @@ import android.util.Log;
 import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.AndroidGlue;
 import com.levien.synthesizer.android.usb.UsbMidiDevice;
-import com.levien.synthesizer.core.midi.MessageForwarder;
+import com.levien.synthesizer.core.midi.MessageTee;
 import com.levien.synthesizer.core.midi.MidiListener;
 import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
 
@@ -100,31 +100,7 @@ public class SynthesizerService extends Service {
         Log.e(getClass().getName(), "loading patches failed");
       }
     }
-    midiListener_ = new MessageForwarder(androidGlue_) {
-      @Override
-      public void onController(int channel, int control, int value) {
-        super.onController(channel, control, value);
-        if (onCcListener_!= null) {
-          onCcListener_.onCcChange(channel, control, value);
-        }
-      }
-
-      @Override
-      public void onNoteOn(int channel, int note, int velocity) {
-        super.onNoteOn(channel, note, velocity);
-        if (onNoteOnListener_ != null) {
-          onNoteOnListener_.onNote(channel, note, velocity);
-        }
-      }
-
-      @Override
-      public void onNoteOff(int channel, int note, int velocity) {
-        super.onNoteOff(channel, note, velocity);
-        if (onNoteOffListener_ != null) {
-          onNoteOffListener_.onNote(channel, note, velocity);
-        }
-      }
-    };
+    midiListener_ = new MessageTee(androidGlue_);
     androidGlue_.setPlayState(true);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
       IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -288,25 +264,11 @@ public class SynthesizerService extends Service {
     }
   };
 
-  // There's a pretty good case to be made this should just tee a MidiListener instead
-  public interface OnCcListener {
-    abstract void onCcChange(int channel, int cc, int value);
+  public void setMidiListener(MidiListener target) {
+    midiListener_.setSecondTarget(target);
   }
 
-  public interface OnNoteListener {
-    abstract void onNote(int channel, int note, int velocity);
-  }
-
-  public void setOnCcListener(OnCcListener onCcListener) {
-    onCcListener_ = onCcListener;
-  }
-
-  public void setOnNoteListeners(OnNoteListener onNoteOn, OnNoteListener onNoteOff) {
-    onNoteOnListener_ = onNoteOn;
-    onNoteOffListener_ = onNoteOff;
-  }
-
-  private MidiListener midiListener_;
+  private MessageTee midiListener_;
 
   // Binder to use for Activities in this process.
   private final IBinder binder_ = new LocalBinder();
@@ -322,8 +284,4 @@ public class SynthesizerService extends Service {
   private UsbInterface usbMidiInterface_;
   private UsbDevice usbDeviceNeedsPermission_;
 
-  // Plumbing for MIDI events
-  private OnCcListener onCcListener_;
-  private OnNoteListener onNoteOnListener_;
-  private OnNoteListener onNoteOffListener_;
 }

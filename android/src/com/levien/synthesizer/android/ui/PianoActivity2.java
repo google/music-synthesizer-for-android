@@ -16,7 +16,6 @@
 
 package com.levien.synthesizer.android.ui;
 
-import java.util.HashMap;
 import java.util.List;
 
 import android.annotation.TargetApi;
@@ -29,8 +28,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,10 +42,11 @@ import android.widget.Spinner;
 
 import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.service.SynthesizerService;
-import com.levien.synthesizer.android.usb.UsbMidiDevice;
 import com.levien.synthesizer.android.widgets.knob.KnobListener;
 import com.levien.synthesizer.android.widgets.knob.KnobView;
 import com.levien.synthesizer.android.widgets.piano.PianoView;
+import com.levien.synthesizer.core.midi.MidiAdapter;
+import com.levien.synthesizer.core.midi.MidiListener;
 
 /**
  * Activity for simply playing the piano.
@@ -69,44 +67,6 @@ public class PianoActivity2 extends Activity {
     resonanceKnob_ = (KnobView)findViewById(R.id.resonanceKnob);
     overdriveKnob_ = (KnobView)findViewById(R.id.overdriveKnob);
     presetSpinner_ = (Spinner)findViewById(R.id.presetSpinner);
-
-    presetSpinner_.setOnItemSelectedListener(new OnItemSelectedListener() {
-      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (synthesizerService_ != null) {
-          synthesizerService_.getMidiListener().onProgramChange(0, position);
-        }
-      }
-      public void onNothingSelected(AdapterView<?> parent) {
-      }
-    });
-
-    cutoffKnob_.setKnobListener(new KnobListener() {
-      public void onKnobChanged(double newValue) {
-        // Maybe actually bind these at synthesizer service connection time?
-        if (synthesizerService_ != null) {
-          int value = (int)Math.round(newValue * 127);
-          synthesizerService_.getMidiListener().onController(0, 1, value);
-        }
-      }
-    });
-    resonanceKnob_.setKnobListener(new KnobListener() {
-      public void onKnobChanged(double newValue) {
-        if (synthesizerService_ != null) {
-          int value = (int)Math.round(newValue * 127);
-          synthesizerService_.getMidiListener().onController(0, 2, value);
-        }
-      }
-    });
-    overdriveKnob_.setKnobListener(new KnobListener() {
-      public void onKnobChanged(double newValue) {
-        if (synthesizerService_ != null) {
-          int value = (int)Math.round(newValue * 127);
-          synthesizerService_.getMidiListener().onController(0, 3, value);
-        }
-      }
-    });
-
-    //piano_.bindTo(synthesizerService_.getMidiListener());
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
       setupUsbMidi(getIntent());
@@ -212,71 +172,108 @@ public class PianoActivity2 extends Activity {
     public void onServiceConnected(ComponentName className, IBinder service) {
       SynthesizerService.LocalBinder binder = (SynthesizerService.LocalBinder)service;
       synthesizerService_ = binder.getService();
-      piano_.bindTo(synthesizerService_.getMidiListener());
-
-      // Populate patch names (note: we could update an existing list rather than
-      // creating a new adapter, but it probably wouldn't save all that much).
-      List<String> patchNames = synthesizerService_.getPatchNames();
-      ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-              PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
-      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      presetSpinner_.setAdapter(adapter);
-
-      // Handle any pending USB device events
-      if (usbDevicePending_ != null) {
-        synthesizerService_.connectUsbMidi(usbDevicePending_);
-        usbDevicePending_ = null;
-      } else {
-        UsbDevice device = synthesizerService_.usbDeviceNeedsPermission();
-        if (device != null) {
-          synchronized (usbReceiver_) {
-            if (!permissionRequestPending_) {
-              permissionRequestPending_ = true;
-              UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-              usbManager.requestPermission(device, permissionIntent_);
-            }
-          }
-        }
-      }
-
-      // Connect controller changes to knob views
-      synthesizerService_.setOnCcListener(new SynthesizerService.OnCcListener() {
-        public void onCcChange(final int channel, final int cc, final int value) {
-          runOnUiThread(new Runnable() {
-            public void run() {
-              if (cc == 1) {
-                cutoffKnob_.setValue(value * (1.0 / 127));
-              } else if (cc == 2) {
-                resonanceKnob_.setValue(value * (1.0 / 127));
-              } else if (cc == 3) {
-                overdriveKnob_.setValue(value * (1.0 / 127));
-              }
-            }
-          });
-        }
-      });
-      synthesizerService_.setOnNoteListeners(new SynthesizerService.OnNoteListener() {
-        public void onNote(final int channel, final int note, final int velocity) {
-          runOnUiThread(new Runnable() {
-            public void run() {
-              piano_.setNoteOn(note, true);
-            }
-          });
-        }
-      }, new SynthesizerService.OnNoteListener() {
-        public void onNote(final int channel, final int note, final int velocity) {
-          runOnUiThread(new Runnable() {
-            public void run() {
-              piano_.setNoteOn(note, false);
-            }
-          });
-        }
-      });
+      onSynthConnected();
     }
     public void onServiceDisconnected(ComponentName className) {
+      onSynthDisconnected();
       synthesizerService_ = null;
     }
   };
+
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+  private void onSynthConnected() {
+    final MidiListener synthMidi = synthesizerService_.getMidiListener();
+    piano_.bindTo(synthMidi);
+
+    cutoffKnob_.setKnobListener(new KnobListener() {
+      public void onKnobChanged(double newValue) {
+        int value = (int)Math.round(newValue * 127);
+        synthMidi.onController(0, 1, value);
+      }
+    });
+    resonanceKnob_.setKnobListener(new KnobListener() {
+      public void onKnobChanged(double newValue) {
+        int value = (int)Math.round(newValue * 127);
+        synthMidi.onController(0, 2, value);
+      }
+    });
+    overdriveKnob_.setKnobListener(new KnobListener() {
+      public void onKnobChanged(double newValue) {
+        int value = (int)Math.round(newValue * 127);
+        synthMidi.onController(0, 3, value);
+      }
+    });
+
+    // Connect controller changes to knob views
+    synthesizerService_.setMidiListener(new MidiAdapter() {
+      public void onNoteOn(final int channel, final int note, final int velocity) {
+        runOnUiThread(new Runnable() {
+          public void run() {
+            piano_.setNoteOn(note, true);
+          }
+        });
+      }
+
+      public void onNoteOff(final int channel, final int note, final int velocity) {
+        runOnUiThread(new Runnable() {
+          public void run() {
+            piano_.setNoteOn(note, false);
+          }
+        });
+      }
+
+      public void onController(final int channel, final int cc, final int value) {
+        runOnUiThread(new Runnable() {
+          public void run() {
+            if (cc == 1) {
+              cutoffKnob_.setValue(value * (1.0 / 127));
+            } else if (cc == 2) {
+              resonanceKnob_.setValue(value * (1.0 / 127));
+            } else if (cc == 3) {
+              overdriveKnob_.setValue(value * (1.0 / 127));
+            }
+          }
+        });
+      }
+    });
+
+    // Populate patch names (note: we could update an existing list rather than
+    // creating a new adapter, but it probably wouldn't save all that much).
+    List<String> patchNames = synthesizerService_.getPatchNames();
+    ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+            PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    presetSpinner_.setAdapter(adapter);
+
+    presetSpinner_.setOnItemSelectedListener(new OnItemSelectedListener() {
+      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        synthesizerService_.getMidiListener().onProgramChange(0, position);
+      }
+      public void onNothingSelected(AdapterView<?> parent) {
+      }
+    });
+
+    // Handle any pending USB device events
+    if (usbDevicePending_ != null) {
+      synthesizerService_.connectUsbMidi(usbDevicePending_);
+      usbDevicePending_ = null;
+    } else {
+      UsbDevice device = synthesizerService_.usbDeviceNeedsPermission();
+      if (device != null) {
+        synchronized (usbReceiver_) {
+          if (!permissionRequestPending_) {
+            permissionRequestPending_ = true;
+            UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+            usbManager.requestPermission(device, permissionIntent_);
+          }
+        }
+      }
+    }
+  }
+
+  private void onSynthDisconnected() {
+    synthesizerService_.setMidiListener(null);
+  }
 
   private SynthesizerService synthesizerService_;
 
