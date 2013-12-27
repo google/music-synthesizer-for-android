@@ -115,7 +115,7 @@ public class UsbMidiDevice {
           }
           if (payloadBytes > 0) {
             //Log.d("synth", "sending midi");
-            MessageFromBytes.send(mReceiver, buf, 1, payloadBytes);
+            MessageFromBytes.send(mReceiver, buf, i + 1, payloadBytes);
           }
         }
       }
