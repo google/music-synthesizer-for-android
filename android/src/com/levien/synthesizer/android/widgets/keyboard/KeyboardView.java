@@ -32,9 +32,13 @@ import com.levien.synthesizer.core.midi.MidiListener;
 public class KeyboardView extends View {
   public KeyboardView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    nKeys_ = 36;   // TODO: make configurable
+    nKeys_ = 25;   // TODO: make configurable
     firstKey_ = 48;
     noteStatus_ = new byte[128];
+    noteForFinger_ = new int[FINGERS];
+    for (int i = 0; i < FINGERS; i++) {
+      noteForFinger_[i] = -1;
+    }
     drawingRect_ = new Rect();
     paint_ = new Paint();
     paint_.setAntiAlias(true);
@@ -151,13 +155,34 @@ public class KeyboardView extends View {
       float y = event.getY();
       float pressure = event.getPressure();
       redraw |= onTouchDown(pointerId, x, y, pressure);
+    } else if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {
+      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
+              >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+      int pointerId = event.getPointerId(pointerIndex);
+      if (pointerId < FINGERS && pointerId >= 0) {
+        float x = event.getX(pointerIndex);
+        float y = event.getY(pointerIndex);
+        float pressure = event.getPressure();
+        redraw |= onTouchDown(pointerId, x, y, pressure);
+      }
     } else if (actionCode == MotionEvent.ACTION_UP) {
       int pointerId = event.getPointerId(0);
       float x = event.getX();
       float y = event.getY();
       float pressure = event.getPressure();
       redraw |= onTouchUp(pointerId, x, y, pressure);
+    } else if (actionCode == MotionEvent.ACTION_POINTER_UP) {
+      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
+              >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+      int pointerId = event.getPointerId(pointerIndex);
+      if (pointerId < FINGERS && pointerId >= 0) {
+        float x = event.getX(pointerIndex);
+        float y = event.getY(pointerIndex);
+        float pressure = event.getPressure();
+        redraw |= onTouchUp(pointerId, x, y, pressure);
+      }
     }
+    // TODO: also handle move (glissando or controller change?)
     if (redraw) {
       invalidate();
     }
@@ -184,6 +209,7 @@ public class KeyboardView extends View {
   private boolean onTouchDown(int id, float x, float y, float pressure) {
     int note = hitTest(x, y);
     if (note >= 0) {
+      noteForFinger_[id] = note;
       if (midiListener_ != null) {
         midiListener_.onNoteOn(0, note, 64);
       }
@@ -192,12 +218,13 @@ public class KeyboardView extends View {
   }
 
   private boolean onTouchUp(int id, float x, float y, float pressure) {
-    int note = hitTest(x, y);
+    int note = noteForFinger_[id];
     if (note >= 0) {
       if (midiListener_ != null) {
         midiListener_.onNoteOff(0, note, 64);
       }
     }
+    noteForFinger_[id] = -1;
     return false;
   }
   private MidiListener midiListener_;
@@ -211,4 +238,6 @@ public class KeyboardView extends View {
   private int nKeys_;
   private int firstKey_;
   private byte[] noteStatus_;
+  private static final int FINGERS = 10;
+  private int[] noteForFinger_;
 }
