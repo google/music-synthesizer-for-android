@@ -42,6 +42,8 @@ import android.widget.Spinner;
 
 import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.service.SynthesizerService;
+import com.levien.synthesizer.android.widgets.keyboard.KeyboardSpec;
+import com.levien.synthesizer.android.widgets.keyboard.KeyboardView;
 import com.levien.synthesizer.android.widgets.knob.KnobListener;
 import com.levien.synthesizer.android.widgets.knob.KnobView;
 import com.levien.synthesizer.android.widgets.piano.PianoView;
@@ -62,7 +64,9 @@ public class PianoActivity2 extends Activity {
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     setContentView(R.layout.piano2);
 
-    piano_ = (PianoView)findViewById(R.id.piano);
+    //piano_ = (PianoView)findViewById(R.id.piano);
+    keyboard_ = (KeyboardView)findViewById(R.id.piano);
+    keyboard_.setKeyboardSpec(KeyboardSpec.make3Layer());
     cutoffKnob_ = (KnobView)findViewById(R.id.cutoffKnob);
     resonanceKnob_ = (KnobView)findViewById(R.id.resonanceKnob);
     overdriveKnob_ = (KnobView)findViewById(R.id.overdriveKnob);
@@ -183,7 +187,8 @@ public class PianoActivity2 extends Activity {
   @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   private void onSynthConnected() {
     final MidiListener synthMidi = synthesizerService_.getMidiListener();
-    piano_.bindTo(synthMidi);
+    //piano_.bindTo(synthMidi);
+    keyboard_.setMidiListener(synthMidi);
 
     cutoffKnob_.setKnobListener(new KnobListener() {
       public void onKnobChanged(double newValue) {
@@ -209,7 +214,7 @@ public class PianoActivity2 extends Activity {
       public void onNoteOn(final int channel, final int note, final int velocity) {
         runOnUiThread(new Runnable() {
           public void run() {
-            piano_.setNoteOn(note, true);
+            keyboard_.onNote(note, velocity);
           }
         });
       }
@@ -217,7 +222,7 @@ public class PianoActivity2 extends Activity {
       public void onNoteOff(final int channel, final int note, final int velocity) {
         runOnUiThread(new Runnable() {
           public void run() {
-            piano_.setNoteOn(note, false);
+            keyboard_.onNote(note, 0);
           }
         });
       }
@@ -277,7 +282,8 @@ public class PianoActivity2 extends Activity {
 
   private SynthesizerService synthesizerService_;
 
-  private PianoView piano_;
+  //private PianoView piano_;
+  private KeyboardView keyboard_;
   private KnobView cutoffKnob_;
   private KnobView resonanceKnob_;
   private KnobView overdriveKnob_;

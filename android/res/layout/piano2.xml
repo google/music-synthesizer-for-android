@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.levien.synthesizer"
     android:id="@+id/TableLayout01"
+    android:background="#ffffff"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:stretchColumns="*"
@@ -82,17 +83,13 @@
     </LinearLayout>
   </TableRow>
   <TableRow>
-    <LinearLayout
-        android:layout_height="fill_parent"
-        android:layout_span="6"
-        android:orientation="vertical">
-      <com.levien.synthesizer.android.widgets.piano.PianoView
+      <com.levien.synthesizer.android.widgets.keyboard.KeyboardView
           android:id="@+id/piano"
           android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="fill_parent"
           android:layout_weight="1"
+          android:layout_span="6"
           app:octaves="2"
           app:first_octave="4" />
-    </LinearLayout>
   </TableRow>
 </TableLayout>

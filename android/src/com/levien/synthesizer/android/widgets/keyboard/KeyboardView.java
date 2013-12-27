@@ -24,12 +24,15 @@ import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+
+import com.levien.synthesizer.core.midi.MidiListener;
 
 public class KeyboardView extends View {
   public KeyboardView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    nKeys_ = 24;   // TODO: make configurable
+    nKeys_ = 36;   // TODO: make configurable
     firstKey_ = 48;
     noteStatus_ = new byte[128];
     drawingRect_ = new Rect();
@@ -44,6 +47,10 @@ public class KeyboardView extends View {
     keyboardSpec_ = keyboardSpec;
     keyboardScale_ = 1.0f / keyboardSpec_.repeatWidth * keyboardSpec_.keys.length / nKeys_;
     invalidate();
+  }
+
+  public void setMidiListener(MidiListener listener) {
+    midiListener_ = listener;
   }
 
   public void onNote(int note, int velocity) {
@@ -63,7 +70,6 @@ public class KeyboardView extends View {
     float y0 = drawingRect_.top + strokeWidth_ * 0.5f;
     for (int i = 0; i < nKeys_; i++) {
       KeySpec ks = keyboardSpec_.keys[i % keyboardSpec_.keys.length];
-      Log.d("synth", "ks["+i+"] = " + ks);
       float x = x0 + ((i / keyboardSpec_.keys.length) * keyboardSpec_.repeatWidth +
               ks.rect.left) * xscale;
       float y = y0 + ks.rect.top * yscale;
@@ -89,6 +95,7 @@ public class KeyboardView extends View {
         paint_.setStyle(Style.STROKE);
         canvas.drawRect(x, y, x + width + strokeWidth_, y + height + strokeWidth_, paint_);
       }
+      // TODO: draw optional note text
     }
   }
 
@@ -132,6 +139,68 @@ public class KeyboardView extends View {
 
     setMeasuredDimension(width, height);
   }
+
+  @Override
+  public boolean onTouchEvent(MotionEvent event) {
+    int action = event.getAction();
+    int actionCode = action & MotionEvent.ACTION_MASK;
+    boolean redraw = false;
+    if (actionCode == MotionEvent.ACTION_DOWN) {
+      int pointerId = event.getPointerId(0);
+      float x = event.getX();
+      float y = event.getY();
+      float pressure = event.getPressure();
+      redraw |= onTouchDown(pointerId, x, y, pressure);
+    } else if (actionCode == MotionEvent.ACTION_UP) {
+      int pointerId = event.getPointerId(0);
+      float x = event.getX();
+      float y = event.getY();
+      float pressure = event.getPressure();
+      redraw |= onTouchUp(pointerId, x, y, pressure);
+    }
+    if (redraw) {
+      invalidate();
+    }
+    return true;
+  }
+
+  private int hitTest(float x, float y) {
+    /* convert x and y to KeyboardSpec space */
+    float xscale = (drawingRect_.width() - strokeWidth_) * keyboardScale_;
+    float yscale = (drawingRect_.height() - strokeWidth_)  / keyboardSpec_.height;
+    float xk = (x - 0.5f * strokeWidth_) / xscale;
+    float yk = (y - 0.5f * strokeWidth_) / yscale;
+    for (int i = 0; i < nKeys_; i++) {
+      KeySpec ks = keyboardSpec_.keys[i % keyboardSpec_.keys.length];
+      float kx0 = ks.rect.left + (i / keyboardSpec_.keys.length) * keyboardSpec_.repeatWidth;
+      if (xk >= kx0 && xk < kx0 + ks.rect.width() &&
+              yk >= ks.rect.top && yk < ks.rect.bottom) {
+        return i + firstKey_;
+      }
+    }
+    return -1;
+  }
+
+  private boolean onTouchDown(int id, float x, float y, float pressure) {
+    int note = hitTest(x, y);
+    if (note >= 0) {
+      if (midiListener_ != null) {
+        midiListener_.onNoteOn(0, note, 64);
+      }
+    }
+    return false;
+  }
+
+  private boolean onTouchUp(int id, float x, float y, float pressure) {
+    int note = hitTest(x, y);
+    if (note >= 0) {
+      if (midiListener_ != null) {
+        midiListener_.onNoteOff(0, note, 64);
+      }
+    }
+    return false;
+  }
+  private MidiListener midiListener_;
 
   private Rect drawingRect_;
   private Paint paint_;

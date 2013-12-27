@@ -264,6 +264,12 @@ public class SynthesizerService extends Service {
     }
   };
 
+  /**
+   * Set a MidiListener. At the moment, this listener gets all MIDI events, but
+   * it might change to only get them from the USB MIDI device.
+   *
+   * @param target MidiListener to receive messages, or null if none
+   */
   public void setMidiListener(MidiListener target) {
     midiListener_.setSecondTarget(target);
   }
