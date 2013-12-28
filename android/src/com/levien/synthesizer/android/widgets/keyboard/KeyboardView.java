@@ -32,8 +32,8 @@ import com.levien.synthesizer.core.midi.MidiListener;
 public class KeyboardView extends View {
   public KeyboardView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    nKeys_ = 36;   // TODO: make configurable
-    firstKey_ = 36;
+    nKeys_ = 25;   // TODO: make configurable
+    firstKey_ = 48;
     noteStatus_ = new byte[128];
     noteForFinger_ = new int[FINGERS];
     for (int i = 0; i < FINGERS; i++) {
@@ -136,6 +136,9 @@ public class KeyboardView extends View {
     int width = 0;
     int height = 0;
 
+    float density = getResources().getDisplayMetrics().density;
+    int maxHeight = (int) (300.0f * density + 0.5f);
+
     switch (widthMode) {
       case MeasureSpec.EXACTLY:
         width = widthSize;
@@ -153,7 +156,7 @@ public class KeyboardView extends View {
         height = heightSize;
         break;
       case MeasureSpec.AT_MOST:
-        height = heightSize;
+        height = Math.min(maxHeight, heightSize);
         break;
       case MeasureSpec.UNSPECIFIED:
         height = 10;
