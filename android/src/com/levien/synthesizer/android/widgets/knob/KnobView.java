@@ -275,7 +275,7 @@ public class KnobView extends View {
 
     // Draw text.
     String knobValueString = String.format("%.2f", getValue());
-    Typeface typeface = Typeface.create(knobPaint_.getTypeface(), Typeface.BOLD);
+    Typeface typeface = Typeface.DEFAULT_BOLD;
     knobPaint_.setTypeface(typeface);
     knobPaint_.setTextAlign(Align.CENTER);
     knobPaint_.setTextSize(rectF_.width() / 8);

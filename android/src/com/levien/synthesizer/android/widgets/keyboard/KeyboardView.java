@@ -22,8 +22,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -32,8 +32,8 @@ import com.levien.synthesizer.core.midi.MidiListener;
 public class KeyboardView extends View {
   public KeyboardView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    nKeys_ = 25;   // TODO: make configurable
-    firstKey_ = 48;
+    nKeys_ = 36;   // TODO: make configurable
+    firstKey_ = 36;
     noteStatus_ = new byte[128];
     noteForFinger_ = new int[FINGERS];
     for (int i = 0; i < FINGERS; i++) {
@@ -43,8 +43,12 @@ public class KeyboardView extends View {
     paint_ = new Paint();
     paint_.setAntiAlias(true);
     float density = getResources().getDisplayMetrics().density;
+    textSize_ = 32.0f * density;
+    paint_.setTextSize(textSize_);
+    paint_.setTextAlign(Paint.Align.CENTER);
     strokeWidth_ = 1.0f * density;
     paint_.setStrokeWidth(strokeWidth_);
+    keyboardSpec_ = KeyboardSpec.make2Layer();
   }
 
   public void setKeyboardSpec(KeyboardSpec keyboardSpec) {
@@ -79,7 +83,8 @@ public class KeyboardView extends View {
       float y = y0 + ks.rect.top * yscale;
       float width = ks.rect.width() * xscale - strokeWidth_;
       float height = ks.rect.height() * yscale - strokeWidth_;
-      int vel = noteStatus_[i + firstKey_];
+      int note = i + firstKey_;
+      int vel = noteStatus_[note];
       if (vel == 0) {
         paint_.setColor(ks.color);
       } else {
@@ -98,8 +103,22 @@ public class KeyboardView extends View {
         paint_.setColor(Color.BLACK);
         paint_.setStyle(Style.STROKE);
         canvas.drawRect(x, y, x + width + strokeWidth_, y + height + strokeWidth_, paint_);
+      } else {
+        paint_.setColor(Color.WHITE);
       }
-      // TODO: draw optional note text
+
+      // Draw note label
+      if (note % 12 == 0) {
+        float xs = x + width/2;
+        float ys = y + 0.5f * height + 0.35f * textSize_;
+        paint_.setStyle(Style.FILL);
+        if (note % 12 == 0) {
+          paint_.setTypeface(Typeface.DEFAULT_BOLD);
+        } else {
+          paint_.setTypeface(Typeface.DEFAULT);
+        }
+        canvas.drawText(noteString(note), xs, ys, paint_);
+      }
     }
   }
 
@@ -181,8 +200,17 @@ public class KeyboardView extends View {
         float pressure = event.getPressure();
         redraw |= onTouchUp(pointerId, x, y, pressure);
       }
+    } else if (actionCode == MotionEvent.ACTION_MOVE) {
+      for (int pointerIndex = 0; pointerIndex < event.getPointerCount(); pointerIndex++) {
+        int pointerId = event.getPointerId(pointerIndex);
+        if (pointerId < FINGERS) {
+          float x = event.getX(pointerIndex);
+          float y = event.getY(pointerIndex);
+          float pressure = event.getPressure();
+          redraw |= onTouchMove(pointerId, x, y, pressure);
+        }
+      }
     }
-    // TODO: also handle move (glissando or controller change?)
     if (redraw) {
       invalidate();
     }
@@ -206,13 +234,27 @@ public class KeyboardView extends View {
     return -1;
   }
 
+  private int computeVelocity(float pressure) {
+    float sensitivity = 0.5f;  // TODO: configure
+    int velocity = (int) ((0.5f + sensitivity * (pressure - 0.5f)) * 127.0f + 0.5f);
+    if (velocity < 1) {
+      velocity = 1;
+    } else if (velocity > 127) {
+      velocity = 127;
+    }
+    return velocity;
+  }
+
   private boolean onTouchDown(int id, float x, float y, float pressure) {
     int note = hitTest(x, y);
-    if (note >= 0) {
+    if (note >= 0 && noteStatus_[note] == 0) {
+      int velocity = computeVelocity(pressure);
       noteForFinger_[id] = note;
+      noteStatus_[note] = (byte)velocity;
       if (midiListener_ != null) {
-        midiListener_.onNoteOn(0, note, 64);
+        midiListener_.onNoteOn(0, note, velocity);
       }
+      return true;
     }
     return false;
   }
@@ -220,18 +262,56 @@ public class KeyboardView extends View {
   private boolean onTouchUp(int id, float x, float y, float pressure) {
     int note = noteForFinger_[id];
     if (note >= 0) {
+      int velocity = noteStatus_[note];
       if (midiListener_ != null) {
-        midiListener_.onNoteOff(0, note, 64);
+        midiListener_.onNoteOff(0, note, velocity);
       }
+      noteForFinger_[id] = -1;
+      noteStatus_[note] = 0;
+      return true;
     }
-    noteForFinger_[id] = -1;
     return false;
   }
+
+  private boolean onTouchMove(int id, float x, float y, float pressure) {
+    int oldNote = noteForFinger_[id];
+    int newNote = hitTest(x, y);
+    if (newNote != -1 && newNote != oldNote && noteStatus_[newNote] == 0) {
+      // keep consistent velocity; new is likely to be too high
+      if (oldNote >= 0) {
+        int velocity = noteStatus_[oldNote];
+        if (midiListener_ != null) {
+          midiListener_.onNoteOff(0, oldNote, velocity);
+          midiListener_.onNoteOn(0, newNote, velocity);
+        }
+        noteForFinger_[id] = newNote;
+        noteStatus_[oldNote] = 0;
+        noteStatus_[newNote] = (byte)velocity;
+      } else {
+        // moving onto active note from dead zone
+        int velocity = 64;
+        if (midiListener_ != null) {
+          midiListener_.onNoteOn(0, newNote, velocity);
+        }
+        noteForFinger_[id] = newNote;
+        noteStatus_[newNote] = (byte)velocity;
+      }
+      return true;
+    }
+  return false;
+  }
+
+  private static String noteString(int note) {
+    int octave = note / 12 - 1;
+    return NOTE_NAMES[note % 12] + Integer.toString(octave);
+  }
+
   private MidiListener midiListener_;
 
   private Rect drawingRect_;
   private Paint paint_;
   private float strokeWidth_;
+  private float textSize_;
   private float keyboardScale_;
 
   private KeyboardSpec keyboardSpec_;
@@ -240,4 +320,7 @@ public class KeyboardView extends View {
   private byte[] noteStatus_;
   private static final int FINGERS = 10;
   private int[] noteForFinger_;
+  static final String[] NOTE_NAMES = new String[] {
+          "C", "C\u266f", "D", "D\u266f", "E", "F", "F\u266f", "G", "G\u266f", "A", "A\u266f", "B"
+        };
 }

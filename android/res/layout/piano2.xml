@@ -15,12 +15,12 @@
         android:id="@+id/cutoffLabel"
         android:gravity="center_horizontal" />
     <TextView
-        android:text="@+string/resonance"
+        android:text="@string/resonance"
         android:width="30sp"
         android:id="@+id/resonanceLabel"
         android:gravity="center_horizontal" />
     <TextView
-        android:text="@+string/overdrive"
+        android:text="@string/overdrive"
         android:width="30sp"
         android:id="@+id/overdriveLabel"
         android:gravity="center_horizontal" />
