@@ -32,8 +32,8 @@ import com.levien.synthesizer.core.midi.MidiListener;
 public class KeyboardView extends View {
   public KeyboardView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    nKeys_ = 25;   // TODO: make configurable
-    firstKey_ = 48;
+    nKeys_ = 108;   // TODO: make configurable
+    firstKey_ = 0;
     noteStatus_ = new byte[128];
     noteForFinger_ = new int[FINGERS];
     for (int i = 0; i < FINGERS; i++) {
@@ -49,11 +49,13 @@ public class KeyboardView extends View {
     strokeWidth_ = 1.0f * density;
     paint_.setStrokeWidth(strokeWidth_);
     keyboardSpec_ = KeyboardSpec.make2Layer();
+    offset_ = 0.0f;
+    zoom_ = 1.0f;
   }
 
   public void setKeyboardSpec(KeyboardSpec keyboardSpec) {
     keyboardSpec_ = keyboardSpec;
-    keyboardScale_ = 1.0f / keyboardSpec_.repeatWidth * keyboardSpec_.keys.length / nKeys_;
+    keyboardScale_ = zoom_ / keyboardSpec_.repeatWidth * keyboardSpec_.keys.length / nKeys_;
     invalidate();
   }
 
@@ -68,13 +70,20 @@ public class KeyboardView extends View {
     }
   }
 
+  public void setScrollZoom(float offset, float zoom) {
+    offset_ = offset;
+    zoom_ = zoom;
+    keyboardScale_ = zoom_ / keyboardSpec_.repeatWidth * keyboardSpec_.keys.length / nKeys_;
+    invalidate();
+  }
+
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     getDrawingRect(drawingRect_);
     float xscale = (drawingRect_.width() - strokeWidth_) * keyboardScale_;
     float yscale = (drawingRect_.height() - strokeWidth_)  / keyboardSpec_.height;
-    float x0 = drawingRect_.left + strokeWidth_ * 0.5f;
+    float x0 = drawingRect_.left + strokeWidth_ * 0.5f + offset_;
     float y0 = drawingRect_.top + strokeWidth_ * 0.5f;
     for (int i = 0; i < nKeys_; i++) {
       KeySpec ks = keyboardSpec_.keys[i % keyboardSpec_.keys.length];
@@ -224,7 +233,7 @@ public class KeyboardView extends View {
     /* convert x and y to KeyboardSpec space */
     float xscale = (drawingRect_.width() - strokeWidth_) * keyboardScale_;
     float yscale = (drawingRect_.height() - strokeWidth_)  / keyboardSpec_.height;
-    float xk = (x - 0.5f * strokeWidth_) / xscale;
+    float xk = (x - 0.5f * strokeWidth_ - offset_) / xscale;
     float yk = (y - 0.5f * strokeWidth_) / yscale;
     for (int i = 0; i < nKeys_; i++) {
       KeySpec ks = keyboardSpec_.keys[i % keyboardSpec_.keys.length];
@@ -316,6 +325,9 @@ public class KeyboardView extends View {
   private float strokeWidth_;
   private float textSize_;
   private float keyboardScale_;
+
+  private float offset_;
+  private float zoom_;
 
   private KeyboardSpec keyboardSpec_;
   private int nKeys_;

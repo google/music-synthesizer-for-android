@@ -44,9 +44,9 @@ import com.levien.synthesizer.R;
 import com.levien.synthesizer.android.service.SynthesizerService;
 import com.levien.synthesizer.android.widgets.keyboard.KeyboardSpec;
 import com.levien.synthesizer.android.widgets.keyboard.KeyboardView;
+import com.levien.synthesizer.android.widgets.keyboard.ScrollStripView;
 import com.levien.synthesizer.android.widgets.knob.KnobListener;
 import com.levien.synthesizer.android.widgets.knob.KnobView;
-import com.levien.synthesizer.android.widgets.piano.PianoView;
 import com.levien.synthesizer.core.midi.MidiAdapter;
 import com.levien.synthesizer.core.midi.MidiListener;
 
@@ -67,6 +67,8 @@ public class PianoActivity2 extends Activity {
     //piano_ = (PianoView)findViewById(R.id.piano);
     keyboard_ = (KeyboardView)findViewById(R.id.piano);
     keyboard_.setKeyboardSpec(KeyboardSpec.make3Layer());
+    ScrollStripView scrollStrip_ = (ScrollStripView)findViewById(R.id.scrollstrip);
+    scrollStrip_.bindKeyboard(keyboard_);
     cutoffKnob_ = (KnobView)findViewById(R.id.cutoffKnob);
     resonanceKnob_ = (KnobView)findViewById(R.id.resonanceKnob);
     overdriveKnob_ = (KnobView)findViewById(R.id.overdriveKnob);

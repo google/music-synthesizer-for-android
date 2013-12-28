@@ -84,6 +84,16 @@
           -->
     </LinearLayout>
   </TableRow>
+  <TableRow
+      >
+      <com.levien.synthesizer.android.widgets.keyboard.ScrollStripView
+          android:id="@+id/scrollstrip"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_span="6"
+          />
+  </TableRow>
   <TableRow>
       <com.levien.synthesizer.android.widgets.keyboard.KeyboardView
           android:id="@+id/piano"
