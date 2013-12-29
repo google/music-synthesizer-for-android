@@ -32,8 +32,8 @@ import com.levien.synthesizer.core.midi.MidiListener;
 public class KeyboardView extends View {
   public KeyboardView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    nKeys_ = 108;   // TODO: make configurable
-    firstKey_ = 0;
+    nKeys_ = 96;
+    firstKey_ = 12;
     noteStatus_ = new byte[128];
     noteForFinger_ = new int[FINGERS];
     for (int i = 0; i < FINGERS; i++) {
@@ -75,6 +75,11 @@ public class KeyboardView extends View {
     zoom_ = zoom;
     keyboardScale_ = zoom_ / keyboardSpec_.repeatWidth * keyboardSpec_.keys.length / nKeys_;
     invalidate();
+  }
+
+  public float getMaxScroll() {
+    float width = drawingRect_.width();
+    return (zoom_ - 1) * width;
   }
 
   @Override

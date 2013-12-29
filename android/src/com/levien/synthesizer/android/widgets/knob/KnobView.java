@@ -60,6 +60,7 @@ public class KnobView extends View {
     knobPaint_.setColor(Color.WHITE);
     float density = getResources().getDisplayMetrics().density;
     knobPaint_.setStrokeWidth(2.0f * density);
+    arcWidth_ = 8.0f * density;
     rect_ = new Rect();
     rectF_ = new RectF();
     textRect_ = new Rect();
@@ -264,18 +265,18 @@ public class KnobView extends View {
 
     // Draw indicator.
     knobPaint_.setShader(null);
-    knobPaint_.setColor(Color.WHITE);
+    knobPaint_.setColor(Color.BLACK);
     knobPaint_.setStyle(Style.STROKE);
-    final float arcWidth = 15.0f;
     canvas.drawArc(rectF_,
-                   (float)(knobValue_ * 360 * 0.8 + 90 - arcWidth / 2 + 36),
-                   (float)arcWidth,
+                   (float)(knobValue_ * 360 * 0.8 + 90 - arcWidth_ / 2 + 36),
+                   (float)arcWidth_,
                    false,
                    knobPaint_);
 
     // Draw text.
     String knobValueString = String.format("%.2f", getValue());
     Typeface typeface = Typeface.DEFAULT_BOLD;
+    knobPaint_.setColor(Color.WHITE);
     knobPaint_.setTypeface(typeface);
     knobPaint_.setTextAlign(Align.CENTER);
     knobPaint_.setTextSize(rectF_.width() / 8);
@@ -378,6 +379,8 @@ public class KnobView extends View {
   private SweepGradient sweepGradient_;
   private RadialGradient radialGradient_;
   private RadialGradient innerRadialGradient_;
+
+  private float arcWidth_;
 
   // Position of the finger relative to the knob.
   private double previousX_ = 0;

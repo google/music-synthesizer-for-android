@@ -88,8 +88,8 @@
       >
       <com.levien.synthesizer.android.widgets.keyboard.ScrollStripView
           android:id="@+id/scrollstrip"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
+          android:layout_width="match_parent"
+          android:layout_height="30dp"
           android:layout_weight="1"
           android:layout_span="6"
           />

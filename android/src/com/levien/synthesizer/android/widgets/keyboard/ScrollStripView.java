@@ -18,6 +18,7 @@ package com.levien.synthesizer.android.widgets.keyboard;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -29,10 +30,13 @@ public class ScrollStripView extends View {
     super(context, attrs);
     drawingRect_ = new Rect();
     paint_ = new Paint();
+    paint_.setAntiAlias(true);
+    paint_.setStyle(Paint.Style.FILL);
+    paint_.setColor(Color.GRAY);
     touchDown_ = new boolean[2];
     touchx_ = new float[2];
     offset_ = -2000.0f;  // TODO: make more systematic
-    zoom_ = 3.0f;
+    zoom_ = 2.5f;
   }
 
   public void bindKeyboard(KeyboardView kv) {
@@ -43,12 +47,16 @@ public class ScrollStripView extends View {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
+    float density = getResources().getDisplayMetrics().density;
     getDrawingRect(drawingRect_);
-    float x0 = 100f + offset_;
-    float x1 = x0 + 100f * zoom_;
-    paint_.setStyle(Paint.Style.STROKE);
-    canvas.drawLine(x0, drawingRect_.top, x0, drawingRect_.bottom, paint_);
-    canvas.drawLine(x1, drawingRect_.top, x1, drawingRect_.bottom, paint_);
+    float y = drawingRect_.centerY();
+    float spacing = 10f * density * zoom_;
+    int min = -(int)(offset_ / spacing);
+    int max = -(int)((offset_ - drawingRect_.width()) / spacing) + 1;
+    for (int i = min; i <= max; i++) {
+      float x = offset_ + i * 10f * density * zoom_;
+      canvas.drawCircle(x, y, 3.0f * density, paint_);
+    }
   }
 
   private boolean onTouchDown(int id, float x) {
@@ -117,11 +125,14 @@ public class ScrollStripView extends View {
         redraw = true;
       } else if (touchDown_[0] && touchDown_[1]) {
         zoom_ = scaleAtTouch_ * (touchx_[1] - touchx_[0]);
+        // TODO: min and max zoom values maybe should depend on screen size
+        zoom_ = Math.max(1.0f, zoom_);
+        zoom_ = Math.min(4.0f, zoom_);
         offset_ = touchx_[0] + zoom_ / zoomAtTouch_ * deltaAtTouch_;
         redraw = true;
       }
+      offset_ = Math.max(-keyboardView_.getMaxScroll(), offset_);
       offset_ = Math.min(0, offset_);
-      // TODO: max offset
     }
     if (redraw) {
       if (keyboardView_ != null) {
@@ -130,50 +141,6 @@ public class ScrollStripView extends View {
       invalidate();
     }
     return true;
-  }
-
-  /**
-   * Layout measurement for this widget.
-   * This method just sets a basic minimum size and makes the widget maximized otherwise.
-   */
-  @Override
-  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-    int width = 0;
-    int height = 0;
-
-    float density = getResources().getDisplayMetrics().density;
-    int maxHeight = (int) (50.0f * density + 0.5f);
-
-    switch (widthMode) {
-      case MeasureSpec.EXACTLY:
-        width = widthSize;
-        break;
-      case MeasureSpec.AT_MOST:
-        width = widthSize;
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        width = 10;
-        break;
-    }
-
-    switch (heightMode) {
-      case MeasureSpec.EXACTLY:
-        height = heightSize;
-        break;
-      case MeasureSpec.AT_MOST:
-        height = Math.min(maxHeight, heightSize);
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        height = 10;
-        break;
-    }
-
-    setMeasuredDimension(width, height);
   }
 
   Rect drawingRect_;

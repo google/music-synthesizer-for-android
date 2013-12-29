@@ -66,7 +66,7 @@ public class PianoActivity2 extends Activity {
 
     //piano_ = (PianoView)findViewById(R.id.piano);
     keyboard_ = (KeyboardView)findViewById(R.id.piano);
-    keyboard_.setKeyboardSpec(KeyboardSpec.make3Layer());
+    keyboard_.setKeyboardSpec(KeyboardSpec.make2Layer());
     ScrollStripView scrollStrip_ = (ScrollStripView)findViewById(R.id.scrollstrip);
     scrollStrip_.bindKeyboard(keyboard_);
     cutoffKnob_ = (KnobView)findViewById(R.id.cutoffKnob);
