@@ -83,8 +83,7 @@ public class ScrollStripView extends View {
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
-    int action = event.getAction();
-    int actionCode = action & MotionEvent.ACTION_MASK;
+    int actionCode = event.getActionMasked();
     boolean redraw = false;
     if (actionCode == MotionEvent.ACTION_DOWN) {
       int pointerId = event.getPointerId(0);
@@ -92,8 +91,7 @@ public class ScrollStripView extends View {
         redraw = onTouchDown(pointerId, event.getX());
       }
     } else if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {
-      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
-              >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+      int pointerIndex = event.getActionIndex();
       int pointerId = event.getPointerId(pointerIndex);
       if (pointerId < 2 && pointerId >= 0) {
         redraw = onTouchDown(pointerId, event.getX(pointerIndex));
@@ -104,8 +102,7 @@ public class ScrollStripView extends View {
         onTouchUp(pointerId);
       }
     } else if (actionCode == MotionEvent.ACTION_POINTER_UP) {
-      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
-              >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+      int pointerIndex = event.getActionIndex();
       int pointerId = event.getPointerId(pointerIndex);
       if (pointerId < 2 && pointerId >= 0) {
         onTouchUp(pointerId);
@@ -126,8 +123,9 @@ public class ScrollStripView extends View {
       } else if (touchDown_[0] && touchDown_[1]) {
         zoom_ = scaleAtTouch_ * (touchx_[1] - touchx_[0]);
         // TODO: min and max zoom values maybe should depend on screen size
+        // Also, zoom range should be on the larger side for 3 level layout
         zoom_ = Math.max(1.0f, zoom_);
-        zoom_ = Math.min(4.0f, zoom_);
+        zoom_ = Math.min(5.0f, zoom_);
         offset_ = touchx_[0] + zoom_ / zoomAtTouch_ * deltaAtTouch_;
         redraw = true;
       }

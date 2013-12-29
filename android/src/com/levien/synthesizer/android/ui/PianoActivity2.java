@@ -24,12 +24,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -51,7 +55,7 @@ import com.levien.synthesizer.core.midi.MidiListener;
  * This version is hacked up to send MIDI to the C++ engine. This needs to
  * be refactored to make it cleaner.
  */
-public class PianoActivity2 extends SynthActivity {
+public class PianoActivity2 extends SynthActivity implements OnSharedPreferenceChangeListener {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     Log.d("synth", "activity onCreate " + getIntent());
@@ -60,9 +64,7 @@ public class PianoActivity2 extends SynthActivity {
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     setContentView(R.layout.piano2);
 
-    //piano_ = (PianoView)findViewById(R.id.piano);
     keyboard_ = (KeyboardView)findViewById(R.id.piano);
-    keyboard_.setKeyboardSpec(KeyboardSpec.make2Layer());
     ScrollStripView scrollStrip_ = (ScrollStripView)findViewById(R.id.scrollstrip);
     scrollStrip_.bindKeyboard(keyboard_);
     cutoffKnob_ = (KnobView)findViewById(R.id.cutoffKnob);
@@ -82,6 +84,16 @@ public class PianoActivity2 extends SynthActivity {
   }
 
   @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.settings:
+        startActivity(new Intent(this, SettingsActivity.class));
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+  @Override
   protected void onDestroy() {
     Log.d("synth", "activity onDestroy");
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
@@ -91,15 +103,30 @@ public class PianoActivity2 extends SynthActivity {
   }
 
   @Override
-  protected void onPause() {
-    Log.d("synth", "activity onPause");
-    super.onPause();
+  protected void onResume() {
+    super.onResume();
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    prefs.registerOnSharedPreferenceChangeListener(this);
+    onSharedPreferenceChanged(prefs, "keyboard_type");
   }
 
   @Override
-  protected void onResume() {
-    Log.d("synth", "activity onResume " + getIntent());
-    super.onResume();
+  protected void onPause() {
+    super.onPause();
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    prefs.unregisterOnSharedPreferenceChangeListener(this);
+
+  }
+
+  public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    if (key.equals("keyboard_type")) {
+      String keyboardType = prefs.getString(key, "2level");
+      if (keyboardType.equals("2level")) {
+        keyboard_.setKeyboardSpec(KeyboardSpec.make2Layer());
+      } else if (keyboardType.equals("3level")) {
+        keyboard_.setKeyboardSpec(KeyboardSpec.make3Layer());
+      }
+    }
   }
 
   @Override
@@ -222,11 +249,16 @@ public class PianoActivity2 extends SynthActivity {
 
     // Populate patch names (note: we could update an existing list rather than
     // creating a new adapter, but it probably wouldn't save all that much).
-    List<String> patchNames = synthesizerService_.getPatchNames();
-    ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-            PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
-    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    presetSpinner_.setAdapter(adapter);
+    if (presetSpinner_.getAdapter() == null) {
+      // Only set it once, which is a workaround that allows the preset
+      // selection to persist for onCreate lifetime. Of course, it should
+      // be persisted for real, instead.
+      List<String> patchNames = synthesizerService_.getPatchNames();
+      ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+              PianoActivity2.this, android.R.layout.simple_spinner_item, patchNames);
+      adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+      presetSpinner_.setAdapter(adapter);
+    }
 
     presetSpinner_.setOnItemSelectedListener(new OnItemSelectedListener() {
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

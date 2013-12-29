@@ -75,6 +75,9 @@
         android:name="com.levien.synthesizer.android.ui.KarplusStrongActivity"
         android:label="@string/karplus_strong"
         android:screenOrientation="landscape" />
+    <activity
+        android:name="com.levien.synthesizer.android.ui.SettingsActivity"
+        android:label="@string/settings" />
     <service android:name=".android.service.SynthesizerService">
     </service>
   </application>

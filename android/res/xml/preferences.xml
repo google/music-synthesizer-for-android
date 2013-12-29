@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<ListPreference
+		android:key="keyboard_type"
+		android:title="@string/pref_keyboardType"
+		android:entries="@array/pref_keyboardType_entries"
+		android:entryValues="@array/pref_keyboardType_values"
+		android:defaultValue="@string/pref_keyboardType_default" />
+</PreferenceScreen>
