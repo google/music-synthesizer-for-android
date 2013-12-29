@@ -19,20 +19,17 @@ package com.levien.synthesizer.android.ui;
 import java.util.List;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -41,7 +38,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.levien.synthesizer.R;
-import com.levien.synthesizer.android.service.SynthesizerService;
 import com.levien.synthesizer.android.widgets.keyboard.KeyboardSpec;
 import com.levien.synthesizer.android.widgets.keyboard.KeyboardView;
 import com.levien.synthesizer.android.widgets.keyboard.ScrollStripView;
@@ -55,7 +51,7 @@ import com.levien.synthesizer.core.midi.MidiListener;
  * This version is hacked up to send MIDI to the C++ engine. This needs to
  * be refactored to make it cleaner.
  */
-public class PianoActivity2 extends Activity {
+public class PianoActivity2 extends SynthActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     Log.d("synth", "activity onCreate " + getIntent());
@@ -80,6 +76,12 @@ public class PianoActivity2 extends Activity {
   }
 
   @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.synth_menu, menu);
+    return true;
+  }
+
+  @Override
   protected void onDestroy() {
     Log.d("synth", "activity onDestroy");
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
@@ -98,19 +100,6 @@ public class PianoActivity2 extends Activity {
   protected void onResume() {
     Log.d("synth", "activity onResume " + getIntent());
     super.onResume();
-  }
-
-  @Override
-  protected void onStart() {
-    super.onStart();
-    bindService(new Intent(this, SynthesizerService.class),
-      synthesizerConnection_, Context.BIND_AUTO_CREATE);
-  }
-
-  @Override
-  protected void onStop() {
-    super.onStop();
-    unbindService(synthesizerConnection_);
   }
 
   @Override
@@ -173,21 +162,8 @@ public class PianoActivity2 extends Activity {
     }
   }
 
-  private ServiceConnection synthesizerConnection_ = new ServiceConnection() {
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-    public void onServiceConnected(ComponentName className, IBinder service) {
-      SynthesizerService.LocalBinder binder = (SynthesizerService.LocalBinder)service;
-      synthesizerService_ = binder.getService();
-      onSynthConnected();
-    }
-    public void onServiceDisconnected(ComponentName className) {
-      onSynthDisconnected();
-      synthesizerService_ = null;
-    }
-  };
-
   @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-  private void onSynthConnected() {
+  protected void onSynthConnected() {
     final MidiListener synthMidi = synthesizerService_.getMidiListener();
     //piano_.bindTo(synthMidi);
     keyboard_.setMidiListener(synthMidi);
@@ -278,11 +254,9 @@ public class PianoActivity2 extends Activity {
     }
   }
 
-  private void onSynthDisconnected() {
+  protected void onSynthDisconnected() {
     synthesizerService_.setMidiListener(null);
   }
-
-  private SynthesizerService synthesizerService_;
 
   //private PianoView piano_;
   private KeyboardView keyboard_;

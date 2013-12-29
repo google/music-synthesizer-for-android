@@ -54,7 +54,7 @@ public class ScrollStripView extends View {
     int min = -(int)(offset_ / spacing);
     int max = -(int)((offset_ - drawingRect_.width()) / spacing) + 1;
     for (int i = min; i <= max; i++) {
-      float x = offset_ + i * 10f * density * zoom_;
+      float x = offset_ + i * spacing;
       canvas.drawCircle(x, y, 3.0f * density, paint_);
     }
   }
