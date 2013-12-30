@@ -11,17 +11,14 @@
   <TableRow>
     <TextView
         android:text="@string/cutoff"
-        android:width="30sp"
         android:id="@+id/cutoffLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text="@string/resonance"
-        android:width="30sp"
         android:id="@+id/resonanceLabel"
         android:gravity="center_horizontal" />
     <TextView
         android:text="@string/overdrive"
-        android:width="30sp"
         android:id="@+id/overdriveLabel"
         android:gravity="center_horizontal" />
     <TextView
@@ -40,18 +37,24 @@
         app:value="1.0"
         app:min="0"
         app:max="1"
+        android:layout_width="@dimen/knobsize"
+        android:layout_height="@dimen/knobsize"
         android:layout_margin="2dp" />
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/resonanceKnob"
         app:value="0.0"
         app:min="0"
         app:max="1"
+        android:layout_width="@dimen/knobsize"
+        android:layout_height="@dimen/knobsize"
         android:layout_margin="2dp" />
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/overdriveKnob"
         app:value="0.0"
         app:min="0"
         app:max="1"
+        android:layout_width="@dimen/knobsize"
+        android:layout_height="@dimen/knobsize"
         android:layout_margin="2dp" />
     <LinearLayout
         android:orientation="vertical"
@@ -89,7 +92,7 @@
       <com.levien.synthesizer.android.widgets.keyboard.ScrollStripView
           android:id="@+id/scrollstrip"
           android:layout_width="match_parent"
-          android:layout_height="30dp"
+          android:layout_height="@dimen/scrollstripheight"
           android:layout_weight="1"
           android:layout_span="6"
           />
