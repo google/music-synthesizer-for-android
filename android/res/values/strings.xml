@@ -86,13 +86,15 @@
   <!-- Preferences -->
   <string name="pref_keyboardType">Keyboard Type</string>
   <string-array name="pref_keyboardType_entries">
-      <item>2 Level (Piano)</item>
-      <item>3 Level</item>
-  </string-array>
+      <item>2 Row (Piano)</item>
+      <item>3 Row</item>
+      <item>3 Row Chromatic</item>
+      </string-array>
   <string-array name="pref_keyboardType_values">
-      <item>2level</item>
-      <item>3level</item>
-  </string-array>
-  <string name="pref_keyboardType_default">2level</string>
+      <item>2row</item>
+      <item>3row</item>
+      <item>3chrome</item>
+      </string-array>
+  <string name="pref_keyboardType_default">2row</string>
 
 </resources>

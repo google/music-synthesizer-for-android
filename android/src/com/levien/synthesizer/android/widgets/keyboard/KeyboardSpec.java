@@ -38,7 +38,7 @@ public class KeyboardSpec {
     addKey(ks);
   }
 
-  public static KeyboardSpec make2Layer() {
+  public static KeyboardSpec make2Row() {
     KeyboardSpec ks = new KeyboardSpec(12, 84, 24);
     final int w = Color.WHITE;
     final int b = Color.BLACK;
@@ -57,7 +57,7 @@ public class KeyboardSpec {
     return ks;
   }
 
-  public static KeyboardSpec make3Layer() {
+  public static KeyboardSpec make3Row() {
     KeyboardSpec ks = new KeyboardSpec(24, 84, 32);
     final int w = Color.WHITE;
     final int b = Color.BLACK;
@@ -79,6 +79,37 @@ public class KeyboardSpec {
       ks.addKey(x0 + 36, y1, 12, 12, w);  // B
     }
     return ks;
+  }
+
+  public static KeyboardSpec make3RowChromatic() {
+    KeyboardSpec ks = new KeyboardSpec(12, 12, 9);
+    final int w = Color.WHITE;
+    final int b = Color.BLACK;
+    ks.addKey(0, 6, 3, 3, w);   // C
+    ks.addKey(1, 3, 3, 3, b);   // C#
+    ks.addKey(2, 0, 3, 3, w);   // D
+    ks.addKey(3, 6, 3, 3, b);   // D#
+    ks.addKey(4, 3, 3, 3, w);   // E
+    ks.addKey(5, 0, 3, 3, w);   // F
+    ks.addKey(6, 6, 3, 3, b);   // F#
+    ks.addKey(7, 3, 3, 3, w);   // G
+    ks.addKey(8, 0, 3, 3, b);   // G#
+    ks.addKey(9, 6, 3, 3, w);   // A
+    ks.addKey(10, 3, 3, 3, b);  // A#
+    ks.addKey(11, 0, 3, 3, w);  // B
+    return ks;
+  }
+
+  public static KeyboardSpec make(String name) {
+    if ("2row".equals(name)) {
+      return make2Row();
+    } else if ("3row".equals(name)) {
+      return make3Row();
+    } else if ("3chrome".equals(name)) {
+      return make3RowChromatic();
+    } else {
+      return null;
+    }
   }
 
   public KeySpec keys[];

@@ -120,12 +120,8 @@ public class PianoActivity2 extends SynthActivity implements OnSharedPreferenceC
 
   public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
     if (key.equals("keyboard_type")) {
-      String keyboardType = prefs.getString(key, "2level");
-      if (keyboardType.equals("2level")) {
-        keyboard_.setKeyboardSpec(KeyboardSpec.make2Layer());
-      } else if (keyboardType.equals("3level")) {
-        keyboard_.setKeyboardSpec(KeyboardSpec.make3Layer());
-      }
+      String keyboardType = prefs.getString(key, "2row");
+      keyboard_.setKeyboardSpec(KeyboardSpec.make(keyboardType));
     }
   }
 
