@@ -49,7 +49,9 @@ public class ScrollStripView extends View {
       int width = right - left;
       zoom_ = 3000f * density / width;
       offset_ = -width * 0.5f * (zoom_ - 1);
-      keyboardView_.setScrollZoom(offset_, zoom_);
+      if (keyboardView_ != null) {
+        keyboardView_.setScrollZoom(offset_, zoom_);
+      }
     }
   }
 

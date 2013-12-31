@@ -136,50 +136,6 @@ public class KeyboardView extends View {
     }
   }
 
-  /**
-   * Layout measurement for this widget.
-   * This method just sets a basic minimum size and makes the widget maximized otherwise.
-   */
-  @Override
-  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-    int width = 0;
-    int height = 0;
-
-    float density = getResources().getDisplayMetrics().density;
-    int maxHeight = (int) (300.0f * density + 0.5f);
-
-    switch (widthMode) {
-      case MeasureSpec.EXACTLY:
-        width = widthSize;
-        break;
-      case MeasureSpec.AT_MOST:
-        width = widthSize;
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        width = 10;
-        break;
-    }
-
-    switch (heightMode) {
-      case MeasureSpec.EXACTLY:
-        height = heightSize;
-        break;
-      case MeasureSpec.AT_MOST:
-        height = Math.min(maxHeight, heightSize);
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        height = 10;
-        break;
-    }
-
-    setMeasuredDimension(width, height);
-  }
-
   @Override
   public boolean onTouchEvent(MotionEvent event) {
     int action = event.getAction();
