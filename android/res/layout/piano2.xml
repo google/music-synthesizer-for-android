@@ -18,7 +18,7 @@
         android:layout_height="@dimen/knobsize"
         android:layout_margin="2dp"
         android:paddingTop="8dp"
-        app:label="@+string/cutoff" />
+        app:label="@string/cutoff" />
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/resonanceKnob"
         app:value="0.0"
@@ -28,7 +28,7 @@
         android:layout_height="@dimen/knobsize"
         android:paddingTop="8dp"
         android:layout_margin="2dp" 
-        app:label="@+string/resonance"/>
+        app:label="@string/resonance"/>
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/overdriveKnob"
         app:value="0.0"
@@ -38,7 +38,7 @@
         android:layout_height="@dimen/knobsize"
         android:paddingTop="8dp"
         android:layout_margin="2dp" 
-        app:label="@+string/overdrive"/>
+        app:label="@string/overdrive"/>
     <LinearLayout
         android:orientation="vertical"
         android:layout_span="3" >
