@@ -49,6 +49,7 @@ public class KnobView extends View {
     knobValue_ = a.getFloat(R.styleable.KnobView_value, 0.5f);
     min_ = a.getFloat(R.styleable.KnobView_min, 0.0f);
     max_ = a.getFloat(R.styleable.KnobView_max, 1.0f);
+    label_ = a.getString(R.styleable.KnobView_label);
     a.recycle();
 
     // Set up the drawing structures.
@@ -61,7 +62,7 @@ public class KnobView extends View {
     rect_ = new Rect();
     rectF_ = new RectF();
     innerRectF_ = new RectF();
-    textHeight_ = 18f * density;  // probably should be set by XML parameter
+    textHeight_ = 16f * density;  // probably should be set by XML parameter
     paint_.setTextSize(textHeight_);
 
     // The listener has to be set later.
@@ -163,6 +164,12 @@ public class KnobView extends View {
 
     getDrawingRect(rect_);
     rectF_.set(rect_);
+    // Apply padding.
+    rectF_.left += getPaddingLeft();
+    rectF_.right -= getPaddingRight();
+    rectF_.top += getPaddingTop();
+    rectF_.bottom -= getPaddingBottom();
+
     // Make it square.
     if (rectF_.height() > rectF_.width()) {
       float center = rectF_.centerY();
@@ -206,7 +213,7 @@ public class KnobView extends View {
     paint_.setStrokeWidth(strokeWidth_);
     canvas.drawCircle(rect_.exactCenterX(),
                       rect_.exactCenterY(),
-                      Math.min(rect_.width(), rect_.height()) * 0.45f - border,
+                      rectF_.width() * 0.45f - border,
                       paint_);
 
     // Draw text.
@@ -219,8 +226,13 @@ public class KnobView extends View {
     paint_.setStyle(Style.FILL);
     canvas.drawText(knobValueString,
                     rect_.centerX(),
-                    rect_.top + 0.8f * textHeight_,
+                    rectF_.top + 0.8f * textHeight_,
                     paint_);
+
+    if (label_ != null) {
+      paint_.setTypeface(Typeface.DEFAULT);
+      canvas.drawText(label_, rect_.centerX(), rectF_.bottom - 0.2f * textHeight_, paint_);
+    }
   }
 
   /**
@@ -317,6 +329,7 @@ public class KnobView extends View {
   private final float startAngle_ = 36f;  // relative to bottom
   private final float strokeWidth_;
   private float sensitivity_;
+  private String label_ = "labelg";
 
   // State of drag gesture
   private float xyAtTouch_;

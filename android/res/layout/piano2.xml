@@ -9,29 +9,6 @@
     android:stretchColumns="*"
     android:shrinkColumns="*">
   <TableRow>
-    <TextView
-        android:text="@string/cutoff"
-        android:id="@+id/cutoffLabel"
-        android:gravity="center_horizontal" />
-    <TextView
-        android:text="@string/resonance"
-        android:id="@+id/resonanceLabel"
-        android:gravity="center_horizontal" />
-    <TextView
-        android:text="@string/overdrive"
-        android:id="@+id/overdriveLabel"
-        android:gravity="center_horizontal" />
-    <TextView
-        android:text=""
-        android:gravity="center_horizontal" />
-    <TextView
-        android:text=""
-        android:gravity="center_horizontal" />
-    <TextView
-        android:text=""
-        android:gravity="center_horizontal" />
-  </TableRow>
-  <TableRow>
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/cutoffKnob"
         app:value="1.0"
@@ -39,7 +16,8 @@
         app:max="1"
         android:layout_width="@dimen/knobsize"
         android:layout_height="@dimen/knobsize"
-        android:layout_margin="2dp" />
+        android:layout_margin="2dp"
+        app:label="@+string/cutoff" />
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/resonanceKnob"
         app:value="0.0"
@@ -47,7 +25,8 @@
         app:max="1"
         android:layout_width="@dimen/knobsize"
         android:layout_height="@dimen/knobsize"
-        android:layout_margin="2dp" />
+        android:layout_margin="2dp" 
+        app:label="@+string/resonance"/>
     <com.levien.synthesizer.android.widgets.knob.KnobView
         android:id="@+id/overdriveKnob"
         app:value="0.0"
@@ -55,7 +34,8 @@
         app:max="1"
         android:layout_width="@dimen/knobsize"
         android:layout_height="@dimen/knobsize"
-        android:layout_margin="2dp" />
+        android:layout_margin="2dp" 
+        app:label="@+string/overdrive"/>
     <LinearLayout
         android:orientation="vertical"
         android:layout_span="3" >
