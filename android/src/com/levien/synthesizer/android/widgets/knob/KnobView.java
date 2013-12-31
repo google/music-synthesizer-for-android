@@ -57,7 +57,7 @@ public class KnobView extends View {
     paint_.setAntiAlias(true);
     paint_.setColor(Color.WHITE);
     float density = getResources().getDisplayMetrics().density;
-    sensitivity_ = .01f * (float)(max_ - min_) / density;  // TODO: should be configurable
+    sensitivity_ = .01f / density;  // TODO: should be configurable
     strokeWidth_ = 1.0f * density;
     rect_ = new Rect();
     rectF_ = new RectF();
@@ -67,9 +67,6 @@ public class KnobView extends View {
 
     // The listener has to be set later.
     listener_ = null;
-
-    int padding = (int)(3.0 * density + 0.5);
-    setPadding(padding, padding, padding, padding);
   }
 
   /**
@@ -90,8 +87,8 @@ public class KnobView extends View {
       case MotionEvent.ACTION_MOVE: {
         float xyDelta = event.getX() - event.getY() - xyAtTouch_;
         knobValue_ = valueAtTouch_ + sensitivity_ * xyDelta;
-        knobValue_ = Math.min(knobValue_, max_);
-        knobValue_ = Math.max(knobValue_, min_);
+        knobValue_ = Math.min(knobValue_, 1.0f);
+        knobValue_ = Math.max(knobValue_, 0.0f);
 
         // Notify listener and redraw.
         if (listener_ != null) {
@@ -194,7 +191,7 @@ public class KnobView extends View {
     paint_.setStrokeWidth(rectF_.width() * 0.1f);
     float startAngle = startAngle_ + 90f;
     float range = 360f - 2 * startAngle_ - arcWidth_;
-    float sweepAngle = (float)((knobValue_ - min_) / (max_ - min_))* range;
+    float sweepAngle = (float)knobValue_ * range;
     canvas.drawArc(innerRectF_,
                    startAngle,
                    sweepAngle + 0.5f * arcWidth_,
@@ -207,12 +204,12 @@ public class KnobView extends View {
             false,
             paint_);
 
-    // Draw outer circle.
+    // Draw knob circle.
     paint_.setColor(Color.BLACK);
     paint_.setStyle(Paint.Style.STROKE);
     paint_.setStrokeWidth(strokeWidth_);
-    canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(),
+    canvas.drawCircle(rectF_.centerX(),
+                      rectF_.centerY(),
                       rectF_.width() * 0.45f - border,
                       paint_);
 
