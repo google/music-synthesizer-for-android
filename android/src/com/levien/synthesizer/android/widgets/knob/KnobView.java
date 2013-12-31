@@ -23,11 +23,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
-import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Shader.TileMode;
-import android.graphics.SweepGradient;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -55,15 +52,17 @@ public class KnobView extends View {
     a.recycle();
 
     // Set up the drawing structures.
-    knobPaint_ = new Paint();
-    knobPaint_.setAntiAlias(true);
-    knobPaint_.setColor(Color.WHITE);
+    paint_ = new Paint();
+    paint_.setAntiAlias(true);
+    paint_.setColor(Color.WHITE);
     float density = getResources().getDisplayMetrics().density;
-    knobPaint_.setStrokeWidth(2.0f * density);
-    arcWidth_ = 8.0f * density;
+    sensitivity_ = .01f * (float)(max_ - min_) / density;  // TODO: should be configurable
+    strokeWidth_ = 1.0f * density;
     rect_ = new Rect();
     rectF_ = new RectF();
-    textRect_ = new Rect();
+    innerRectF_ = new RectF();
+    textHeight_ = 18f * density;  // probably should be set by XML parameter
+    paint_.setTextSize(textHeight_);
 
     // The listener has to be set later.
     listener_ = null;
@@ -81,36 +80,17 @@ public class KnobView extends View {
     switch (action) {
       case MotionEvent.ACTION_DOWN: {
         // Just record the current finger position.
+        xyAtTouch_ = event.getX() - event.getY();
+        valueAtTouch_ = knobValue_;
         getDrawingRect(rect_);
-        previousX_ = event.getX() - rect_.centerX();
-        previousY_ = event.getY() - rect_.centerY();
-        currentTouchAngle_ = knobValue_ * 2 * Math.PI * 0.8 + (Math.PI / 5.0);
-        diffAngle_ = 0;
         break;
       }
 
       case MotionEvent.ACTION_MOVE: {
-        getDrawingRect(rect_);
-
-        // Compare the previous angle of the finger position (relative to the center of the control)
-        // to the new angle, and update the value accordingly.
-        currentTouchAngle_ = knobValue_ * 2 * Math.PI * 0.8 + (Math.PI / 5.0);
-        currentX_ = event.getX() - rect_.centerX();
-        currentY_ = event.getY() - rect_.centerY();
-        diffAngle_ = Math.atan2(currentY_, currentX_) - Math.atan2(previousY_, previousX_);
-        if (diffAngle_ > Math.PI) {
-          diffAngle_ -= Math.PI * 2;
-        } else if (diffAngle_ < -Math.PI) {
-          diffAngle_ += Math.PI * 2;
-        }
-        currentTouchAngle_ += diffAngle_;
-        knobValue_ = currentTouchAngle_ / (2.0 * Math.PI);
-        if (knobValue_ < 0.1) knobValue_ = 0.1;
-        if (knobValue_ > 0.9) knobValue_ = 0.9;
-        knobValue_ -= 0.1;
-        knobValue_ /= 0.8;
-        previousX_ = currentX_;
-        previousY_ = currentY_;
+        float xyDelta = event.getX() - event.getY() - xyAtTouch_;
+        knobValue_ = valueAtTouch_ + sensitivity_ * xyDelta;
+        knobValue_ = Math.min(knobValue_, max_);
+        knobValue_ = Math.max(knobValue_, min_);
 
         // Notify listener and redraw.
         if (listener_ != null) {
@@ -194,99 +174,53 @@ public class KnobView extends View {
       rectF_.right = center + rectF_.height() / 2;
     }
 
-    // Draw outer white glow.
-    int[] radialGradientColors = {Color.WHITE,  Color.WHITE, 0x00000000};
-    float[] radialGradientPositions = {0.0f, 0.87f, 1.0f};
-    radialGradient_ = new RadialGradient(rect_.exactCenterX(),
-                                         rect_.exactCenterY(),
-                                         Math.min(rect_.width(), rect_.height()) / 2,
-                                         radialGradientColors,
-                                         radialGradientPositions,
-                                         TileMode.CLAMP);
-
-    knobPaint_.setShader(radialGradient_);
-    canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(),
-                      Math.min(rect_.width(), rect_.height()) / 2,
-                      knobPaint_);
-
-    // Draw outer gauge.
-    final int fullDark = Color.BLACK;
-    final int guageStartColor = 0xff202050;
-    final int guageEndColor = 0xff4040A0;
-
-    final int adjustedStartColor = Color.argb(
-        0xFF,
-        (int)(0.1875 * Color.red(guageStartColor) + (1.0 - 0.1875) * Color.red(guageEndColor)),
-        (int)(0.1875 * Color.green(guageStartColor) + (1.0 - 0.1875) * Color.green(guageEndColor)),
-        (int)(0.1875 * Color.blue(guageStartColor) + (1.0 - 0.1875) * Color.blue(guageEndColor)));
-
-    int[] sweepGradientColors = {
-        adjustedStartColor,
-        guageEndColor,
-        fullDark,
-        fullDark,
-        guageStartColor,
-        adjustedStartColor};
-    float[] sweepGradientPositions = { 0.0f, 0.16f, 0.16f, 0.35f, 0.35f, 1.0f };
-    sweepGradient_ = new SweepGradient(rect_.exactCenterX(),
-                                       rect_.exactCenterY(),
-                                       sweepGradientColors,
-                                       sweepGradientPositions);
-    knobPaint_.setShader(sweepGradient_);
-    canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(),
-                      Math.min(rect_.width(), rect_.height()) / 2.4f,
-                      knobPaint_);
-
-    // Draw inner gauge.
-    knobPaint_.setShader(null);
-    knobPaint_.setStyle(Style.FILL);
-    knobPaint_.setColor(Color.BLACK);
-    canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(),
-                      Math.min(rect_.width(), rect_.height()) / 4,
-                      knobPaint_);
-
-    // Draw inner white glow.
-    int[] innerRadialGradientColors = { 0x00000000,  0x00000000, Color.WHITE };
-    float[] innerRadialGradientPositions = { 0.0f, 0.6f, 1.0f };
-    innerRadialGradient_ = new RadialGradient(rect_.exactCenterX(),
-                                              rect_.exactCenterY(),
-                                              Math.min(rect_.width(), rect_.height()) / 4f,
-                                              innerRadialGradientColors,
-                                              innerRadialGradientPositions,
-                                              TileMode.CLAMP);
-    knobPaint_.setShader(innerRadialGradient_);
-    canvas.drawCircle(rect_.exactCenterX(),
-                      rect_.exactCenterY(),
-                      Math.min(rect_.width(),rect_.height()) / 4,
-                      knobPaint_);
+    float border = textHeight_ + rectF_.width() * 0.05f;
 
     // Draw indicator.
-    knobPaint_.setShader(null);
-    knobPaint_.setColor(Color.BLACK);
-    knobPaint_.setStyle(Style.STROKE);
-    canvas.drawArc(rectF_,
-                   (float)(knobValue_ * 360 * 0.8 + 90 - arcWidth_ / 2 + 36),
-                   (float)arcWidth_,
+
+    innerRectF_.set(rectF_);
+    float inner = border;
+    innerRectF_.inset(inner, inner);
+    paint_.setShader(null);
+    paint_.setColor(0xffcccccc);
+    paint_.setStyle(Style.STROKE);
+    paint_.setStrokeWidth(rectF_.width() * 0.1f);
+    float startAngle = startAngle_ + 90f;
+    float range = 360f - 2 * startAngle_ - arcWidth_;
+    float sweepAngle = (float)((knobValue_ - min_) / (max_ - min_))* range;
+    canvas.drawArc(innerRectF_,
+                   startAngle,
+                   sweepAngle + 0.5f * arcWidth_,
                    false,
-                   knobPaint_);
+                   paint_);
+    paint_.setColor(Color.BLACK);
+    canvas.drawArc(innerRectF_,
+            startAngle + sweepAngle,
+            arcWidth_,
+            false,
+            paint_);
+
+    // Draw outer circle.
+    paint_.setColor(Color.BLACK);
+    paint_.setStyle(Paint.Style.STROKE);
+    paint_.setStrokeWidth(strokeWidth_);
+    canvas.drawCircle(rect_.exactCenterX(),
+                      rect_.exactCenterY(),
+                      Math.min(rect_.width(), rect_.height()) * 0.45f - border,
+                      paint_);
 
     // Draw text.
     String knobValueString = String.format("%.2f", getValue());
     Typeface typeface = Typeface.DEFAULT_BOLD;
-    knobPaint_.setColor(Color.WHITE);
-    knobPaint_.setTypeface(typeface);
-    knobPaint_.setTextAlign(Align.CENTER);
-    knobPaint_.setTextSize(rectF_.width() / 8);
-    knobPaint_.setSubpixelText(true);
-    knobPaint_.setStyle(Style.FILL);
-    knobPaint_.getTextBounds(knobValueString, 0, knobValueString.length(), textRect_);
+    paint_.setColor(Color.BLACK);
+    paint_.setTypeface(typeface);
+    paint_.setTextAlign(Align.CENTER);
+    paint_.setSubpixelText(true);
+    paint_.setStyle(Style.FILL);
     canvas.drawText(knobValueString,
                     rect_.centerX(),
-                    rect_.centerY() + textRect_.height() / 2,
-                    knobPaint_);
+                    rect_.top + 0.8f * textHeight_,
+                    paint_);
   }
 
   /**
@@ -372,23 +306,21 @@ public class KnobView extends View {
   private double max_;
 
   // Structures used in drawing that we don't want to reallocate every time we draw.
-  private Paint knobPaint_;
+  private Paint paint_;
   private Rect rect_;
-  private Rect textRect_;
   private RectF rectF_;
-  private SweepGradient sweepGradient_;
-  private RadialGradient radialGradient_;
-  private RadialGradient innerRadialGradient_;
+  private RectF innerRectF_;
 
-  private float arcWidth_;
+  // Appearance and behavior parameters
+  private final float textHeight_;
+  private final float arcWidth_ = 4.0f;
+  private final float startAngle_ = 36f;  // relative to bottom
+  private final float strokeWidth_;
+  private float sensitivity_;
 
-  // Position of the finger relative to the knob.
-  private double previousX_ = 0;
-  private double previousY_ = 0;
-  private double currentX_ = 0;
-  private double currentY_ = 0;
-  private double currentTouchAngle_ = 0;
-  private double diffAngle_ = 0;
+  // State of drag gesture
+  private float xyAtTouch_;
+  private double valueAtTouch_;
 
   // Object listening for events when the knob's value changes.
   private KnobListener listener_;
