@@ -35,13 +35,22 @@ public class ScrollStripView extends View {
     paint_.setColor(Color.GRAY);
     touchDown_ = new boolean[2];
     touchx_ = new float[2];
-    offset_ = -2000.0f;  // TODO: make more systematic
-    zoom_ = 2.5f;
+    zoom_ = -1f;  // placeholder value to be replaced in onLayout
   }
 
   public void bindKeyboard(KeyboardView kv) {
     keyboardView_ = kv;
-    kv.setScrollZoom(offset_, zoom_);
+  }
+
+  @Override
+  public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    if (zoom_ < 0) {
+      float density = getResources().getDisplayMetrics().density;
+      int width = right - left;
+      zoom_ = 3000f * density / width;
+      offset_ = -width * 0.5f * (zoom_ - 1);
+      keyboardView_.setScrollZoom(offset_, zoom_);
+    }
   }
 
   @Override

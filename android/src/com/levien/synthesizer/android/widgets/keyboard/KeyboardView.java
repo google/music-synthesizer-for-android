@@ -48,9 +48,9 @@ public class KeyboardView extends View {
     paint_.setTextAlign(Paint.Align.CENTER);
     strokeWidth_ = 1.0f * density;
     paint_.setStrokeWidth(strokeWidth_);
-    keyboardSpec_ = KeyboardSpec.make2Row();
     offset_ = 0.0f;
     zoom_ = 1.0f;
+    setKeyboardSpec(KeyboardSpec.make2Row());
   }
 
   public void setKeyboardSpec(KeyboardSpec keyboardSpec) {
