@@ -51,6 +51,8 @@ public class KeyboardView extends View {
     offset_ = 0.0f;
     zoom_ = 1.0f;
     setKeyboardSpec(KeyboardSpec.make2Row());
+    velSens_ = 0.5f;
+    velAvg_ = 64;
   }
 
   public void setKeyboardSpec(KeyboardSpec keyboardSpec) {
@@ -68,6 +70,11 @@ public class KeyboardView extends View {
       noteStatus_[note] = (byte)velocity;
       invalidate();  // could do smarter invalidation, whatev
     }
+  }
+
+  public void setVelocitySensitivity(float velSens, float velAvg) {
+    velSens_ = velSens;
+    velAvg_ = velAvg;
   }
 
   public void setScrollZoom(float offset, float zoom) {
@@ -138,51 +145,42 @@ public class KeyboardView extends View {
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
-    int action = event.getAction();
-    int actionCode = action & MotionEvent.ACTION_MASK;
+    int actionCode = event.getActionMasked();
     boolean redraw = false;
-    if (actionCode == MotionEvent.ACTION_DOWN) {
-      int pointerId = event.getPointerId(0);
-      float x = event.getX();
-      float y = event.getY();
-      float pressure = event.getPressure();
-      redraw |= onTouchDown(pointerId, x, y, pressure);
-    } else if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {
-      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
-              >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-      int pointerId = event.getPointerId(pointerIndex);
-      if (pointerId < FINGERS && pointerId >= 0) {
-        float x = event.getX(pointerIndex);
-        float y = event.getY(pointerIndex);
-        float pressure = event.getPressure();
-        redraw |= onTouchDown(pointerId, x, y, pressure);
-      }
-    } else if (actionCode == MotionEvent.ACTION_UP) {
-      int pointerId = event.getPointerId(0);
-      float x = event.getX();
-      float y = event.getY();
-      float pressure = event.getPressure();
-      redraw |= onTouchUp(pointerId, x, y, pressure);
-    } else if (actionCode == MotionEvent.ACTION_POINTER_UP) {
-      int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK)
-              >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-      int pointerId = event.getPointerId(pointerIndex);
-      if (pointerId < FINGERS && pointerId >= 0) {
-        float x = event.getX(pointerIndex);
-        float y = event.getY(pointerIndex);
-        float pressure = event.getPressure();
-        redraw |= onTouchUp(pointerId, x, y, pressure);
-      }
-    } else if (actionCode == MotionEvent.ACTION_MOVE) {
-      for (int pointerIndex = 0; pointerIndex < event.getPointerCount(); pointerIndex++) {
-        int pointerId = event.getPointerId(pointerIndex);
-        if (pointerId < FINGERS) {
-          float x = event.getX(pointerIndex);
-          float y = event.getY(pointerIndex);
-          float pressure = event.getPressure();
-          redraw |= onTouchMove(pointerId, x, y, pressure);
+    switch (actionCode) {
+      case MotionEvent.ACTION_DOWN:
+      case MotionEvent.ACTION_POINTER_DOWN:
+        int index = actionCode == MotionEvent.ACTION_POINTER_DOWN ? event.getActionIndex() : 0;
+        int pointerId = event.getPointerId(index);
+        if (pointerId < FINGERS && pointerId >= 0) {
+          float x = event.getX(index);
+          float y = event.getY(index);
+          float pressure = event.getPressure(index);
+          redraw |= onTouchDown(pointerId, x, y, pressure);
         }
-      }
+        break;
+      case MotionEvent.ACTION_UP:
+      case MotionEvent.ACTION_POINTER_UP:
+        index = actionCode == MotionEvent.ACTION_POINTER_UP ? event.getActionIndex() : 0;
+        pointerId = event.getPointerId(index);
+        if (pointerId < FINGERS && pointerId >= 0) {
+          float x = event.getX(index);
+          float y = event.getY(index);
+          float pressure = event.getPressure(index);
+          redraw |= onTouchUp(pointerId, x, y, pressure);
+        }
+        break;
+      case MotionEvent.ACTION_MOVE:
+        for (index = 0; index < event.getPointerCount(); index++) {
+          pointerId = event.getPointerId(index);
+          if (pointerId < FINGERS) {
+            float x = event.getX(index);
+            float y = event.getY(index);
+            float pressure = event.getPressure(index);
+            redraw |= onTouchMove(pointerId, x, y, pressure);
+          }
+        }
+        break;
     }
     if (redraw) {
       invalidate();
@@ -208,8 +206,7 @@ public class KeyboardView extends View {
   }
 
   private int computeVelocity(float pressure) {
-    float sensitivity = 0.5f;  // TODO: configure
-    int velocity = (int) ((0.5f + sensitivity * (pressure - 0.5f)) * 127.0f + 0.5f);
+    int velocity = (int) (velSens_ * (pressure - 0.5f) * 127.0f + velAvg_ + 0.5f);
     if (velocity < 1) {
       velocity = 1;
     } else if (velocity > 127) {
@@ -278,6 +275,9 @@ public class KeyboardView extends View {
     int octave = note / 12 - 1;
     return NOTE_NAMES[note % 12] + Integer.toString(octave);
   }
+
+  private float velSens_;
+  private float velAvg_;
 
   private MidiListener midiListener_;
 

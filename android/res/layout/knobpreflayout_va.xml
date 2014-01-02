@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.levien.synthesizer.android.widgets.knob.KnobView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.levien.synthesizer"
+    android:id="@+id/knob"
+    app:value="0"
+    app:min="0"
+    app:max="127"
+    app:numberformat="%3.0f"
+    app:horizontal="true"
+    android:layout_width="200dp"
+    android:layout_height="match_parent"
+    app:label="" />

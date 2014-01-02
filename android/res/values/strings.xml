@@ -97,4 +97,12 @@
       </string-array>
   <string name="pref_keyboardType_default">2row</string>
 
+  <string name="pref_velAvg">Velocity average value</string>
+  <string name="pref_velAvg_summary">MIDI velocity at medium pressure</string>
+  <string name="pref_velAvg_default">64.0</string>
+
+  <string name="pref_velSens">Velocity sensitivity</string>
+  <string name="pref_velSens_summary">Sensitivity of MIDI velocity to pressure</string>
+  <string name="pref_velSens_default">0.5</string>
+
 </resources>

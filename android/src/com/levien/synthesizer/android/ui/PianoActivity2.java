@@ -108,6 +108,7 @@ public class PianoActivity2 extends SynthActivity implements OnSharedPreferenceC
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     prefs.registerOnSharedPreferenceChangeListener(this);
     onSharedPreferenceChanged(prefs, "keyboard_type");
+    onSharedPreferenceChanged(prefs, "vel_sens");
   }
 
   @Override
@@ -122,6 +123,10 @@ public class PianoActivity2 extends SynthActivity implements OnSharedPreferenceC
     if (key.equals("keyboard_type")) {
       String keyboardType = prefs.getString(key, "2row");
       keyboard_.setKeyboardSpec(KeyboardSpec.make(keyboardType));
+    } else if (key.equals("vel_sens") || key.equals("vel_avg")) {
+      float velSens = prefs.getFloat("vel_sens", 0.5f);
+      float velAvg = prefs.getFloat("vel_avg", 64);
+      keyboard_.setVelocitySensitivity(velSens, velAvg);
     }
   }
 

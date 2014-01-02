@@ -16,6 +16,8 @@
 
 package com.levien.synthesizer.android.widgets.knob;
 
+import java.util.Locale;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -50,6 +52,9 @@ public class KnobView extends View {
     min_ = a.getFloat(R.styleable.KnobView_min, 0.0f);
     max_ = a.getFloat(R.styleable.KnobView_max, 1.0f);
     label_ = a.getString(R.styleable.KnobView_label);
+    String numberFormat = a.getString(R.styleable.KnobView_numberformat);
+    numberFormat_ = numberFormat != null ? numberFormat : "%.2f";
+    horizontal_ = a.getBoolean(R.styleable.KnobView_horizontal, false);
     a.recycle();
 
     // Set up the drawing structures.
@@ -99,7 +104,11 @@ public class KnobView extends View {
         break;
       }
 
+      case MotionEvent.ACTION_CANCEL:
       case MotionEvent.ACTION_UP: {
+        if (listenerUp_ != null) {
+          listenerUp_.onKnobChanged(getValue());
+        }
         break;
       }
     }
@@ -111,6 +120,13 @@ public class KnobView extends View {
    */
   public void setKnobListener(KnobListener listener) {
     listener_ = listener;
+  }
+
+  /**
+   * Sets the listener to receive events when the knob's value finalizes (on touch up).
+   */
+  public void setKnobListenerUp(KnobListener listener) {
+    listenerUp_ = listener;
   }
 
   /**
@@ -178,7 +194,7 @@ public class KnobView extends View {
       rectF_.right = center + rectF_.height() / 2;
     }
 
-    float border = textHeight_ + rectF_.width() * 0.05f;
+    float border = (horizontal_ ? 0.5f * textHeight_ : textHeight_) + rectF_.width() * 0.05f;
 
     // Draw indicator.
 
@@ -214,17 +230,17 @@ public class KnobView extends View {
                       paint_);
 
     // Draw text.
-    String knobValueString = String.format("%.2f", getValue());
+    String knobValueString = String.format(Locale.getDefault(), numberFormat_, getValue());
     Typeface typeface = Typeface.DEFAULT_BOLD;
     paint_.setColor(Color.BLACK);
     paint_.setTypeface(typeface);
-    paint_.setTextAlign(Align.CENTER);
+    paint_.setTextAlign(horizontal_ ? Align.RIGHT : Align.CENTER);
+    float x = horizontal_ ? rectF_.left: rectF_.centerX();
+    float y = horizontal_ ? rectF_.centerY()  + 0.4f * textHeight_ :
+      rectF_.top + 0.8f * textHeight_;
     paint_.setSubpixelText(true);
     paint_.setStyle(Style.FILL);
-    canvas.drawText(knobValueString,
-                    rect_.centerX(),
-                    rectF_.top + 0.8f * textHeight_,
-                    paint_);
+    canvas.drawText(knobValueString, x, y, paint_);
 
     if (label_ != null) {
       paint_.setTypeface(Typeface.DEFAULT);
@@ -237,45 +253,12 @@ public class KnobView extends View {
    */
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-    // Specify that 100 is preferred for both dimensions.
-    int width = 0;
-    int height = 0;
-    switch (widthMode) {
-      case MeasureSpec.EXACTLY:
-        width = widthSize;
-        break;
-      case MeasureSpec.AT_MOST:
-        width = widthSize;
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        width = 100;
-        break;
+    int width = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+    int height = getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+    if (!horizontal_) {
+      // Make it square
+      width = height = Math.min(width, height);
     }
-    switch (heightMode) {
-      case MeasureSpec.EXACTLY:
-        height = heightSize;
-        break;
-      case MeasureSpec.AT_MOST:
-        height = heightSize;
-        break;
-      case MeasureSpec.UNSPECIFIED:
-        height = 100;
-        break;
-    }
-
-    // Make it square.
-    if (width > height && widthMode != MeasureSpec.EXACTLY) {
-      width = height;
-    }
-    if (height > width && heightMode != MeasureSpec.EXACTLY) {
-      height = width;
-    }
-
     setMeasuredDimension(width, height);
   }
 
@@ -313,6 +296,8 @@ public class KnobView extends View {
   private double knobValue_;
   private double min_;
   private double max_;
+  private String numberFormat_;
+  private boolean horizontal_;
 
   // Structures used in drawing that we don't want to reallocate every time we draw.
   private Paint paint_;
@@ -334,4 +319,5 @@ public class KnobView extends View {
 
   // Object listening for events when the knob's value changes.
   private KnobListener listener_;
+  private KnobListener listenerUp_;
 }

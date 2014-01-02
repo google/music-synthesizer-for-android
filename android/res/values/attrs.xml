@@ -8,6 +8,8 @@
     <attr name="min" format="float" />
     <attr name="max" format="float" />
     <attr name="label" format="string" />
+    <attr name="numberformat" format="string" />
+    <attr name="horizontal" format="boolean" />
   </declare-styleable>
   <declare-styleable name="PianoView">
     <attr name="octaves" format="integer" />
