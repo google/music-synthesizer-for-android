@@ -102,8 +102,8 @@ public class KeyboardView extends View {
       float x = x0 + ((i / keyboardSpec_.keys.length) * keyboardSpec_.repeatWidth +
               ks.rect.left) * xscale;
       float y = y0 + ks.rect.top * yscale;
-      float width = ks.rect.width() * xscale - strokeWidth_;
-      float height = ks.rect.height() * yscale - strokeWidth_;
+      float width = ks.rect.width() * xscale;
+      float height = ks.rect.height() * yscale;
       int note = i + firstKey_;
       int vel = noteStatus_[note];
       if (vel == 0) {
@@ -123,7 +123,7 @@ public class KeyboardView extends View {
       if (ks.color != Color.BLACK) {
         paint_.setColor(Color.BLACK);
         paint_.setStyle(Style.STROKE);
-        canvas.drawRect(x, y, x + width + strokeWidth_, y + height + strokeWidth_, paint_);
+        canvas.drawRect(x, y, x + width, y + height, paint_);
       } else {
         paint_.setColor(Color.WHITE);
       }
