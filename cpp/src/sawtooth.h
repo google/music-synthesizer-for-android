@@ -19,9 +19,17 @@ class Sawtooth : Module {
   Sawtooth();
 
   static void init(double sample_rate);
-  static int32_t lookup(int32_t phase, int32_t log_f);
   void process(const int32_t **inbufs, const int32_t *control_in,
 			   const int32_t *control_last, int32_t **outbufs);
  private:
   int32_t phase;
+
+  // Compute mathematical function with no antialiasing
+  static int32_t compute(int32_t phase);
+
+  // Lookup from a single slice
+  static int32_t lookup_1(int32_t phase, int slice);
+
+  // Lookup from two slices, interpolate
+  static int32_t lookup_2(int32_t phase, int slice, int32_t slice_lowbits);
 };

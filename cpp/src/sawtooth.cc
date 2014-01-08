@@ -18,41 +18,39 @@
 
 #include "module.h"
 #include "sawtooth.h"
-#include "freqlut.h"
+#include "exp2.h"
 
 // There's a fair amount of lookup table and so on that needs to be set before
 // generating any signal. In Java, this would be done by a separate factory class.
 // Here, we're just going to do it as globals.
-
-#define HIGH_QUALITY
-
-#define noLOW_FREQ_HACK
 
 #define FANCY_GOERTZEL_SIN
 #define noPRINT_ERROR
 
 #define R (1 << 29)
 
-#ifdef LOW_FREQ_HACK
-#define LG_N_SAMPLES 9
-#else
-#define LG_N_SAMPLES 11
-#endif
+#define LG_N_SAMPLES 10
 #define N_SAMPLES (1 << LG_N_SAMPLES)
 #define N_PARTIALS_MAX (N_SAMPLES / 2)
 
 #define LG_SLICES_PER_OCTAVE 2
 #define SLICES_PER_OCTAVE (1 << LG_SLICES_PER_OCTAVE)
 #define SLICE_SHIFT (24 - LG_SLICES_PER_OCTAVE)
+#define SLICE_EXTRA 3
 
-#define LG_N_SLICES (LG_SLICES_PER_OCTAVE + 4)
-#define N_SLICES (1 << LG_N_SLICES)
+#define N_SLICES 36
+// 0.5 * (log(440./44100) / log(2) + log(440./48000) / log(2) + 2./12) + 1./64 - 3 in Q24
+#define SLICE_BASE 161217316
+#define LOW_FREQ_LIMIT (-SLICE_BASE)
 
 #define NEG2OVERPI -0.63661977236758138
 
 int32_t sawtooth[N_SLICES][N_SAMPLES];
 
+int32_t sawtooth_freq_off;
+
 void Sawtooth::init(double sample_rate) {
+  sawtooth_freq_off = -(1 << 24) * log(sample_rate) / log(2);
   int32_t lut[N_SAMPLES / 2];
 
   for (int i = 0; i < N_SAMPLES / 2; i++) {
@@ -60,11 +58,12 @@ void Sawtooth::init(double sample_rate) {
   }
 
   double slice_inc = pow(2.0, 1.0 / SLICES_PER_OCTAVE);
-  double f_0 = pow(slice_inc, N_SLICES - 1);
+  double f_0 = pow(slice_inc, N_SLICES - 1) * pow(0.5, SLICE_BASE * 1.0 / (1 << 24));
   int n_partials_last = 0;
   for (int j = N_SLICES - 1; j >= 0; j--) {
-    int n_partials = floor(0.5 * sample_rate / f_0);
+    int n_partials = floor(0.5 / f_0);
     n_partials = n_partials < N_PARTIALS_MAX ? n_partials : N_PARTIALS_MAX;
+    //printf("slice %d: n_partials=%d\n", j, n_partials);
     for (int k = n_partials_last + 1; k <= n_partials; k++) {
       double scale = NEG2OVERPI / k;
       scale = (N_PARTIALS_MAX - k) > (N_PARTIALS_MAX >> 2) ? scale :
@@ -94,7 +93,7 @@ void Sawtooth::init(double sample_rate) {
         int abs_err = err > 0 ? err : -err;
         maxerr = abs_err > maxerr ? abs_err : maxerr;
 #endif
-        ds += ((int64_t)cm2 * (int64_t)s + R) >> 29;
+        ds += ((int64_t)cm2 * (int64_t)s + (1 << 28)) >> 29;
         s += (ds + round) >> dshift;
       }
 #else
@@ -135,56 +134,82 @@ Sawtooth::Sawtooth() {
   phase = 0;
 }
 
-int32_t Sawtooth::lookup(int32_t phase, int32_t log_f) {
+int32_t Sawtooth::compute(int32_t phase) {
+  return phase * 2 - (1 << 24);
+}
 
-  log_f = log_f < 0 ? 0 : log_f;
-  int slice = (log_f + (1 << SLICE_SHIFT) - 1) >> SLICE_SHIFT;
-  int phase_int = (phase >> (24 - LG_N_SAMPLES)) & (N_SAMPLES - 1);
-  int lowbits = phase & ((1 << (24 - LG_N_SAMPLES)) - 1);
-  int y0 = sawtooth[slice][phase_int];
-  int y1 = sawtooth[slice][(phase_int + 1) & (N_SAMPLES - 1)];
+int32_t Sawtooth::lookup_1(int32_t phase, int slice) {
+  int32_t phase_int = (phase >> (24 - LG_N_SAMPLES)) & (N_SAMPLES - 1);
+  int32_t lowbits = phase & ((1 << (24 - LG_N_SAMPLES)) - 1);
+  int32_t y0 = sawtooth[slice][phase_int];
+  int32_t y1 = sawtooth[slice][(phase_int + 1) & (N_SAMPLES - 1)];
 
-  int y4 = y0 + ((((int64_t)(y1 - y0) * (int64_t)lowbits)) >> (24 - LG_N_SAMPLES));
+  return y0 + ((((int64_t)(y1 - y0) * (int64_t)lowbits)) >> (24 - LG_N_SAMPLES));
+}
 
-  // TODO: lift this out of loop
-  // TODO: optimal threshold probably depends on sample rate
-#ifdef LOW_FREQ_HACK
-  if (log_f < (8 << 24))
-    y4 = phase * 2 - (1 << 24);
-#endif
+int32_t Sawtooth::lookup_2(int32_t phase, int slice, int32_t slice_lowbits) {
+  int32_t phase_int = (phase >> (24 - LG_N_SAMPLES)) & (N_SAMPLES - 1);
+  int32_t lowbits = phase & ((1 << (24 - LG_N_SAMPLES)) - 1);
+  int32_t y0 = sawtooth[slice][phase_int];
+  int32_t y1 = sawtooth[slice][(phase_int + 1) & (N_SAMPLES - 1)];
+  int32_t y4 = y0 + ((((int64_t)(y1 - y0) * (int64_t)lowbits)) >> (24 - LG_N_SAMPLES));
 
-#ifdef HIGH_QUALITY
-  int y2 = sawtooth[slice + 1][phase_int];
-  int y3 = sawtooth[slice + 1][(phase_int + 1) & (N_SAMPLES - 1)];
-  int y5 = y2 + ((((int64_t)(y3 - y2) * (int64_t)lowbits)) >> (24 - LG_N_SAMPLES));
-#ifdef LOW_FREQ_HACK
-  if (log_f < (8 << 24) - (1 << SLICE_SHIFT))
-    y5 = phase * 2 - (1 << 24);
-#endif
-  int slice_lowbits = log_f & ((1 << SLICE_SHIFT) - 1);
-  int y = y4 + ((((int64_t)(y5 - y4) * (int64_t)slice_lowbits)) >> SLICE_SHIFT);
-  return y;
-#else
-  return y4;
-#endif
+  int32_t y2 = sawtooth[slice + 1][phase_int];
+  int32_t y3 = sawtooth[slice + 1][(phase_int + 1) & (N_SAMPLES - 1)];
+  int32_t y5 = y2 + ((((int64_t)(y3 - y2) * (int64_t)lowbits)) >> (24 - LG_N_SAMPLES));
+
+  return y4 + ((((int64_t)(y5 - y4) * (int64_t)slice_lowbits)) >> (SLICE_SHIFT - SLICE_EXTRA));
 }
 
 void Sawtooth::process(const int32_t **inbufs, const int32_t *control_in,
                        const int32_t *control_last, int32_t **outbufs) {
   int32_t logf = control_last[0];
-  int32_t logf_in = control_in[0];
   int32_t *obuf = outbufs[0];
-  int32_t delta_logf = (logf_in - logf) >> lg_n;
-  int f = Freqlut::lookup(logf);
-  int f_in = Freqlut::lookup(logf_in);
-  int32_t delta_f = (f_in - f) >> lg_n;
+  int32_t actual_logf = logf + sawtooth_freq_off;
+  int f = Exp2::lookup(actual_logf);
   int32_t p = phase;
-  for (int i = 0; i < n; i++) {
-    f += delta_f;
-    logf += delta_logf;
-    obuf[i] = lookup(p, logf);
-    p += f;
-    p &= (1 << 24) - 1;
+  // choose a strategy based on the frequency
+  if (actual_logf < LOW_FREQ_LIMIT - (1 << (SLICE_SHIFT - SLICE_EXTRA))) {
+    for (int i = 0; i < n; i++) {
+      obuf[i] = compute(p);
+      p += f;
+      p &= (1 << 24) - 1;
+    }
+  } else if (actual_logf < LOW_FREQ_LIMIT) {
+    // interpolate between computed and lookup
+    int slice = (LOW_FREQ_LIMIT + SLICE_BASE + (1 << SLICE_SHIFT) - 1) >> SLICE_SHIFT;
+    int slice_lowbits = actual_logf - LOW_FREQ_LIMIT + (1 << (SLICE_SHIFT - SLICE_EXTRA));
+    for (int i = 0; i < n; i++) {
+      int32_t yc = compute(p);
+      int32_t yl = lookup_1(p, slice + 1);
+      obuf[i] = yc + ((((int64_t)(yl - yc) * (int64_t)slice_lowbits)) >> (SLICE_SHIFT - SLICE_EXTRA));
+      p += f;
+      p &= (1 << 24) - 1;
+    }
+  } else {
+    int slice = (actual_logf + SLICE_BASE + (1 << SLICE_SHIFT) - 1) >> SLICE_SHIFT;
+    const int slice_start = (1 << SLICE_SHIFT) - (1 << (SLICE_SHIFT - SLICE_EXTRA));
+    int slice_lowbits = ((actual_logf + SLICE_BASE) & ((1 << SLICE_SHIFT) - 1)) - slice_start;
+    // slice < 0 can't happen because LOW_FREQ_LIMIT kicks in first
+    if (slice > N_SLICES - 2) {
+      if (slice > N_SLICES - 1 || slice_lowbits > 0) {
+        slice = N_SLICES - 1;
+        slice_lowbits = 0;
+      }
+    }
+    if (slice_lowbits <= 0) {
+      for (int i = 0; i < n; i++) {
+        obuf[i] = lookup_1(p, slice);
+        p += f;
+        p &= (1 << 24) - 1;
+      }
+    } else {
+      for (int i = 0; i < n; i++) {
+        obuf[i] = lookup_2(p, slice, slice_lowbits);
+        p += f;
+        p &= (1 << 24) - 1;
+      }
+    }
   }
   phase = p;
 }

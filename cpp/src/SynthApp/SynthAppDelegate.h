@@ -16,7 +16,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import <SynthMain.h>
+#import "SynthMain.h"
 
 @interface SynthAppDelegate : NSObject <NSApplicationDelegate> {
   NSWindow *window;

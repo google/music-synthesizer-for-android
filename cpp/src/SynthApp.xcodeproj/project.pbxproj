@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 45;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -182,11 +182,7 @@
 			};
 			buildConfigurationList = F2D5F35CD2FF169326ADC8E8 /* Build configuration list for PBXProject "SynthApp" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
-			knownRegions = (
-				en,
-			);
 			mainGroup = EEAFDBA4970041AA25C22652;
 			projectDirPath = "";
 			projectReferences = (
