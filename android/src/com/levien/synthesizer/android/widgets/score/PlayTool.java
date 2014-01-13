@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -100,11 +100,9 @@ public class PlayTool extends ScoreViewTool {
    * Returns true iff we need to redraw.
    */
   private boolean onTouchDown(ScoreView view, int finger, int physicalX, int physicalY) {
-    double note = view.getNoteAt(physicalY);
-    double logFrequency = Note.computeLog12TET(((int)note) % 12, ((int)note) / 12);
-    view.getSynthesizer().getChannel(view.getCurrentChannel()).setPitch(logFrequency, finger);
-    view.getSynthesizer().getChannel(view.getCurrentChannel()).turnOn(true, finger);
-    keysDown_[finger] = (int)note;
+    int note = (int)Math.floor(view.getNoteAt(physicalY));
+    view.getSynthesizer().onNoteOn(view.getCurrentChannel(), note, 64);
+    keysDown_[finger] = note;
     return true;
   }
 
@@ -112,9 +110,12 @@ public class PlayTool extends ScoreViewTool {
    * Called to handle touch move events.
    */
   private boolean onTouchMove(ScoreView view, int finger, int physicalX, int physicalY) {
-    double note = view.getNoteAt(physicalY);
-    double logFrequency = Note.computeLog12TET(((int)note) % 12, ((int)note) / 12);
-    view.getSynthesizer().getChannel(view.getCurrentChannel()).setPitch(logFrequency, finger);
+    int note = (int)Math.floor(view.getNoteAt(physicalY));
+    int oldNote = keysDown_[finger];
+    if (oldNote >= 0) {
+      view.getSynthesizer().onNoteOff(view.getCurrentChannel(), oldNote, 64);
+    }
+    view.getSynthesizer().onNoteOn(view.getCurrentChannel(), note, 64);
     keysDown_[finger] = (int)note;
     return true;
   }
@@ -123,7 +124,8 @@ public class PlayTool extends ScoreViewTool {
    * Called to handle touch up events.
    */
   protected boolean onTouchUp(ScoreView view, int finger) {
-    view.getSynthesizer().getChannel(view.getCurrentChannel()).turnOff(finger);
+    int note = keysDown_[finger];
+    view.getSynthesizer().onNoteOff(view.getCurrentChannel(), note, 64);
     keysDown_[finger] = -1;
     return true;
   }
@@ -210,7 +212,7 @@ public class PlayTool extends ScoreViewTool {
     if (redraw) {
       view.invalidate();
     }
-    return true;    
+    return true;
   }
 
   // The piano key each finger is holding down, or -1 if a finger is not pressing any key.

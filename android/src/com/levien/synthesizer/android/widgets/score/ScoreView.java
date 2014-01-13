@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,12 +18,6 @@ package com.levien.synthesizer.android.widgets.score;
 
 import java.util.logging.Logger;
 
-import com.levien.synthesizer.R;
-import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
-import com.levien.synthesizer.core.music.Music.Event;
-import com.levien.synthesizer.core.music.Music.Score;
-import com.levien.synthesizer.core.music.Note;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -34,15 +28,21 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.levien.synthesizer.R;
+import com.levien.synthesizer.core.midi.MidiListener;
+import com.levien.synthesizer.core.music.Music.Event;
+import com.levien.synthesizer.core.music.Music.Score;
+import com.levien.synthesizer.core.music.Note;
+
 /**
  * ScoreView is a UI widget that allows editing a musical score, as well as live playing.  The
  * majority of the ScoreView area shows a subsequence of the current musical score.  Along the
  * y-axis are the keys of a piano.  Time is along the x-axis.  Along the bottom, there is a toolbar,
  * which allows selecting various "tools" to use on the score.
- * 
+ *
  * A score is composed of various "events", such as playing a note for a certain duration at a
  * certain time, using a certain channel.  A ScoreView lets the user create or edit these events.
- * 
+ *
  * PlayTool - When selected, pressing plays the note at that x using the selected channel.
  * ViewportTool - Sets the currently visible part of the score by touching or dragging.
  * NewEventTool - Creates new events.
@@ -330,7 +330,7 @@ public class ScoreView extends View {
   /**
    * Returns the pixel (physical x) that corresponds to the given time (logical x).
    * @param time - the time, in measures, from the score start.
-   * @return the x offset of the given time, in screen coordinates. 
+   * @return the x offset of the given time, in screen coordinates.
    */
   public int getTimeX(double time) {
     return (int)(((time - timeOffset_) * timeZoom_) * drawingRect_.width() +
@@ -652,7 +652,7 @@ public class ScoreView extends View {
 
     int width = 0;
     int height = 0;
-    
+
     switch (widthMode) {
       case MeasureSpec.EXACTLY:
         width = widthSize;
@@ -664,7 +664,7 @@ public class ScoreView extends View {
         width = 10;
         break;
     }
-    
+
     switch (heightMode) {
       case MeasureSpec.EXACTLY:
         height = heightSize;
@@ -684,7 +684,7 @@ public class ScoreView extends View {
    * Connects the ScoreView to a Synthesizer for playback.
    * @synth - The synthesizer to connect to.
    */
-  public void bindTo(final MultiChannelSynthesizer synth) {
+  public void bindTo(final MidiListener synth) {
     synthesizer_ = synth;
   }
 
@@ -692,7 +692,7 @@ public class ScoreView extends View {
    * Returns the synthesizer connected to this ScoreView.
    * @return the connected synthesizer.
    */
-  public MultiChannelSynthesizer getSynthesizer() {
+  public MidiListener getSynthesizer() {
     return synthesizer_;
   }
 
@@ -736,7 +736,7 @@ public class ScoreView extends View {
   private double cursor_;
 
   // The synthesizer this control is bound to.
-  private MultiChannelSynthesizer synthesizer_;
+  private MidiListener synthesizer_;
 
   // The listener to notify of events in this control.
   private ScoreViewListener listener_;

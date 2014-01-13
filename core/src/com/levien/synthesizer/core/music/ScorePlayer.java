@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import java.util.ListIterator;
 import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
+import com.levien.synthesizer.core.midi.MidiListener;
 import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
 import com.levien.synthesizer.core.music.Music.Event;
 import com.levien.synthesizer.core.music.Music.Score;
@@ -64,14 +65,14 @@ public class ScorePlayer {
   /**
    * Plays the given score using the given synthesizer.  Returns immediately, while the music plays
    * in a separate thread.
-   * 
+   *
    * @param synth - the synthesizer to use for output.
    * @param score - the score to play.
    * @param beatsPerMinute - the tempo to play.
    * @param beatsPerMeasure - the time signature.
    * @param listener - the listener to notify of events.
    */
-  public synchronized void startPlaying(MultiChannelSynthesizer synth,
+  public synchronized void startPlaying(MidiListener synth,
                                         Score score,
                                         double beatsPerMinute,
                                         int beatsPerMeasure,
@@ -115,7 +116,7 @@ public class ScorePlayer {
             // Check if it's time to stop.
             if (stop_) {
               playing_ = false;
-              
+
               // Okay, now finish off all of the events that have been started.
               while (!ends_.isEmpty()) {
                 Event.Builder event = ends_.remove();
@@ -123,7 +124,7 @@ public class ScorePlayer {
                   synth_.onNoteOff(event.getKeyEvent().getChannel(), event.getKey(), 0);
                 }
               }
-              
+
               listener_.onStop();
               logger_.info("Finished playing.");
               break;
@@ -211,7 +212,7 @@ public class ScorePlayer {
             }
 
             // If we got this far, we'll need to sleep until the next event.  See how long.
-            delay = (long)((targetTime - currentTime_) * 1000.0);            
+            delay = (long)((targetTime - currentTime_) * 1000.0);
           }  // synchronized (ScorePlayer.this)
 
           // Sleep for a while.
@@ -240,7 +241,7 @@ public class ScorePlayer {
     iterator.previous();
     return event;
   }
-  
+
   /**
    * Stops playback as soon as convenient.  Doesn't block.
    */
@@ -263,7 +264,7 @@ public class ScorePlayer {
   }
 
   // The synthesizer to use for playing.
-  private MultiChannelSynthesizer synth_;
+  private MidiListener synth_;
 
   // The tempo of the song.
   private double beatsPerMinute_;

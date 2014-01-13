@@ -89,6 +89,9 @@ public class PianoActivity2 extends SynthActivity implements OnSharedPreferenceC
       case R.id.settings:
         startActivity(new Intent(this, SettingsActivity.class));
         return true;
+      case R.id.compose:
+        startActivity(new Intent(this, ScoreActivity.class));
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }

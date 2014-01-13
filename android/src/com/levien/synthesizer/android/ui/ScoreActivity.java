@@ -1,12 +1,12 @@
 /*
  * Copyright 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,16 +29,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.levien.synthesizer.R;
-import com.levien.synthesizer.core.model.composite.MultiChannelSynthesizer;
-import com.levien.synthesizer.core.music.Music.Score.Builder;
 import com.levien.synthesizer.android.Storage;
 import com.levien.synthesizer.android.widgets.score.ScoreView;
 import com.levien.synthesizer.android.widgets.score.ScoreViewToolbar;
+import com.levien.synthesizer.core.midi.MidiListener;
+import com.levien.synthesizer.core.music.Music.Score.Builder;
 
 /**
  * An Activity for editing or playing a score.
  */
-public class ScoreActivity extends SynthesizerActivity {
+public class ScoreActivity extends SynthActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -80,7 +80,7 @@ public class ScoreActivity extends SynthesizerActivity {
     inflater.inflate(R.menu.score_menu, menu);
     return true;
   }
-  
+
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
@@ -129,9 +129,9 @@ public class ScoreActivity extends SynthesizerActivity {
     }
   }
 
-  @Override
-  protected void onSynthesizerUpdate(MultiChannelSynthesizer synth) {
-    scoreView_.bindTo(synth);
+  protected void onSynthConnected() {
+    final MidiListener synthMidi = synthesizerService_.getMidiListener();
+    scoreView_.bindTo(synthMidi);
   }
 
   private ScoreView scoreView_;
