@@ -61,18 +61,19 @@ include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := test_fir.cc \
+LOCAL_SRC_FILES := test_filter.cc \
   fir.cc
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_ARM_NEON := true
     LOCAL_CFLAGS := -DHAVE_NEON=1
-    LOCAL_SRC_FILES += neon_fir.s
+    LOCAL_SRC_FILES += neon_fir.s \
+                       neon_iir.s
 endif
 
 LOCAL_CFLAGS += -O3
 LOCAL_STATIC_LIBRARIES += cpufeatures
-LOCAL_MODULE := test_fir
+LOCAL_MODULE := test_filter
 include $(BUILD_EXECUTABLE)
 
 
