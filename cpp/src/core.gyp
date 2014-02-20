@@ -23,6 +23,14 @@
       ],
       'include_dirs': ['.'],
     },
+    {
+      'target_name': 'test_filter',
+      'type': 'executable',
+      'sources': [
+        'test_filter.cc',
+        'fir.cc',
+      ],
+    }
   ],
 }
 

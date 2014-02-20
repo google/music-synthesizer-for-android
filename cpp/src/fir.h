@@ -76,3 +76,17 @@ class Neon16FirFilter : public FirFilter<float, float> {
 };
 
 #endif  // HAVE_NEON
+
+#ifdef __SSE2__
+
+class SseFirFilter : public FirFilter<float, float> {
+ public:
+  SseFirFilter(const float *kernel, size_t nk);
+  ~SseFirFilter();
+  void process(const float *in, float *out, size_t n);
+ private:
+  size_t nk;
+  float *k;
+};
+
+#endif  // __SSE2__

@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 #include <sys/time.h>
 #include <math.h>
 
@@ -101,6 +102,11 @@ void benchfir(int size, int experiment) {
     case 4:
       f = new HalfRateFirFilter(kernel, size, nblock);
       break;
+#ifdef __SSE2__
+    case 5:
+      f = new SseFirFilter(kernel, size);
+      break;
+#endif
   }
 
 
@@ -127,7 +133,13 @@ void runfirbench() {
     "set xlabel 'FIR kernel size'\n"
     "set ylabel 'ns per sample'\n"
     "plot '-' title 'scalar', '-' title '4x4 block', '-' title 'fixed16', '-' title 'fixed16 mirror', '-' title 'half rate'\n");
-  for (int experiment = 0; experiment < 5; experiment++) {
+  for (int experiment = 0; experiment < 6; experiment++) {
+#ifndef HAVE_NEON
+    if (experiment >= 1 && experiment <= 4) continue;
+#endif
+#ifndef __SSE2__
+    if (experiment == 5) continue;
+#endif
     for (int i = 16; i <= 256; i += 16) {
       benchfir(i, experiment);
     }

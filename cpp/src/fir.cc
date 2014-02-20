@@ -18,15 +18,21 @@
 
 #include <stdio.h> // for debugging, remove
 #include <stdlib.h>
-#include <malloc.h>
 
 #include "aligned_buf.h"
 #include "fir.h"
 
-// Should probably ifdef this to make it more portable
+#ifdef __ANDROID_API__
 void *malloc_aligned(size_t alignment, size_t nbytes) {
   return memalign(alignment, nbytes);
 }
+#else
+void *malloc_aligned(size_t alignment, size_t nbytes) {
+  void *result;
+  int status = posix_memalign(&result, alignment, nbytes);
+  return status == 0 ? result : 0;
+}
+#endif
 
 SimpleFirFilter::SimpleFirFilter(const float *kernel, size_t nk) : nk(nk) {
   k = (float *)malloc(nk * sizeof(k[0]));
@@ -177,6 +183,91 @@ void Neon16FirFilter::process(const float *in, float *out, size_t n) {
     neon_fir_fixed16m(in - 1, k, out, n, nk);
   else
     neon_fir_fixed16(in - 1, k, out, n, nk);
+}
+
+#endif
+
+#ifdef __SSE2__
+#include <emmintrin.h>
+
+SseFirFilter::SseFirFilter(const float *kernel, size_t nk) : nk(nk) {
+  // TODO: handle odd size nk (must be multiple of 4)
+  k = (float *)malloc_aligned(16, nk * sizeof(k[0]));
+  for (size_t i = 0; i < nk; i += 4) {
+    for (size_t j = 0; j < 4; j++) {
+      k[i + j] = kernel[nk - i - 4 + j];
+    }
+  }
+}
+
+SseFirFilter::~SseFirFilter() {
+  free(k);
+}
+
+void printvec(__m128 v) {
+  float *f = (float *)&v;
+  printf("[%f %f %f %f]\n", f[0], f[1], f[2], f[3]);
+}
+
+void SseFirFilter::process(const float *in1, float *out, size_t n) {
+  const float *in = in1 - 1;
+  __m128 q9 = _mm_set_ps1(0.0);
+  __m128 q10 = _mm_set_ps1(0.0);
+  __m128 q11 = _mm_set_ps1(0.0);
+  __m128i mask = _mm_set_epi32(-1, -1, -1, 0);
+  for (int i = 0; i < nk; i += 4) {
+    __m128 q0 = _mm_load_ps(&in[i]);
+    __m128 q1 = _mm_load_ps(&k[i]);
+    __m128 s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(1, 1, 1, 1));
+    q9 = _mm_add_ps(_mm_mul_ps(q1, s), q9);
+    s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(2, 2, 2, 2));
+    q10 = _mm_add_ps(_mm_mul_ps(q1, s), q10);
+    s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(3, 3, 3, 3));
+    q11 = _mm_add_ps(_mm_mul_ps(q1, s), q11);
+  }
+  // Note: AVX has _mm_permute_ps, which would be a bit more direct
+  q9 = (__m128)_mm_and_si128((__m128i)q9, mask);
+  __m128 q8 = _mm_shuffle_ps(q9, q9, _MM_SHUFFLE(0, 0, 0, 3));
+  q10 = _mm_shuffle_ps(q10, (__m128)mask, _MM_SHUFFLE(0, 0, 3, 2));
+  q8 = _mm_add_ps(q8, q10);
+  q11 = (__m128)_mm_and_si128((__m128i)q11, mask);
+  q11 = _mm_shuffle_ps(q11, q11, _MM_SHUFFLE(0, 3, 2, 1));
+  q8 = _mm_add_ps(q8, q11);
+  for (int i = 0; i < n; i += 4) {
+    q9 = _mm_set_ps1(0.0);
+    q10 = _mm_set_ps1(0.0);
+    q11 = _mm_set_ps1(0.0);
+    const float *inptr = &in[i + 4];
+    // inner loop
+    for (int j = 0; j < nk; j += 4) {
+      __m128 q0 = _mm_load_ps(&inptr[j]);
+      __m128 q1 = _mm_load_ps(&k[j]);
+      __m128 s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(0, 0, 0, 0));
+      q8 = _mm_add_ps(_mm_mul_ps(q1, s), q8);
+      s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(1, 1, 1, 1));
+      q9 = _mm_add_ps(_mm_mul_ps(q1, s), q9);
+      s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(2, 2, 2, 2));
+      q10 = _mm_add_ps(_mm_mul_ps(q1, s), q10);
+      s = _mm_shuffle_ps(q0, q0, _MM_SHUFFLE(3, 3, 3, 3));
+      q11 = _mm_add_ps(_mm_mul_ps(q1, s), q11);
+    }
+
+    // process overlaps
+    __m128 q0a = _mm_shuffle_ps(q9, q9, _MM_SHUFFLE(2, 1, 0, 3));
+    __m128 q0 = _mm_add_ps(q8, (__m128)_mm_and_si128(mask, (__m128i)q0a));
+    q8 = (__m128)_mm_andnot_si128(mask, (__m128i)q0a);
+    q0a = _mm_shuffle_ps((__m128)mask, q10, _MM_SHUFFLE(1, 0, 0, 0));
+    q0 = _mm_add_ps(q0, q0a);
+    q0a = _mm_shuffle_ps(q10, (__m128)mask, _MM_SHUFFLE(0, 0, 3, 2));
+    q8 = _mm_add_ps(q8, q0a);
+    q0a = (__m128)_mm_andnot_si128(mask, (__m128i)q11);
+    q0a = _mm_shuffle_ps(q0a, q0a, _MM_SHUFFLE(0, 3, 2, 1));
+    q0 = _mm_add_ps(q0, q0a);
+    q0a = (__m128)_mm_and_si128(mask, (__m128i)q11);
+    q0a = _mm_shuffle_ps(q0a, q0a, _MM_SHUFFLE(0, 3, 2, 1));
+    q8 = _mm_add_ps(q8, q0a);
+    _mm_store_ps(&out[i], q0);
+  }
 }
 
 #endif
