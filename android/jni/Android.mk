@@ -62,13 +62,21 @@ include $(BUILD_EXECUTABLE)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := test_filter.cc \
-  fir.cc
+  fir.cc \
+  sawtooth.cc \
+  exp2.cc \
+  sin.cc \
+  fm_op_kernel.cc \
+  resofilter.cc \
+  freqlut.cc
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_ARM_NEON := true
     LOCAL_CFLAGS := -DHAVE_NEON=1
     LOCAL_SRC_FILES += neon_fir.s \
-                       neon_iir.s
+                       neon_iir.s \
+                       neon_fm_kernel.s \
+                       neon_ladder.s
 endif
 
 LOCAL_CFLAGS += -O3

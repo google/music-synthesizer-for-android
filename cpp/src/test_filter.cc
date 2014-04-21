@@ -25,6 +25,13 @@
 
 #include "aligned_buf.h"
 #include "fir.h"
+#include "module.h"
+#include "exp2.h"
+#include "sawtooth.h"
+#include "sin.h"
+#include "fm_op_kernel.h"
+#include "resofilter.h"
+#include "freqlut.h"
 
 // clock_gettime would be a little better, but whatever
 double now() {
@@ -284,6 +291,96 @@ void runbiquad() {
 #endif
 }
 
+void runfmbench() {
+  condition_governor();
+  Sin::init();
+  const int nbuf = 64;
+  int32_t *out = (int32_t *)malloc_aligned(16, nbuf * sizeof(out[0]));
+
+  int32_t freq = 440.0 / 44100.0 * (1 << 24);
+  double start = now();
+  const int niter = 1000000;
+  for (int i = 0; i < niter; i++) {
+    FmOpKernel::compute(out, out, 0, freq, 1 << 24, 1 << 24, false);
+  }
+
+  double elapsed = now() - start;
+  double ns_per_sample = 1e9 * elapsed / nbuf / niter;
+  printf("fm op kernel: %f ns/sample\n", ns_per_sample);
+  free(out);
+}
+
+void runsawbench() {
+  condition_governor();
+  double sample_rate = 44100.0;
+  Exp2::init();
+  Sawtooth::init(sample_rate);
+  const int nbuf = 64;
+  int32_t *out = (int32_t *)malloc_aligned(16, nbuf * sizeof(out[0]));
+  Sawtooth s;
+  int32_t control_last[1];
+  int32_t control[1];
+  int32_t *bufs[1];
+  bufs[0] = out;
+
+  for (int i = 0; i < 1; i++) {
+    double f = 440.0 * (i + 1);
+    control[0] = (1 << 24) * log(f) / log(2);
+    control_last[0] = control[0];
+
+    double start = now();
+    const int niter = 1000000;
+    for (int i = 0; i < niter; i++) {
+      s.process((const int32_t **)0, control, control_last, bufs);
+    }
+
+    double elapsed = now() - start;
+    double ns_per_sample = 1e9 * elapsed / nbuf / niter;
+    printf("sawtooth %gHz: %f ns/sample\n", f, ns_per_sample);
+  }
+  free(out);
+}
+
+void test_matrix();
+void runladderbench() {
+  test_matrix();
+  condition_governor();
+  double sample_rate = 44100.0;
+  Freqlut::init(sample_rate);
+  ResoFilter::init(sample_rate);
+  const int nbuf = 64;
+  int32_t *in = (int32_t *)malloc_aligned(16, nbuf * sizeof(in[0]));
+  int32_t *out = (int32_t *)malloc_aligned(16, nbuf * sizeof(out[0]));
+  ResoFilter r;
+  int32_t control_last[3];
+  int32_t control[3];
+  int32_t *inbufs[1];
+  int32_t *outbufs[1];
+  inbufs[0] = in;
+  outbufs[0] = out;
+
+  for (int i = 0; i < nbuf; i++) {
+    in[i] = (i - 32) << 18;
+  }
+  control[0] = 1 << 23;
+  control[1] = 1 << 23;
+  for (int nl = 0; nl < 2; nl++) {
+    control[2] = nl << 20;
+    double start = now();
+    const int niter = 1000000;
+    for (int i = 0; i < niter; i++) {
+      r.process((const int32_t **)inbufs, control, control_last, outbufs);
+    }
+
+    double elapsed = now() - start;
+    double ns_per_sample = 1e9 * elapsed / nbuf / niter;
+    printf("ladder %s: %f ns/sample\n",
+      nl ? "nonlinear" : "linear", ns_per_sample);
+  }
+
+  free(out);
+}
+
 int main(int argc, char **argv) {
   if (argc == 2) {
     if (!strcmp("fir", argv[1])) {
@@ -292,10 +389,22 @@ int main(int argc, char **argv) {
     } else if (!strcmp("biquad", argv[1])) {
       runbiquad();
       return 0;
+    } else if (!strcmp("fm", argv[1])) {
+      runfmbench();
+      return 0;
+    } else if (!strcmp("saw", argv[1])) {
+      runsawbench();
+      return 0;
+    } else if (!strcmp("ladder", argv[1])) {
+      runladderbench();
+      return 0;
     }
   }
   printf("usage:\n"
     "  test_filter fir\n"
-    "  test_filter biquad\n");
+    "  test_filter biquad\n"
+    "  test_filter fm\n"
+    "  test_filter saw\n"
+    "  test_filter ladder\n");
   return 1;
 }
