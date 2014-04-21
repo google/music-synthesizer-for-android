@@ -233,12 +233,12 @@ neon_ladder_lin_1:
     .type   neon_ladder_mkmatrix, %function
 neon_ladder_mkmatrix:
 @ r0 = pointer to params (a, k)
-@ r1 = out pointer to matrix (A then B, just like consumer)
+@ r1 = out pointer to matrix (B then A)
+@ TODO: produce output as A then B, avoiding copies
 	vpush {q4-q7}
 	vld1.32 {d0[]}, [r0]!  @ a
 	vmov.i32 d1, #0
-	vneg.f32 d2, d0
-	vmov.f32 s0, s4
+	vneg.f32 s0, s0
 
 	vld1.32 {d6[0]}, [r0]  @ k
 	vmov.i32 q2, #0
@@ -305,28 +305,29 @@ neon_ladder_mkmatrix2:
 	bne neon_ladder_mkmatrix2
 
 	@ unwrap toeplitz matrix into the full form
-	vst1.32 {q0}, [r1]!
+	add r1, #16  @ TODO: remove this for A then B output
+	vst1.32 {q0}, [r1,:128]!
 	vext.32 q8, q2, q0, #3
-	vst1.32 {q8}, [r1]!
+	vst1.32 {q8}, [r1,:128]!
 	vext.32 q9, q2, q0, #2
-	vst1.32 {q9}, [r1]!
+	vst1.32 {q9}, [r1,:128]!
 	vext.32 q10, q2, q0, #1
-	vst1.32 {q10}, [r1]!
+	vst1.32 {q10}, [r1,:128]!
+	sub r1, #80  @ TODO: remove this for A then B output
 
-	adr r2, neon_ladder_mkmatrix_const
-	vld1.32 {d2[], d3[]}, [r2]
+	vmov.f32 q1, 1.0
 	vld1.32 {d4[0]}, [r0]  @ k
 	vadd.f32 d4, d2
 	vrecpe.f32 d6, d4
-	vrecps.f32 d2, d6, d4
+	vrecps.f32 d5, d6, d4
 
 	vadd.f32 q0, q8
 	vadd.f32 q9, q10
 	vsub.f32 q15, q1, q0
-	vmul.f32 d6, d2  @ 1 / (1 + k)
+	vmul.f32 d6, d5  @ 1 / (1 + k)
 	vsub.f32 q15, q9
 	vmul.f32 q15, d6[0]
-	vst1.32 {q15}, [r1]!
+	vst1.32 {q15}, [r1,:128]!
 
 	vpop {q4-q7}
 	bx lr

@@ -38,6 +38,7 @@ void neon_ladder_nl(const int32_t *in, const float *a, int32_t *out, int count,
 extern "C"
 void neon_ladder_lin(const int32_t *in, const float *a, int32_t *out, int count,
   float *state);
+extern "C" void neon_ladder_mkmatrix(const float *in, float *out);
 #endif
 
 double this_sample_rate;
@@ -56,7 +57,6 @@ ResoFilter::ResoFilter() {
 }
 
 int32_t compute_alpha(int32_t logf) {
-  // TODO: better tuning
   return min(1 << 24, Freqlut::lookup(logf));
 }
 
@@ -178,9 +178,15 @@ static void make_state_transition(float result[20], int32_t f0, int32_t k) {
 }
 
 void test_matrix() {
-  float a[20];
-  make_state_transition(a, 1.0 * (1 << 24), 3.99 * (1 << 24));
-  dump_matrix(a);
+  float params[2] = {1.0, 3.99};
+  AlignedBuf<float, 20> a;
+  make_state_transition(a.get(), params[0] * (1 << 24), params[1] * (1 << 24));
+  dump_matrix(a.get());
+#ifdef HAVE_NEON
+  params[0] /= 16;
+  neon_ladder_mkmatrix(params, a.get());
+  dump_matrix(a.get());
+#endif
 }
 
 #if defined(USE_MATRIX)
@@ -193,11 +199,20 @@ static float sigmoid(float x, float overdrive) {
 void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
                          const int32_t *control_last, int32_t **outbufs) {
   AlignedBuf<float, 20> a;
-  make_state_transition(a.get(), compute_alpha(control_in[0]), control_in[1]);
   float overdrive = control_in[2] * (1.0 / (1 << 24));
   const int32_t *ibuf = inbufs[0];
   int32_t *obuf = outbufs[0];
   bool useneon = hasNeon();
+  if (useneon) {
+#ifdef HAVE_NEON
+    float params[2];
+    params[0] = compute_alpha(control_in[0]) * (1.0 / (1 << 28));
+    params[1] = control_in[1] * (1.0 / (1 << 24));
+    neon_ladder_mkmatrix(params, a.get());
+#endif
+  } else {
+    make_state_transition(a.get(), compute_alpha(control_in[0]), control_in[1]);
+  }
 
   if (overdrive < 0.01) {
     if (useneon) {
