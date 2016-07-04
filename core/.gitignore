@@ -1,4 +1,0 @@
-build/**
-core.jar
-bin/protoc
-lib/libprotobuf.jar

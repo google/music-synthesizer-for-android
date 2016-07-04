@@ -1,0 +1,76 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.levien.synthesizer">
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true">
+        <activity
+            android:name="com.levien.synthesizer.android.ui.PianoActivity2"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/LightThemeSelector"
+            android:icon="@drawable/icon"
+            android:launchMode="singleTop">
+          <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+          </intent-filter>
+        </activity>
+        <activity
+            android:name="com.levien.synthesizer.android.ui.MainActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.ScoreActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.ChordGridActivity"
+            android:label="@string/chord_grid"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.InstrumentListActivity"
+            android:label="@string/instrument_list"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.EditInstrumentActivity"
+            android:label="@string/edit_instrument"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.VibratoActivity"
+            android:label="@string/vibrato"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.OscillatorActivity"
+            android:label="@string/oscillator"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.TremoloActivity"
+            android:label="@string/tremolo"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.LowPassFilterActivity"
+            android:label="@string/low_pass_filter"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.AmplificationActivity"
+            android:label="@string/amplification"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.EffectsActivity"
+            android:label="@string/effects"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.KarplusStrongActivity"
+            android:label="@string/karplus_strong"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="com.levien.synthesizer.android.ui.SettingsActivity"
+            android:label="@string/settings" />
+        <service android:name=".android.service.SynthesizerService">
+        </service>
+
+    </application>
+
+</manifest>
