@@ -51,18 +51,26 @@ inline static T max(const T& a, const T& b) {
     return a > b ? a : b;
 }
 
-#ifdef HAVE_NEON
-#include <cpu-features.h>
+#ifdef __aarch64__
+#define HAVE_NEON_INTRINSICS
+#include <arm_neon.h>
+static inline bool hasNeon() {
+  return true;
+}
+#elif __ARM_NEON__
+#define HAVE_NEON_INTRINSICS
+#include <arm_neon.h>
+// TODO: get this working (although maybe we don't even care about non-NEON ARM any more)
+//#include <cpu-features.h>
 
 static inline bool hasNeon() {
-  return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
+  return true;
+  //return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
 }
 #else
 static inline bool hasNeon() {
   return false;
 }
 #endif
-
-
 
 #endif  // __SYNTH_H

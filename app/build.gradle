@@ -22,6 +22,11 @@ model {
             moduleName "synth"
             ldLibs.addAll(['log', 'OpenSLES'])
         }
+        abis {
+            create("armeabi-v7a") {
+                cppFlags.add('-mfpu=neon')
+            }
+        }
         sources {
             main {
                 jni {

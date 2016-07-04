@@ -202,7 +202,7 @@ void ResoFilter::process(const int32_t **inbufs, const int32_t *control_in,
   float overdrive = control_in[2] * (1.0 / (1 << 24));
   const int32_t *ibuf = inbufs[0];
   int32_t *obuf = outbufs[0];
-  bool useneon = hasNeon();
+  bool useneon = false; // TODO: hasNeon();
   if (useneon) {
 #ifdef HAVE_NEON
     float params[2];

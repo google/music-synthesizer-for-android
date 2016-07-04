@@ -21,11 +21,131 @@
 #include "sin.h"
 #include "fm_op_kernel.h"
 
-#ifdef HAVE_NEON
+#ifdef HAVE_NEON_INTRINSICS
 
 extern "C"
 void neon_fm_kernel(const int *in, const int *busin, int *out, int count,
   int32_t phase0, int32_t freq, int32_t gain1, int32_t dgain);
+
+const int32_t __attribute__ ((aligned(16))) const_0_1_2_3_arg[4] = {0, 1, 2, 3};
+const int32_t __attribute__ ((aligned(16))) mask23_arg = 0x7fffff;
+const float32_t __attribute__ ((aligned(16))) coeffs_arg[4] = {
+        -0.01880853017455781, 0.25215252666796095, -1.2333439964934032, 1.0
+};
+
+void neon_fm_kernel(const int *in, const int *busin, int *out, int count,
+    int32_t phase0, int32_t freq_arg, int32_t gain1_arg, int32_t dgain_arg) {
+  int32x4_t phase = vld1q_dup_s32(&phase0);
+  int32x4_t freq = vld1q_dup_s32(&freq_arg);
+  int32x4_t const_0_1_2_3 = vld1q_s32(const_0_1_2_3_arg);
+  phase = vmlaq_s32(phase, freq, const_0_1_2_3);
+  int32x4_t gain1 = vld1q_dup_s32(&gain1_arg);
+  int32x4_t dgain = vld1q_dup_s32(&dgain_arg);
+  gain1 = vmlaq_s32(gain1, dgain, const_0_1_2_3);
+  int32x4_t mask23 = vld1q_dup_s32(&mask23_arg);
+  float32x4_t coeffs = vld1q_f32(coeffs_arg);
+  float32x4_t gainf = vcvtq_n_f32_s32(gain1, 24);
+  int32x4_t freq4 = vshlq_n_s32(freq, 2);
+  float32x4_t dgainf = vcvtq_n_f32_s32(dgain, 22);
+
+  count -= 4;
+  int32x4_t q15 = vmovq_n_s32(0x800000);
+  int32x4_t q7 = vmovq_n_s32(0x400000);
+  while (true) {
+    int32x4_t phase4 = vaddq_s32(phase, freq4);
+    int32x4_t phase8 = vaddq_s32(phase4, freq4);
+    int32x4_t data1a = vld1q_s32(in);
+    data1a = vaddq_s32(data1a, phase);
+    int32x4_t data1b = vld1q_s32(in + 4);
+    data1b = vaddq_s32(data1b, phase4);
+    int32x4_t data1c = vld1q_s32(in + 8);
+    data1c = vaddq_s32(data1c, phase8);
+    phase = vaddq_s32(phase8, freq4);
+    in += 12;
+    int32x4_t data4a = (int32x4_t)vtstq_s32(data1a, q15);
+    int32x4_t data4b = (int32x4_t)vtstq_s32(data1b, q15);
+    int32x4_t data4c = (int32x4_t)vtstq_s32(data1c, q15);
+    data1a = vandq_s32(data1a, mask23);
+    data1b = vandq_s32(data1b, mask23);
+    data1c = vandq_s32(data1c, mask23);
+    data1a = vsubq_s32(data1a, q7);
+    data1b = vsubq_s32(data1b, q7);
+    data1c = vsubq_s32(data1c, q7);
+    float32x4_t fdata1a = vcvtq_n_f32_s32(data1a, 22);
+    float32x4_t fdata1b = vcvtq_n_f32_s32(data1b, 22);
+    float32x4_t fdata1c = vcvtq_n_f32_s32(data1c, 22);
+    fdata1a = vmulq_f32(fdata1a, fdata1a);
+    fdata1b = vmulq_f32(fdata1b, fdata1b);
+    fdata1c = vmulq_f32(fdata1c, fdata1c);
+    float32x4_t fdata2a = vdupq_lane_f32(vget_low_f32(coeffs), 1);
+    float32x4_t fdata2b = vdupq_lane_f32(vget_low_f32(coeffs), 1);
+    float32x4_t fdata2c = vdupq_lane_f32(vget_low_f32(coeffs), 1);
+    fdata2a = vmlaq_lane_f32(fdata2a, fdata1a, vget_low_f32(coeffs), 0);
+    fdata2b = vmlaq_lane_f32(fdata2b, fdata1b, vget_low_f32(coeffs), 0);
+    fdata2c = vmlaq_lane_f32(fdata2c, fdata1c, vget_low_f32(coeffs), 0);
+    float32x4_t fdata3a = vdupq_lane_f32(vget_high_f32(coeffs), 0);
+    float32x4_t fdata3b = vdupq_lane_f32(vget_high_f32(coeffs), 0);
+    float32x4_t fdata3c = vdupq_lane_f32(vget_high_f32(coeffs), 0);
+    fdata3a = vmlaq_f32(fdata3a, fdata1a, fdata2a);
+    fdata3b = vmlaq_f32(fdata3b, fdata1b, fdata2b);
+    fdata3c = vmlaq_f32(fdata3c, fdata1c, fdata2c);
+    fdata2a = vdupq_lane_f32(vget_high_f32(coeffs), 1);
+    fdata2b = vdupq_lane_f32(vget_high_f32(coeffs), 1);
+    fdata2c = vdupq_lane_f32(vget_high_f32(coeffs), 1);
+    fdata2a = vmlaq_f32(fdata2a, fdata1a, fdata3a);
+    fdata2b = vmlaq_f32(fdata2b, fdata1b, fdata3b);
+    fdata2c = vmlaq_f32(fdata2c, fdata1c, fdata3c);
+    fdata3a = vaddq_f32(gainf, dgainf);
+    fdata3b = vaddq_f32(fdata3a, dgainf);
+    fdata2a = vmulq_f32(fdata2a, gainf);
+    fdata2b = vmulq_f32(fdata2b, fdata3a);
+    fdata2c = vmulq_f32(fdata2c, fdata3b);
+    gainf = vaddq_f32(fdata3b, dgainf);
+    int32x4_t data3a = vcvtq_n_s32_f32(fdata2a, 24);
+    int32x4_t data3b = vcvtq_n_s32_f32(fdata2b, 24);
+    int32x4_t data3c = vcvtq_n_s32_f32(fdata2c, 24);
+    data1a = vld1q_s32(busin);
+    data1b = vld1q_s32(busin + 4);
+    data1c = vld1q_s32(busin + 8);
+    busin += 12;
+    data3a = veorq_s32(data3a, data4a);
+    data3b = veorq_s32(data3b, data4b);
+    data3c = veorq_s32(data3c, data4c);
+    data3a = vaddq_s32(data3a, data1a);
+    data3b = vaddq_s32(data3b, data1b);
+    data3c = vaddq_s32(data3c, data1c);
+    vst1q_s32(out, data3a);
+    vst1q_s32(out + 4, data3b);
+    vst1q_s32(out + 8, data3c);
+    out += 12;
+    count -= 12;
+    if (count <= 0) {
+      if (count == 0) {
+        // finish last chunk of 4
+        data1a = vld1q_s32(in);
+        data1a = vaddq_s32(data1a, phase);
+        data4a = (int32x4_t)vtstq_s32(data1a, q15);
+        data1a = vandq_s32(data1a, mask23);
+        data1a = vsubq_s32(data1a, q7);
+        fdata1a = vcvtq_n_f32_s32(data1a, 22);
+        fdata1a = vmulq_f32(fdata1a, fdata1a);
+        fdata2a = vdupq_lane_f32(vget_low_f32(coeffs), 1);
+        fdata2a = vmlaq_lane_f32(fdata2a, fdata1a, vget_low_f32(coeffs), 0);
+        fdata3a = vdupq_lane_f32(vget_high_f32(coeffs), 0);
+        fdata3a = vmlaq_f32(fdata3a, fdata1a, fdata2a);
+        fdata2a = vdupq_lane_f32(vget_high_f32(coeffs), 1);
+        fdata2a = vmlaq_f32(fdata2a, fdata1a, fdata3a);
+        fdata2a = vmulq_f32(fdata2a, gainf);
+        data3a = vcvtq_n_s32_f32(fdata2a, 24);
+        data1a = vld1q_s32(busin);
+        data3a = veorq_s32(data3a, data4a);
+        data3a = vaddq_s32(data3a, data1a);
+        vst1q_s32(out, data3a);
+      }
+      break;
+    }
+  }
+}
 
 const int32_t __attribute__ ((aligned(16))) zeros[N] = {0};
 
@@ -38,7 +158,7 @@ void FmOpKernel::compute(int32_t *output, const int32_t *input,
   int32_t gain = gain1;
   int32_t phase = phase0;
   if (hasNeon()) {
-#ifdef HAVE_NEON
+#ifdef HAVE_NEON_INTRINSICS
     neon_fm_kernel(input, add ? output : zeros, output, N,
       phase0, freq, gain, dgain);
 #endif
@@ -68,7 +188,7 @@ void FmOpKernel::compute_pure(int32_t *output, int32_t phase0, int32_t freq,
   int32_t gain = gain1;
   int32_t phase = phase0;
   if (hasNeon()) {
-#ifdef HAVE_NEON
+#ifdef HAVE_NEON_INTRINSICS
     neon_fm_kernel(zeros, add ? output : zeros, output, N,
       phase0, freq, gain, dgain);
 #endif
