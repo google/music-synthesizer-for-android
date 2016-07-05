@@ -334,7 +334,7 @@ neon_halfrate_split1:
 
 	pop {r4}
 	bx lr
-	.size neon_halfrate_split, .-.neon_halfrate_split
+	.size neon_halfrate_split, .-neon_halfrate_split
 
 	.align 2
 	.global neon_halfrate_combine
@@ -364,4 +364,4 @@ neon_halfrate_combine1:
 
 	pop {r4}
 	bx lr
-	.size neon_halfrate_combine, .-.neon_halfrate_combine
+	.size neon_halfrate_combine, .-neon_halfrate_combine

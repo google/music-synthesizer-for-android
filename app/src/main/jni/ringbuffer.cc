@@ -36,7 +36,7 @@ int RingBuffer::WriteBytesAvailable() {
 int RingBuffer::Read(int size, uint8_t *bytes) {
   int rd_ix = rd_ix_;
   SynthMemoryBarrier();  // read barrier, make sure data is committed before ix
-  int fragment_size = min(size, kBufSize - rd_ix);
+  unsigned int fragment_size = min((unsigned int)size, kBufSize - rd_ix);
   memcpy(bytes, buf_ + rd_ix, fragment_size);
   if (size > fragment_size) {
     memcpy(bytes + fragment_size, buf_, size - fragment_size);
@@ -46,20 +46,20 @@ int RingBuffer::Read(int size, uint8_t *bytes) {
   return size;
 }
 
-int RingBuffer::Write(const uint8_t *bytes, int size) {
-  int remaining = size;
+void RingBuffer::Write(const uint8_t *bytes, int size) {
+  unsigned int remaining = (unsigned int)size;
   while (remaining > 0) {
     int rd_ix = rd_ix_;
     int wr_ix = wr_ix_;
-    int space_available = (rd_ix - wr_ix - 1) & (kBufSize - 1);
+    unsigned int space_available = (rd_ix - wr_ix - 1) & (kBufSize - 1);
     if (space_available == 0) {
       struct timespec sleepTime;
       sleepTime.tv_sec = 0;
       sleepTime.tv_nsec = 1000000;
       nanosleep(&sleepTime, NULL);
     } else {
-      int wr_size = min(remaining, space_available);
-      int fragment_size = min(wr_size, kBufSize - wr_ix);
+      unsigned int wr_size = min(remaining, space_available);
+      unsigned int fragment_size = min(wr_size, kBufSize - wr_ix);
       memcpy(buf_ + wr_ix, bytes, fragment_size);
       if (wr_size > fragment_size) {
         memcpy(buf_, bytes + fragment_size, wr_size - fragment_size);

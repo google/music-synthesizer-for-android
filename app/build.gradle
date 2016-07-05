@@ -20,6 +20,8 @@ model {
         }
         ndk {
             moduleName "synth"
+            toolchain "clang"
+            cppFlags.add('-Ofast')
             ldLibs.addAll(['log', 'OpenSLES'])
         }
         abis {
