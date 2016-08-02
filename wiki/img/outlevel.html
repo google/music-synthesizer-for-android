@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        var options = {
+          title: 'Wave form qr=60'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        draw_outputlevel(chart);
+        var chart = new google.visualization.LineChart(document.getElementById('rate_div'));
+        draw_rate(chart);
+      }
+    </script>
+  </head>
+  <body>
+  	<p>Output level (in dB) for DX7 envelope, scaled from 0-99 output level values. This data is based on measurement of an actual device.</p>
+    <div id="chart_div" style="width: 600px; height: 500px;"></div>
+
+    <p>Similarly for rate, this time measured in dB/s, for decay. Attack is faster, and has a nonlinear curve.</p>
+    <div id="rate_div" style="width:600px; height:500px"></div>
+  </body>
+  <script>
+
+var outputlevel = [0, 5, 9, 13, 17, 20, 23, 25, 27, 29, 31, 33, 35, 37, 39,
+41, 42, 43, 45, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61,
+62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
+115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127];
+
+function draw_outputlevel(chart) {
+	var rawdata = [['value', 'gain']];
+	for (var i = 0; i < outputlevel.length; i++) {
+		var ol = outputlevel[i];
+		var db = 20 * Math.log(2) / Math.log(10) * (ol - 127) / 8;
+		rawdata.push([i, db]);
+	}
+	var data = google.visualization.arrayToDataTable(rawdata);
+	chart.draw(data, {title: 'Output level to dB scaling', hAxis: {
+		title: 'Output level value (0-99)'
+	}, vAxis: {
+		title: 'dB' 
+	}});
+}
+
+function draw_rate(chart) {
+	var rawdata = [['value', 'rate']];
+	for (var i = 0; i < outputlevel.length; i++) {
+		var qr = i * 41 / 64;
+		var samplerate = 49096;
+		var baserate = samplerate / (1<<20) * 20 * Math.log(2) / Math.log(10);
+		var rate = baserate * (1 << (qr >> 2)) * (1 + .25 * (qr & 3));
+		rawdata.push([i, rate]);
+	}
+	var data = google.visualization.arrayToDataTable(rawdata);
+	chart.draw(data, {title: 'Rate values to actual level change', hAxis: {
+		title: 'Rate value (0-99)'
+	}, vAxis: {
+		title: 'dB/s',
+		logScale: true
+	}});
+
+}
+
+  </script>
+</html>
