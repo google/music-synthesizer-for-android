@@ -60,7 +60,7 @@ OSStatus SynthMain::setupplayback(SynthUnit *synth_unit) {
   description.componentFlags = 0;
   description.componentFlagsMask = 0;
   
-  if (component = FindNextComponent(NULL, &description)) {
+  if ((component = FindNextComponent(NULL, &description))) {
     err = OpenAComponent(component, &audioUnit_);
     if (err != noErr) return err;
   }
@@ -156,10 +156,8 @@ int SynthMain::Load(const char *filename) {
 
 int SynthMain::SynthInit() {
   double sample_rate = 44100.0;
-  Freqlut::init(sample_rate);
-  Sawtooth::init(sample_rate);
-  Sin::init();
   synth_unit_ = new SynthUnit(&ring_buffer_);
+  SynthUnit::Init(sample_rate);
   if (true) {
     const char *fn = "/Users/raph/dx7/ROM1A.SYX";
     Load(fn);
