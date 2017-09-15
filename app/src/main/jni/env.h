@@ -17,6 +17,8 @@
 #ifndef __ENV_H
 #define __ENV_H
 
+#include <stdint.h>
+
 // DX7 envelope generation
 
 class Env {

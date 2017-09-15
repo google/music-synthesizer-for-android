@@ -1,0 +1,14 @@
+svg .white {
+    fill: white;
+    stroke: gray;
+}
+
+svg .black {
+    fill: black;
+    stroke: gray;
+}
+
+svg .pressed {
+    fill: #80a0c0;
+    stroke: gray;
+}

@@ -23,6 +23,8 @@
 // It will continue to evolve a bit, as note-stealing logic, scaling,
 // and real-time control of parameters live here.
 
+#include <stdint.h>
+
 #include "env.h"
 #include "pitchenv.h"
 #include "fm_core.h"

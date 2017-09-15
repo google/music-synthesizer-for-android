@@ -17,8 +17,6 @@
 #include "synth.h"
 #include "env.h"
 
-using namespace std;
-
 void Env::init(const int r[4], const int l[4], int32_t ol, int rate_scaling) {
   for (int i = 0; i < 4; i++) {
     rates_[i] = r[i];
@@ -32,7 +30,7 @@ void Env::init(const int r[4], const int l[4], int32_t ol, int rate_scaling) {
 }
 
 int32_t Env::getsample() {
-  if (ix_ < 3 || (ix_ < 4) && !down_) {
+  if (ix_ < 3 || ((ix_ < 4) && !down_)) {
     if (rising_) {
       const int jumptarget = 1716;
       if (level_ < (jumptarget << 16)) {
