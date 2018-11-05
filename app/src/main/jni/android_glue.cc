@@ -139,7 +139,7 @@ Java_com_levien_synthesizer_android_AndroidGlue_start(JNIEnv *env,
   SLDataLocator_AndroidSimpleBufferQueue loc_bufq =
     {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, N_BUFFERS};
   SLDataFormat_PCM format_pcm = {
-    SL_DATAFORMAT_PCM, 1, sample_rate * 1000,
+    SL_DATAFORMAT_PCM, 1, static_cast<SLuint32>(sample_rate * 1000),
     SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
     SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN
       // TODO: compute real endianness

@@ -1,42 +1,29 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-model {
-    android {
-        compileSdkVersion 23
-        buildToolsVersion "23.0.3"
+android {
+    compileSdkVersion 28
 
-        defaultConfig {
-            applicationId "com.levien.synthesizer"
-            minSdkVersion.apiLevel 16
-            targetSdkVersion.apiLevel 23
-            versionCode 1
-            versionName "1.0"
-        }
-        buildTypes {
-            release {
-                minifyEnabled false
-                proguardFiles.add(file('proguard-android.txt'))
+    defaultConfig {
+        applicationId "com.levien.synthesizer"
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        externalNativeBuild {
+            cmake {
+                cppFlags "-Ofast -mfpu=neon"
             }
         }
-        ndk {
-            moduleName "synth"
-            toolchain "clang"
-            cppFlags.add('-Ofast')
-            ldLibs.addAll(['log', 'OpenSLES'])
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles.add(file('proguard-android.txt'))
         }
-        abis {
-            create("armeabi-v7a") {
-                cppFlags.add('-mfpu=neon')
-            }
-        }
-        sources {
-            main {
-                jni {
-                    source {
-                        excludes.addAll(["main.cc", "wavout.cc", "test_*.cc", "SynthApp/*"])
-                    }
-                }
-            }
+    }
+    externalNativeBuild {
+        cmake {
+           path "src/main/jni/CMakeLists.txt"
         }
     }
 }
@@ -44,5 +31,5 @@ model {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
 }
